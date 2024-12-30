@@ -1,0 +1,14 @@
+{
+  "name": "zalo-meta-api",
+  "version": "1.0.0",
+  "description": "zalo meta web clone the zalo web",
+  "main": "/src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "zalo-meta"
+  ],
+  "author": "Quang,Tuyen",
+  "license": "ISC"
+}
