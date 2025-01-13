@@ -6,8 +6,11 @@ import cors from "cors";
 import chalk from "chalk";
 import routing from "./application/router/index.js";
 import config from "../config/index.js";
+import socketService from "./infrastructure/socket/connection/ConnectionSocketIO.js";
+import http from "http";
 
 const app = express();
+const server = http.createServer(app);
 
 express.static(".");
 
@@ -25,16 +28,16 @@ routing(app);
 
 function runningService() {
   //TODO: Start
-  app.listen(config.port, () => {
-    console.log(
-      chalk.bgGray(`🚀> Server is running at http://localhost:${config.port}`)
-    );
+  server.listen(config.port, () => {
+    console.log(`🚀> Server is running at http://localhost:${config.port}`);
     console.log(
       chalk.bgGray(
         `🚀> Swagger is running at http://localhost:${config.port}/api/v1/swagger`
       )
     );
   });
+  socketService.start(server);
+  
   console.log(chalk.grey("🚀 Service Info"));
   console.log(
     chalk.blueBright(`> Name:::::::: ${service_info.name || "Unknown"}`)
@@ -45,4 +48,5 @@ function runningService() {
 }
 
 runningService();
+socketService.start(server);
 export default app;
