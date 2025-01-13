@@ -8,14 +8,20 @@ services:
     volumes:
       - ./data/zalo:/data/db
     restart: always
-  nginx:
-    image: nginx
-    container_name: nginx-zalo
+  # nginx:
+  #   image: nginx
+  #   container_name: nginx-zalo
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./nginx/conf.d:/etc/nginx/conf.d
+  #     - ./nginx/ssl:/etc/nginx/ssl
+  #   restart: always
+  redis:
+    image: redis
+    container_name: redis-cache
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
+      - "27017:27017"
     restart: always
