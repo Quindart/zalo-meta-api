@@ -1,5 +1,5 @@
-require("dotenv").config();
-
+import dotenv from "dotenv";
+dotenv.config();
 class ConfigureApp {
   port = process.env.PORT || 5000;
   clientURL = process.env.CLIENT_URL || "http://localhost:3000";
@@ -20,4 +20,4 @@ class ConfigureApp {
     },
   };
 }
-module.exports = new ConfigureApp();
+export default new ConfigureApp();

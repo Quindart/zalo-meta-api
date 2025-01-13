@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const EmojiSchema = new mongoose.Schema({
   createAt: { type: Date, default: Date.now },
@@ -10,4 +10,4 @@ const EmojiSchema = new mongoose.Schema({
   thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
 });
 
-module.exports = mongoose.model("Emoji", EmojiSchema);
+export default mongoose.model("Emoji", EmojiSchema);

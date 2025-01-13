@@ -53,7 +53,7 @@ function randomTokenString() {
   return Crypto.randomBytes(40).toString("hex");
 }
 
-module.exports = {
+export default {
   verifyToken,
   generateToken,
   randomTokenString,

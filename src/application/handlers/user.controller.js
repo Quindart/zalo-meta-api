@@ -7,4 +7,4 @@ class UserController {
   }
 }
 
-modules.exports = new UserController();
+export default new UserController();

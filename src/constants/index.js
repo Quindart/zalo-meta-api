@@ -57,6 +57,6 @@ const HTTP_STATUS = {
   NETWORK_AUTHENTICATION_REQUIRED: 511,
 };
 
-modules.exports = {
+export default {
   HTTP_STATUS,
 };

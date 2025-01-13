@@ -1,6 +1,6 @@
-const zaloService = require("./src");
-const os = require("os");
-const chalk = require("chalk");
+import zaloService from "./src/index.js";
+import os from "os";
+import chalk from "chalk";
 
 const totalMemory = (os.totalmem() / 1024 ** 3).toFixed(2);
 const freeMemory = (os.freemem() / 1024 ** 3).toFixed(2);

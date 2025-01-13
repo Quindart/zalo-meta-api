@@ -6,5 +6,10 @@ const ROUTING = {
   //*Schema
   USER: "/users",
   CHANNEL: "/channels",
+  EMOJI: "/emojis",
+  FILE: "/files",
+  MESSAGE: "/messages",
+  THREAD: "/threads",
+  chat: "/chats",
 };
-modules.exports = ROUTING;
+export default ROUTING;

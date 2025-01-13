@@ -9,8 +9,8 @@ class ConnectionMongoDB {
       });
       console.log("🚀 ~~~ connected to Atlas::::Zalo-Meta-api ");
     } catch (error) {
-      console.log("🚀 ~ ConnectionMongoDB ~ connect ~ error:", error)
+      console.log("🚀 ~ ConnectionMongoDB ~ connect ~ error:", error);
     }
   }
 }
-module.exports = new ConnectionMongoDB();
+export default new ConnectionMongoDB();

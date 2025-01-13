@@ -1,11 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const chalk = require("chalk");
+import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import chalk from "chalk";
+import routing from "./application/router/index.js";
+import config from "../config/index.js";
+
 const app = express();
 
-const config = require("../config/index");
+express.static(".");
+
 const service_info = config.services.zalo;
 
 //TODO: middleware
@@ -13,6 +18,9 @@ app.use(helmet());
 app.use(cors({ origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//TODO: Routing service
+routing(app);
 
 function runningService() {
   //TODO: Start
@@ -31,4 +39,4 @@ function runningService() {
 }
 
 runningService();
-module.exports = app;
+export default app;
