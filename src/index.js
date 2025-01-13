@@ -18,17 +18,23 @@ app.use(helmet());
 app.use(cors({ origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
 //TODO: Routing service
 routing(app);
 
 function runningService() {
   //TODO: Start
-  app.listen(config.port, () =>
+  app.listen(config.port, () => {
     console.log(
-      chalk.bgGray(`🚀> App is running at http://localhost:${config.port}`)
-    )
-  );
+      chalk.bgGray(`🚀> Server is running at http://localhost:${config.port}`)
+    );
+    console.log(
+      chalk.bgGray(
+        `🚀> Swagger is running at http://localhost:${config.port}/api/v1/swagger`
+      )
+    );
+  });
   console.log(chalk.grey("🚀 Service Info"));
   console.log(
     chalk.blueBright(`> Name:::::::: ${service_info.name || "Unknown"}`)
