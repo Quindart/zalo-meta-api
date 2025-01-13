@@ -2,7 +2,7 @@ version: "1.0"
 services:
   mongodb:
     image: "mongo"
-    container_name: mongo-meta-db
+    container_name: mongo-zalo-db
     ports:
       - "27017:27017"
     volumes:
@@ -23,5 +23,5 @@ services:
     image: redis
     container_name: redis-cache
     ports:
-      - "27017:27017"
+      - "6374:6374"
     restart: always
