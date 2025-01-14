@@ -10,8 +10,9 @@ class RedisService {
   }
   async connect() {
     this.redis.on("connect", () => {
-      console.log("✅> Connected to Redis!");
+      // return console.log("✅> Connected to Redis!");
     });
+    // console.log("✅> Connected to Redis!");
 
     this.redis.on("error", (err) => {
       console.error("Redis connection error:", err);
