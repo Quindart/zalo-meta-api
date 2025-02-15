@@ -9,7 +9,7 @@ class MongoService {
 
   async connect() {
     const mongoURI =
-      process.env.MONGO_URI || "mongodb://localhost:27017/zalo-meta-api";
+      process.env.CLOUD_ATLAS_URL || "mongodb://localhost:27017/zalo-meta-api";
     try {
       await mongoose.connect(mongoURI, {
         useNewUrlParser: true,

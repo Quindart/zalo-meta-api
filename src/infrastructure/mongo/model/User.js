@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const USER_STATUS = {
   ACTIVE: "ACTIVE",
   UNACTIVE: "UNACTIVE",
