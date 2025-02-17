@@ -13,10 +13,14 @@ import mongoService from "./infrastructure/mongo/connection/MongoService.js";
 
 const app = express();
 const server = http.createServer(app);
+const { blacklistMiddleware, whitelistMiddleware } = require('./config/access-list');
 
 express.static(".");
 
 const service_info = config.services.zalo;
+
+//TODO: Access list
+app.use(blacklistMiddleware);
 
 //TODO: middleware
 app.use(helmet());
