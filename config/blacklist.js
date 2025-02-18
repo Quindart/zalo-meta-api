@@ -12,7 +12,7 @@ const blacklistConfig = {
     ],
 
     isIPBlocked: function (ip) {
-        return this.blockedIPs.includes(ip);
+        return this.blockIPs.includes(ip);
     },
 
     isRouteBlocked: function (route) {

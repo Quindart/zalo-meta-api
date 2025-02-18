@@ -9,4 +9,10 @@ router.get(ROUTING.API, (req, res) => {
   });
 });
 
+router.get(ROUTING.LOGIN, (req, res) => {
+  res.status(HTTP_STATUS.OK).json({
+    title: "login",
+  });
+});
+
 export default router;

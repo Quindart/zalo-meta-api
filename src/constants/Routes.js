@@ -13,5 +13,14 @@ const ROUTING = {
   MESSAGE: "/api/v1/messages",
   THREAD: "/api/v1/threads",
   chat: "/api/v1/chats",
+
+  //*Auth
+  LOGIN: "/api/v1/auth/login",
+  REGISTER: "/api/v1/auth/register",
+  LOGOUT: "/api/v1/auth/logout",
+  FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
+  RESET_PASSWORD: "/api/v1/auth/reset-password",
+  VERIFY_EMAIL: "/api/v1/auth/verify-email",
+  REFRESH_TOKEN: "/api/v1/auth/refresh-token",
 };
 export default ROUTING;

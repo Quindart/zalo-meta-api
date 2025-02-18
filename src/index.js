@@ -13,7 +13,7 @@ import mongoService from "./infrastructure/mongo/connection/MongoService.js";
 
 const app = express();
 const server = http.createServer(app);
-const { blacklistMiddleware, whitelistMiddleware } = require('./config/access-list');
+import { blacklistMiddleware, whitelistMiddleware } from '../config/access-list.js';
 
 express.static(".");
 
