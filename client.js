@@ -63,7 +63,7 @@ class Client {
       res.render("chat", { port: this.port, userName: this.userName });
     });
 
-    this.serverClient.listen(this.port, "0.0.0.0", () => {
+    this.serverClient.listen(this.port, this.localIP, () => {
       console.log(
         `$Truy cập client LAN:`,
         `http://${this.localIP}:${this.port}/view`
