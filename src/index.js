@@ -38,6 +38,7 @@ function runningService() {
       )
     );
   });
+
   //TODO: socket
   socketService.start(server);
 

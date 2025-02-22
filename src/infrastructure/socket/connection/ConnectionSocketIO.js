@@ -8,6 +8,10 @@ class SocketService {
     });
     io.on("connection", (socket) => {
       console.log(`⚡: ${socket.id} user just connected!`);
+      socket.on("send_message", (data) => {
+        console.log("Tin nhắn nhận được:", data);
+        io.emit("receive_message", data);
+      });
       socket.on("disconnect", () => {
         console.log(`🔥: A user disconnected`);
       });

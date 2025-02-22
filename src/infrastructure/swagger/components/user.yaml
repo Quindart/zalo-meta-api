@@ -1,0 +1,42 @@
+User:
+{
+  "convert": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "avatar": {
+        "type": "string"
+      },
+      "phone": {
+        "type": "string"
+      },
+      "gender": {
+        "type": "string"
+      },
+      "dateOfBirth": {},
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "twoFactorAuthenticationSecret": {
+        "type": "string"
+      },
+      "isTwoFactorAuthenticationEnabled": {
+        "type": "boolean"
+      },
+      "updatedAt": {},
+      "createdAt": {}
+    }
+  },
+  "key": "user"
+}
