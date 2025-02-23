@@ -60,7 +60,11 @@ class Client {
     this.serverClient = http.createServer(this.client);
 
     this.client.get("/view", (req, res) => {
-      res.render("chat", { port: this.port, userName: this.userName });
+      res.render("chat", {
+        port: this.port,
+        userName: this.userName,
+        localIP: this.localIP,
+      });
     });
 
     this.serverClient.listen(this.port, this.localIP, () => {

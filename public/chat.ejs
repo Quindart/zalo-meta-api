@@ -15,7 +15,7 @@
     <ul id="messages"></ul>
 
     <script>
-      const socket = io("http://192.168.1.167:5000");
+      const socket = io("<%= localIP %>" + ":5000");
 
       function sendMessage() {
         const message = document.getElementById("message").value;
