@@ -5,7 +5,14 @@ const ChannelSchema = new mongoose.Schema({
   deleteAt: { type: Date },
   name: { type: String, required: true },
   updateAt: { type: Date, default: Date.now },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  members: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      role: {
+        type: mongoose.Schema.Types.String,
+      },
+    },
+  ],
 });
 
 export default mongoose.model("Channel", ChannelSchema);

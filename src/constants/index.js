@@ -56,3 +56,6 @@ export const HTTP_STATUS = {
   INSUFFICIENT_STORAGE: 507,
   NETWORK_AUTHENTICATION_REQUIRED: 511,
 };
+
+export const ROLE_MEMBER_OF_CHANNEL = ["CAPTAIN MEM", "SUB MEM", "MEM"];
+export const ROLE_MEMBER_VNESE = ["Trưởng nhóm", "Phó nhóm", "Thành viên"];
