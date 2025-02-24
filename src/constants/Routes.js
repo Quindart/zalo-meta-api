@@ -5,6 +5,12 @@ const ROUTING = {
   BY_ID: "/:id",
   SWAGGER: "/api/v1/swagger",
 
+  // Member of channel
+  MEMBER: "/members",
+  OUT_GROUP: "/out-group",
+  ASSIGN_ROLE: "/assign-role",
+
+
   //*Schema
   USER: "/api/v1/users",
   CHANNEL: "/api/v1/channels",

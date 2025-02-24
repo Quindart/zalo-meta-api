@@ -1,0 +1,25 @@
+Channel:
+{
+  "convert": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string"
+      },
+      "name":{
+        type: "string"
+      },
+      "user": {
+        "type": "array",
+        "minItems": 3,
+        "items": {
+          "type": "string"
+        }
+      },
+      "updatedAt": {},
+      "createdAt": {},
+      "deleteAt": {}
+    }
+  },
+  "key": "channel"
+}
