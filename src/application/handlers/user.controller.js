@@ -2,6 +2,7 @@ import { HTTP_STATUS } from "../../constants/index.js";
 import User from "../../infrastructure/mongo/model/User.js";
 import Error from "../../utils/errors.js";
 import { responseEntity } from "../../utils/query.js";
+import bcrypt from 'bcrypt';
 
 class UserController {
   //TODO: [GET]
@@ -46,6 +47,7 @@ class UserController {
   //TODO: [POST]
   async createUser(req, res) {
     try {
+
       const {
         email,
         password,
@@ -56,16 +58,18 @@ class UserController {
         dateOfBirth,
       } = req.body;
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       const user = await User.create({
         email,
-        password,
+        password: hashedPassword,
         phone,
         firstName,
         lastName,
         avatar,
         dateOfBirth,
         isTwoFactorAuthenticationEnabled: true,
-      }).lean();
+      });
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,

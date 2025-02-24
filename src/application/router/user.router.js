@@ -17,11 +17,6 @@ router.put(ROUTING.BY_ID, userController.updateUser);
 //TODO [DELETE]
 router.delete(ROUTING.BY_ID, userController.deleteUser);
 
-router.get(ROUTING.LOGIN, (req, res) => {
-  res.status(HTTP_STATUS.OK).json({
-    title: "login",
-  });
-});
 
 export default router;
 
