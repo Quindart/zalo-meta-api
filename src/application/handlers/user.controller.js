@@ -47,7 +47,6 @@ class UserController {
   //TODO: [POST]
   async createUser(req, res) {
     try {
-<<<<<<< HEAD
 
       const {
         email,
@@ -64,13 +63,6 @@ class UserController {
       const user = await User.create({
         email,
         password: hashedPassword,
-=======
-      const { email, phone, firstName, lastName, avatar, dateOfBirth } =
-        req.body;
-      // const password =
-      const user = await User.create({
-        email,
->>>>>>> a6726f2aafa73bf7659a8ff26e5f64f2203f3724
         phone,
         firstName,
         lastName,
