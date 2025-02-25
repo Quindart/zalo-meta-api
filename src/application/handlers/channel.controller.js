@@ -13,9 +13,9 @@ class ChannelController {
             const createMembers = [{
                 user: "67b4b8fa40191e21f03c08f2",
                 role: ROLE_MEMBER_OF_CHANNEL[0]
-            }, ...memberData.map(memId =>({user: memId, role:  ROLE_MEMBER_OF_CHANNEL[2] }))]
-            
-            const chanel = await Channel.create({ name,  members : createMembers });
+            }, ...memberData.map(memId => ({ user: memId, role: ROLE_MEMBER_OF_CHANNEL[2] }))]
+
+            const chanel = await Channel.create({ name, members: createMembers });
             return res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
                 success: true,
@@ -30,7 +30,7 @@ class ChannelController {
     // GET ALL CHANNEL
     async getAllChannel(req, res) {
         try {
-            const channels = await Channel.find({});
+            const channels = await Channel.find({}).lean();
             return res.status(HTTP_STATUS.OK).json({
                 status: HTTP_STATUS.OK,
                 success: true,
@@ -45,8 +45,8 @@ class ChannelController {
     // GET CHANNEL BY ID
     async getChannelByID(req, res) {
         try {
-            const channelID = req.params.id;
-            const channel = await Channel.findById(channelID);
+            const channelId = req.params.id;
+            const channel = await Channel.findById(channelId).lean();
             if (!channel) {
                 return Error.sendNotFound(res, "Not found channel")
             }
@@ -64,17 +64,16 @@ class ChannelController {
     // ADD MEMBER TO CHANNEL BY GROUPID
     async addMemberToChannel(req, res) {
         try {
-            const channelID = req.query.channelID;
-            const user = req.query.userID;
-            const channel = await Channel.findById(channelID);
-            if (!channel) {
+            const channelId = req.query.channelId;
+            const userId = req.query.userId;
+            const updatedChannel = await Channel.findByIdAndUpdate(
+                channelId,
+                { $push: { members: { user: userId, role: ROLE_MEMBER_OF_CHANNEL[2] } } },
+                { new: true, select: '_id', lean: true }
+            );
+            if (!updatedChannel) {
                 return Error.sendNotFound(res, "Not found channel")
             }
-            channel.members.push({
-                user: user,
-                role: ROLE_MEMBER_OF_CHANNEL[2]
-            });
-            await channel.save();
             return res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
                 success: true,
@@ -85,21 +84,19 @@ class ChannelController {
         }
     }
 
-    // GET ALL MEMBER OF CHANNEL BY CHANNELID
+    // GET ALL MEMBER OF CHANNEL BY channelId
     async getAllMember(req, res) {
         try {
-            let { channelID } = req.query;
-            console.log("check channelID", channelID);
-            const channel = await Channel.findById(channelID);
-            if (!channel) {
+            let { channelId } = req.query;
+            const members = await Channel.findById(channelId).select("members").lean();
+            if (!members) {
                 return Error.sendNotFound(res, "Not found channel")
             }
-
             return res.status(HTTP_STATUS.OK).json({
                 status: HTTP_STATUS.OK,
                 success: true,
                 message: "Get all members of channel success",
-                members: channel.members,
+                members: members,
             });
         } catch (error) {
             Error.sendError(res, error);
@@ -109,29 +106,21 @@ class ChannelController {
     //OUT GROUP 
     async outChannel(req, res) {
         try {
-            let userID = "67b548d821d36359846f8190";
-            let channelID = "67bae576d278d1e7fdc6469e"
-            const channel = await Channel.findById(channelID);
-            if (!channel) {
-                return Error.sendNotFound(res, "Not found channel")
-            }
-
-            const userExists = channel.members.some(member => member.user.toString() === userID);
-            if (!userExists) {
-                return Error.sendNotFound(res, "Not found user in members")
-            }
-
-            const updatedChannel = await Channel.findByIdAndUpdate(
-                channelID,
-                { $pull: { members: { user: userID } } },
-                { new: true }
+            let userId = "67baead7581e27c55e2b3d26";
+            let channelId = "67bae576d278d1e7fdc6469e"
+            const updatedChannel = await Channel.findOneAndUpdate(
+                { _id: channelId, "members.user": userId },
+                { $pull: { members: { user: userId } } },
+                { new: true, select: "members", lean: true }
             );
-
+            if (!updatedChannel) {
+                Error.sendNotFound(res, "Channel not found or user not in channel")
+            }
             return res.status(HTTP_STATUS.OK).json({
                 status: HTTP_STATUS.OK,
                 success: true,
                 message: "User removed from channel successfully",
-                members: updatedChannel.members,
+                members: updatedChannel,
             });
         } catch (error) {
             Error.sendError(res, error);
@@ -141,30 +130,28 @@ class ChannelController {
     // ASSIGN ROLE MEMBER
     async assignRoleMember(req, res) {
         try {
-            let { userID, channelID, role } = req.body;
+            let { userId, channelId, role } = req.body;
             role = role.trim();
-            const channel = await Channel.findById(channelID);
-            if (!channel) {
-                return Error.sendNotFound(res, "Not found channel")
-            }
-
-            const memberIndex = channel.members.findIndex(member => member.user.toString() === userID);
-            if (memberIndex === -1) {
-                return Error.sendNotFound(res, "User not found in members");
-            }
-
-            // Cập nhật role mới
             if (!ROLE_MEMBER_OF_CHANNEL.includes(role)) {
-                console.log("❌ Invalid role received:", role);
-                return Error.sendError(res, "Invalid role");
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    status: HTTP_STATUS.BAD_REQUEST,
+                    success: false,
+                    message: "Invalid role"
+                });
             }
-
-            channel.members[memberIndex].role = ROLE_MEMBER_OF_CHANNEL[1];
-            await channel.save();
+            const updatedChannel = await Channel.findOneAndUpdate(
+                { _id: channelId, "members.user": userId },
+                { $set: { "members.$.role": role } },
+                { new: true, select: "members", lean: true }
+            );
+            if (!updatedChannel) {
+                Error.sendNotFound(res, "Channel not found or user not in channel")
+            }
             return res.status(HTTP_STATUS.OK).json({
                 status: HTTP_STATUS.OK,
                 success: true,
-                user: channel.members[memberIndex]
+                message: "Role assigned successfully",
+                user: updatedChannel.members.find(m => m.user.toString() === userId),
             })
 
         } catch (error) {

@@ -7,7 +7,7 @@ const ROUTING = {
 
   // Member of channel
   MEMBER: "/members",
-  OUT_GROUP: "/out-group",
+  OUT_CHANNEL: "/out-channel",
   ASSIGN_ROLE: "/assign-role",
 
 
