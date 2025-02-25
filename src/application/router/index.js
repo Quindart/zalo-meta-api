@@ -7,6 +7,7 @@ import { authenticateToken } from "../middleware/authentication.middleware.js";
 function routing(app) {
   app.use(ROUTING.AUTHEN, authRouter);
   app.use(ROUTING.USER, authenticateToken, userRouter);
+  app.use(ROUTING.CHANNEL, channelRouter)
   app.use(swaggerRouter);
 }
 
