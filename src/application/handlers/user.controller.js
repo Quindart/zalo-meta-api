@@ -46,19 +46,11 @@ class UserController {
   //TODO: [POST]
   async createUser(req, res) {
     try {
-      const {
-        email,
-        password,
-        phone,
-        firstName,
-        lastName,
-        avatar,
-        dateOfBirth,
-      } = req.body;
-
+      const { email, phone, firstName, lastName, avatar, dateOfBirth } =
+        req.body;
+      // const password =
       const user = await User.create({
         email,
-        password,
         phone,
         firstName,
         lastName,

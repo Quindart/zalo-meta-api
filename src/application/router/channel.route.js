@@ -12,11 +12,11 @@ router.use((req, res, next) => {
 // 📌 Các route PUT cần đặt trước
 router.put(ROUTING.ASSIGN_ROLE, channelController.assignRoleMember);
 router.put(ROUTING.OUT_CHANNEL, channelController.outChannel);
-router.put(ROUTING.INDEX, channelController.addMemberToChannel);
+router.post(ROUTING.MEMBER, channelController.addMemberToChannel);
 
 // 📌 Các route GET với đường dẫn cố định
-router.get(ROUTING.INDEX, channelController.getAllChannel);
 router.get(ROUTING.MEMBER, channelController.getAllMember);
+router.get(ROUTING.INDEX, channelController.getAllChannel);
 
 // 📌 Route động (/:id) đặt cuối cùng
 router.get(ROUTING.BY_ID, channelController.getChannelByID);

@@ -6,9 +6,9 @@ const ROUTING = {
   SWAGGER: "/api/v1/swagger",
 
   // Member of channel
-  MEMBER: "/members",
-  OUT_CHANNEL: "/out-channel",
-  ASSIGN_ROLE: "/assign-role",
+  MEMBER: "/:id/members",
+  OUT_CHANNEL: "/:id/out-channel",
+  ASSIGN_ROLE: "/:id/assign-role",
 
 
   //*Schema
