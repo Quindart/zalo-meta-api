@@ -5,6 +5,7 @@ import User from '../../infrastructure/mongo/model/User.js';
 import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.js';
 import { generateAccessToken } from '../middleware/authentication.middleware.js';
 import { generateRefreshToken } from '../middleware/authentication.middleware.js';
+import { HTTP_STATUS } from '../../constants/index.js';
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ class AuthenController {
             const { phone, password } = req.body;
 
             if (!phone || !password) {
-                return res.status(400).json({
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
                     message: 'phone và password là bắt buộc'
                 });
@@ -31,7 +32,7 @@ class AuthenController {
             const user = await User.findOne({ phone });
 
             if (!user) {
-                return res.status(401).json({
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
                     success: false,
                     message: 'Thông tin đăng nhập không chính xác'
                 });
@@ -40,7 +41,7 @@ class AuthenController {
             const isPasswordValids = await bcrypt.compare(password, user.password);
 
             if (!isPasswordValids) {
-                return res.status(401).json({
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
                     success: false,
                     message: 'Invalid login credentials'
                 });
@@ -66,7 +67,7 @@ class AuthenController {
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 ngày
             });
 
-            return res.status(200).json({
+            return res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: 'Đăng nhập thành công',
                 data: {
@@ -84,7 +85,7 @@ class AuthenController {
             });
         } catch (error) {
             console.error('Login error:', error);
-            return res.status(500).json({
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: 'Lỗi server',
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -97,7 +98,7 @@ class AuthenController {
             const { refreshToken } = req.body;
 
             if (!refreshToken) {
-                return res.status(400).json({
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
                     message: 'Refresh token là bắt buộc'
                 });
@@ -108,7 +109,7 @@ class AuthenController {
             });
 
             if (!existingToken) {
-                return res.status(403).json({
+                return res.status(HTTP_STATUS.FORBIDDEN).json({
                     success: false,
                     refreshToken: existingToken,
                     message: 'Refresh token không hợp lệ hoặc đã hết hạn'
@@ -117,7 +118,7 @@ class AuthenController {
 
             // Kiểm tra xem token đã hết hạn chưa
             if (existingToken.expiresAt < new Date()) {
-                return res.status(403).json({
+                return res.status(HTTP_STATUS.FORBIDDEN).json({
                     success: false,
                     message: 'Refresh token đã hết hạn'
                 });
@@ -134,7 +135,7 @@ class AuthenController {
                     // Xóa token nếu không tìm thấy user
                     await RefreshToken.deleteOne({ _id: existingToken._id });
 
-                    return res.status(403).json({
+                    return res.status(HTTP_STATUS.FORBIDDEN).json({
                         success: false,
                         message: 'Người dùng không tồn tại'
                     });
@@ -153,7 +154,7 @@ class AuthenController {
                 const newAccessToken = generateAccessToken(payload);
 
                 // Trả về access token mới
-                return res.status(200).json({
+                return res.status(HTTP_STATUS.OK).json({
                     success: true,
                     message: 'Tạo access token mới thành công',
                     data: {
@@ -163,13 +164,13 @@ class AuthenController {
                 });
             } catch (error) {
                 // Token không hợp lệ
-                return res.status(403).json({
+                return res.status(HTTP_STATUS.FORBIDDEN).json({
                     success: false,
                     message: 'Refresh token không hợp lệ'
                 });
             }
         } catch (error) {
-            return res.status(500).json({
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: 'Lỗi server',
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -182,7 +183,7 @@ class AuthenController {
             const { refreshToken } = req.body;
 
             if (!refreshToken) {
-                return res.status(400).json({
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
                     message: 'Refresh token là bắt buộc'
                 });
@@ -191,13 +192,13 @@ class AuthenController {
             // Xóa refresh token khỏi database
             await RefreshToken.deleteOne({ token: refreshToken });
 
-            return res.status(200).json({
+            return res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: 'Đăng xuất thành công'
             });
         } catch (error) {
             console.error('Logout error:', error);
-            return res.status(500).json({
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: 'Lỗi server',
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
