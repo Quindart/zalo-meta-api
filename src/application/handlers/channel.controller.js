@@ -9,20 +9,13 @@ class ChannelController {
     // CREATE CHANNEl
     async createGroup(req, res) {
         try {
-            const { name, memberData } = req.body;
-            const members = [];
-            const captain = {
+            const { name, members } = req.body;
+            const createMembers = [{
                 user: "67b4b8fa40191e21f03c08f2",
                 role: ROLE_MEMBER_OF_CHANNEL[0]
-            };
-            members.push(captain);
-            memberData.map(item => {
-                members.push({
-                    user: item,
-                    role: ROLE_MEMBER_OF_CHANNEL[2]
-                })
-            })
-            const chanel = await Channel.create({ name, members });
+            }, ...memberData.map(memId =>({user: memId, role:  ROLE_MEMBER_OF_CHANNEL[2] }))]
+            
+            const chanel = await Channel.create({ name,  members : createMembers });
             return res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
                 success: true,
