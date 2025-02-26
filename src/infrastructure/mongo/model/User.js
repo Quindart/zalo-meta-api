@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
   isTwoFactorAuthenticationEnabled: { type: Boolean, default: false },
   updatedAt: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now },
+  isVerifiedMail: {
+    type: Boolean,
+    default: false
+  },
 });
 
 export default mongoose.model("users", UserSchema);

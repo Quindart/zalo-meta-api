@@ -1,6 +1,7 @@
 import userRouter from "./user.router.js";
 import authRouter from "./authen.router.js";
 import swaggerRouter from "./swagger.router.js";
+import channelRouter from "./channel.route.js";
 import ROUTING from "../../constants/Routes.js";
 import { authenticateToken } from "../middleware/authentication.middleware.js";
 
