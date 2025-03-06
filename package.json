@@ -18,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@faker-js/faker": "^9.5.0",
+    "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -25,15 +26,19 @@
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
+    "googleapis": "^146.0.0",
     "helmet": "^8.0.0",
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
-    "mongoose": "^8.10.1",
+    "mongoose": "^8.12.1",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
     "socket.io": "^4.8.1",
     "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.4.5",
+    "yaml": "^2.7.0",
     "zalo-meta-api": "file:"
   }
 }
