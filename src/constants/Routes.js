@@ -29,5 +29,9 @@ const ROUTING = {
   RESET_PASSWORD: "/api/v1/auth/reset-password",
   VERIFY_EMAIL: "/api/v1/auth/verify-email",
   REFRESH_TOKEN: "/refresh-token",
+
+  //*Mail
+  MAIL: "/api/v1/mail",
+  MAIL_SEND: "/send",
 };
 export default ROUTING;
