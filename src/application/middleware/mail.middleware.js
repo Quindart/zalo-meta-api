@@ -1,38 +1,51 @@
 import mailConfig from '../../../config/mail.js';
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
+import OTP from '../../infrastructure/mongo/model/OTP.js';
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: mailConfig.EMAIL_USERNAME,
-        pass: mailConfig.EMAIL_PASSWORD
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    from: `App Zalo <${mailConfig.EMAIL_USERNAME}>`,
-    headers: {
-        'X-Laziness-level': 1000,
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'High'
-    }
+  service: 'gmail',
+  auth: {
+    user: mailConfig.EMAIL_USERNAME,
+    pass: mailConfig.EMAIL_PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  from: `App Zalo <${mailConfig.EMAIL_USERNAME}>`,
+  headers: {
+    'X-Laziness-level': 1000,
+    'X-Priority': '1',
+    'X-MSMail-Priority': 'High',
+    'Importance': 'High'
+  }
 });
 
 export const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000);
+  return Math.floor(100000 + Math.random() * 900000);
 };
 
 export const sendMail = async (req, res) => {
-    const { email } = req.body;
-    const otp = generateOTP();
+  const { email } = req.body;
+  const otp = generateOTP();
 
-    const mailOptions = {
-        from: mailConfig.EMAIL_USERNAME,
-        to: email,
-        subject: 'Reset password',
-        html: `
+  const otpData = new OTP({
+    email: email,
+    otp: otp
+  });
+
+  try {
+    await OTP.findOneAndUpdate({ email: email }, { $set: { otp: otp } }, { upsert: true });
+  }
+  catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Failed to save OTP' });
+  }
+
+  const mailOptions = {
+    from: mailConfig.EMAIL_USERNAME,
+    to: email,
+    subject: 'Reset password',
+    html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
           <div style="text-align: center; margin-bottom: 20px;">
             <img src="https://yourdomain.com/logo.png" alt="Logo" style="max-width: 150px;">
@@ -51,15 +64,50 @@ export const sendMail = async (req, res) => {
           </div>
         </div>
       `
-    };
+  };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ message: 'Failed to send email' });
-        }
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: 'Failed to send email' });
+    }
 
-        console.log('Email sent: ' + info.response);
-        return res.status(200).json({ message: 'Email sent' });
-    });
+    console.log('Email sent: ' + info.response);
+    return res.status(200).json({ message: 'Email sent' });
+  });
+};
+
+export const verifyOTP = async (req, res) => {
+
+  const { email, otp } = req.body;
+
+  try {
+    const otpData = await OTP.findOne({ email: email });
+
+    if (!otpData) {
+      return res.status(404).json({ message: 'OTP not found' });
+    }
+
+    if (otpData.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (otpData.isVerified) {
+      return res.status(400).json({ message: 'OTP has already been verified' });
+    }
+
+    await OTP
+      .findOneAndUpdate({ email: email }, { $set: { isVerified: true } })
+      .then(() => {
+        return res.status(200).json({ message: 'OTP verified' });
+      })
+      .catch(error => {
+        console.log(error);
+        return res.status(500).json({ message: 'Failed to verify OTP' });
+      });
+  }
+  catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Failed to verify OTP' });
+  }
 };

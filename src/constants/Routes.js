@@ -33,5 +33,6 @@ const ROUTING = {
   //*Mail
   MAIL: "/api/v1/mail",
   MAIL_SEND: "/send",
+  MAIL_VERIFY: "/verify-otp",
 };
 export default ROUTING;
