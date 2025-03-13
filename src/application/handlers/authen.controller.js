@@ -28,7 +28,6 @@ class AuthenController {
                     message: 'phone và password là bắt buộc'
                 });
             }
-
             const user = await User.findOne({ phone });
 
             if (!user) {
