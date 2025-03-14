@@ -1,6 +1,7 @@
 import mailConfig from '../../../config/mail.js';
 import nodemailer from 'nodemailer';
 import OTP from '../../infrastructure/mongo/model/OTP.js';
+import { HTTP_STATUS } from '../../constants/index.js';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -38,7 +39,7 @@ export const sendMail = async (req, res) => {
   }
   catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Failed to save OTP' });
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Failed to save OTP' });
   }
 
   const mailOptions = {
@@ -69,11 +70,11 @@ export const sendMail = async (req, res) => {
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
       console.log(err);
-      return res.status(500).json({ message: 'Failed to send email' });
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Failed to send email' });
     }
 
     console.log('Email sent: ' + info.response);
-    return res.status(200).json({ message: 'Email sent' });
+    return res.status(HTTP_STATUS.OK).json({ message: 'Email sent' });
   });
 };
 
@@ -85,29 +86,29 @@ export const verifyOTP = async (req, res) => {
     const otpData = await OTP.findOne({ email: email });
 
     if (!otpData) {
-      return res.status(404).json({ message: 'OTP not found' });
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'OTP not found' });
     }
 
     if (otpData.otp !== otp) {
-      return res.status(400).json({ message: 'Invalid OTP' });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Invalid OTP' });
     }
 
     if (otpData.isVerified) {
-      return res.status(400).json({ message: 'OTP has already been verified' });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'OTP has already been verified' });
     }
 
     await OTP
       .findOneAndUpdate({ email: email }, { $set: { isVerified: true } })
       .then(() => {
-        return res.status(200).json({ message: 'OTP verified' });
+        return res.status(HTTP_STATUS.OK).json({ message: 'OTP verified' });
       })
       .catch(error => {
         console.log(error);
-        return res.status(500).json({ message: 'Failed to verify OTP' });
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Failed to verify OTP' });
       });
   }
   catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'Failed to verify OTP' });
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Failed to verify OTP' });
   }
 };
