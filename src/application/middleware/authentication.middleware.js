@@ -11,11 +11,9 @@ let refreshTokens = [];
 export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-
     if (!token) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Access token required' });
     }
-
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
@@ -24,7 +22,6 @@ export const authenticateToken = (req, res, next) => {
                     expired: true
                 });
             }
-
             return res.status(HTTP_STATUS.FORBIDDEN).json({
                 message: 'Invalid token',
                 expired: false

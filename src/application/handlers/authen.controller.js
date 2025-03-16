@@ -6,9 +6,7 @@ import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.js';
 import { generateAccessToken } from '../middleware/authentication.middleware.js';
 import { generateRefreshToken } from '../middleware/authentication.middleware.js';
 import { HTTP_STATUS } from '../../constants/index.js';
-
 dotenv.config();
-
 
 class AuthenController {
     constructor() {
@@ -17,7 +15,6 @@ class AuthenController {
         this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1m';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
-
     async login(req, res) {
         try {
             const { phone, password } = req.body;

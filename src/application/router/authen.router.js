@@ -4,8 +4,6 @@ import ROUTING from "../../constants/Routes.js";
 import authenController from "../handlers/authen.controller.js";
 import { authenticateToken } from "../middleware/authentication.middleware.js";
 const router = express.Router();
-
-
 router.post(ROUTING.LOGIN, (req, res) => authenController.login(req, res));
 router.post(ROUTING.REFRESH_TOKEN, (req, res) => authenController.refreshToken(req, res));
 router.post(ROUTING.REGISTER, (req, res) => authenController.register(req, res));
