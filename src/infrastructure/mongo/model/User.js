@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-});
+  isEmailNotificationEnabled: { type: Boolean, default: true }, 
+  emailSentAt: { type: Date },
+},
+{ timestamps: true }
+);
 
 export default mongoose.model("users", UserSchema);

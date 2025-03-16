@@ -15,6 +15,7 @@ const app = express();
 const server = http.createServer(app);
 
 import { blacklistMiddleware, whitelistMiddleware } from '../config/access-list.js';
+import onSocketControllerTesting from "./demo.socket.io.js";
 
 express.static(".");
 
@@ -32,7 +33,6 @@ app.use(express.static("public"));
 
 //TODO: Routing service
 routing(app);
-
 function runningService() {
   //TODO: Start
   server.listen(config.port, () => {
@@ -44,8 +44,10 @@ function runningService() {
     );
   });
 
-  //TODO: socket
-  socketService.start(server);
+//TODO: socket
+const appSocket = new socketService(server);
+//  onSocketControllerTesting(app,appSocket)
+appSocket.start()
 
   //TODO: Redis
   redisService.connect();
@@ -64,5 +66,4 @@ function runningService() {
 }
 
 runningService();
-socketService.start(server);
 export default app;
