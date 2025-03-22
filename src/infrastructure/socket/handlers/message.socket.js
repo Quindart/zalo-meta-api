@@ -1,4 +1,6 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
+import chatController from "../../../application/handlers/chat.controller.js";
+import Message from "../../mongo/model/Message.js";
 
 class MessageSocket {
     constructor(io, socket) {
@@ -11,15 +13,20 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.READ, this.readMessage.bind(this));
     }
     async sendMessage(data) {
-        console.log(`New message from ${data.senderId} to ${data.receiverId}: ${data.content}`);
+        const chat = await chatController.findOrCreateChat([data.senderId, data.receiverId]);
+        const chatId = chat._id;
+
         const message = {
             id: Date.now().toString(),
             senderId: data.senderId,
             receiverId: data.receiverId,
             content: data.content,
+            chatId: chatId,
             status: "sent",
             timestamp: new Date(),
         };
+        const newMessage = new Message(message);
+        await newMessage.save();
         console.log("💲💲💲 ~ MessageSocket ~ sendMessage ~ message:", message)
         this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, message);
     }

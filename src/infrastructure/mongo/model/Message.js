@@ -1,15 +1,24 @@
 import mongoose from "mongoose";
 
 const MessageSchema = new mongoose.Schema({
-  createAt: { type: Date, default: Date.now },
-  deleteAt: { type: Date },
-  message: { type: String, required: true },
-  sender: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
-  type: { type: String },
-  updateAt: { type: Date, default: Date.now },
-  thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
+  senderId: String,
+  receiverId: String,
+  content: String,
+  status: String,
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
+  },
 },
- { timestamps: true }
+  { timestamps: true }
 
 );
 

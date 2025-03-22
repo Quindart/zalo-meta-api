@@ -14,7 +14,7 @@ class AuthenController {
     constructor() {
         this.ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
         this.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY;
-        this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1m';
+        this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
     async login(req, res) {
@@ -179,6 +179,8 @@ class AuthenController {
     async logout(req, res) {
         try {
             const { refreshToken } = req.body;
+
+            console.log('Logout req.user:', req.user); // Log refreshToken
 
             if (!refreshToken) {
                 return res.status(HTTP_STATUS.BAD_REQUEST).json({
