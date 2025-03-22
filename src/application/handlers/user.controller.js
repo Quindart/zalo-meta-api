@@ -54,12 +54,11 @@ class UserController {
         phone,
         firstName,
         lastName,
-        avatar,
         dateOfBirth,
       } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
-
+      const avatar = req.uploadedImages && req.uploadedImages.avatar ? req.uploadedImages.avatar.url : null;
       const user = await User.create({
         email,
         password: hashedPassword,
