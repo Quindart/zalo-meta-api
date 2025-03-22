@@ -52,7 +52,7 @@ export const sendMail = async (req, res) => {
             <img src="https://yourdomain.com/logo.png" alt="Logo" style="max-width: 150px;">
           </div>
           <h2 style="color: #333;">Xin chào,</h2>
-          <p>Cảm ơn bạn đã đăng ký tài khoản. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác thực sau:</p>
+          <p>Để hoàn tất quá trình, vui lòng sử dụng mã xác thực sau:</p>
           <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 24px; letter-spacing: 5px; font-weight: bold; margin: 20px 0;">
             ${otp}
           </div>

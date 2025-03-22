@@ -6,13 +6,15 @@ import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.js';
 import { generateAccessToken } from '../middleware/authentication.middleware.js';
 import { generateRefreshToken } from '../middleware/authentication.middleware.js';
 import { HTTP_STATUS } from '../../constants/index.js';
+import { sendMail, verifyOTP } from '../middleware/mail.middleware.js';
+import OTP from '../../infrastructure/mongo/model/OTP.js';
 dotenv.config();
 
 class AuthenController {
     constructor() {
         this.ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
         this.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY;
-        this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1m';
+        this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
     async login(req, res) {
@@ -178,6 +180,8 @@ class AuthenController {
         try {
             const { refreshToken } = req.body;
 
+            console.log('Logout req.user:', req.user); // Log refreshToken
+
             if (!refreshToken) {
                 return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
@@ -201,6 +205,236 @@ class AuthenController {
             });
         }
     }
+
+    async changePassword(req, res) {
+        try {
+            const { phone, password, newPassword } = req.body;
+
+            if (!phone || !password || !newPassword) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'phone, password và newPassword là bắt buộc'
+                });
+            }
+
+            const user = await User.findOne({ phone });
+
+            if (!user) {
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                    success: false,
+                    message: 'Người dùng không tồn tại'
+                });
+            }
+
+            const isPasswordValids = await bcrypt.compare(password, user.password);
+
+            if (!isPasswordValids) {
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                    success: false,
+                    message: 'Mật khẩu cũ không chính xác'
+                });
+            }
+
+            // Hash mật khẩu mới
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            // Cập nhật mật khẩu mới
+            await User.updateOne({ phone }, { password: hashedPassword });
+
+            return res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: 'Đổi mật khẩu thành công'
+            });
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
+    async forgotPassword(req, res) {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'phone là bắt buộc'
+                });
+            }
+
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                    success: false,
+                    message: 'Người dùng không tồn tại'
+                });
+            }
+
+            // Gửi mã OTP
+            try {
+                await sendMail(req, res);
+                return res.status(HTTP_STATUS.OK).json({
+                    success: true,
+                    message: 'Mã OTP đã được gửi',
+                });
+            } catch (error) {
+                console.log(error);
+                return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: 'Failed to send email'
+                });
+            }
+        } catch (error) {
+            console.error('Forgot password error:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
+    async verifyForgotPassword(req, res) {
+        try {
+            const { email, otp } = req.body;
+
+            if (!email || !otp) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'email và otp là bắt buộc'
+                });
+            }
+
+            const otpData = await OTP.findOne({ email });
+
+            if (!otpData) {
+                return res.status(HTTP_STATUS.NOT_FOUND).json({
+                    success: false,
+                    message: 'OTP not found'
+                });
+            }
+
+            if (otpData.otp !== otp) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Invalid OTP'
+                });
+            }
+
+            if (otpData.isVerified) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'OTP has already been verified'
+                });
+            }
+
+            // Tạo payload mới cho access token
+            const payload = {
+                email: email,
+                expiry_accesstoken: this.ACCESS_TOKEN_EXPIRY,
+                expiry_refreshtoken: this.REFRESH_TOKEN_EXPIRY,
+            };
+
+            // Tạo reset token
+            const resetToken = generateRefreshToken(payload);
+
+            // Lưu refresh token vào database
+            await RefreshToken.create({
+                token: resetToken,
+                userId: email,
+                expiresAt: Date.now() + 30 * 60 * 1000 // 30 phút
+            });
+
+            await OTP
+                .findOneAndUpdate({ email }, { $set: { isVerified: true } })
+                .then(() => {
+                    return res.status(HTTP_STATUS.OK).json({
+                        success: true,
+                        message: 'OTP verified',
+                        reset_token: resetToken,
+                    });
+                })
+                .catch(error => {
+                    console.log(error);
+                    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        message: 'Failed to verify OTP'
+                    });
+                });
+        } catch (error) {
+            console.error('Verify forgot password error:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
+    async resetPassword(req, res) {
+        try {
+            const { email, password, resetToken } = req.body;
+
+            if (!email || !password || !resetToken) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'email, password và resetToken là bắt buộc'
+                });
+            }
+
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                    success: false,
+                    message: 'Người dùng không tồn tại'
+                });
+            }
+
+            const existingToken = await RefreshToken.findOne({
+                token: resetToken
+            });
+
+            if (!existingToken) {
+                return res.status(HTTP_STATUS.FORBIDDEN).json({
+                    success: false,
+                    message: 'Reset token không hợp lệ hoặc đã hết hạn'
+                });
+            }
+
+            // Kiểm tra xem token đã hết hạn chưa
+            if (existingToken.expiresAt < new Date()) {
+                return res.status(HTTP_STATUS.FORBIDDEN).json({
+                    success: false,
+                    message: 'Reset token đã hết hạn'
+                });
+            }
+
+            // Hash mật khẩu mới
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Cập nhật mật khẩu mới
+            await User.updateOne({ email }, { password: hashedPassword });
+
+            return res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: 'Đổi mật khẩu thành công'
+            });
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
 }
 
 export default new AuthenController();

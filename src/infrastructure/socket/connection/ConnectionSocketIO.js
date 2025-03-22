@@ -5,21 +5,22 @@ class SocketService {
   io;
   messageSocket;
   userSocket;
-  getIO(){
+  getIO() {
     return this.io
   }
-  constructor(server){
-    this.io  = new Server(server, {
+  constructor(server) {
+    this.io = new Server(server, {
       cors: {
         origin: "*",
       },
     });
   }
   start() {
+    console.log("🚀 Socket is running");
     this.io.on("connection", (socket) => {
       console.log(`${socket.id} user just connected!`);
-      this.messageSocket = new MessageSocket(this.io,socket)
-      this.messageSocket = new UserSocket(this.io,socket)
+      this.messageSocket = new MessageSocket(this.io, socket)
+      this.userSocket = new UserSocket(this.io, socket)
 
       socket.on("disconnect", () => {
         console.log(`🔥: A user disconnected`);

@@ -17,6 +17,8 @@ const ROUTING = {
   EMOJI: "/api/v1/emojis",
   FILE: "/api/v1/files",
   MESSAGE: "/api/v1/messages",
+  MESSAGE_BY_CHAT_ID: "/chat/:chatId",
+  MESSAGE_BY_RECEIVERID_SENDERID: "/:receiverId/:senderId",
   THREAD: "/api/v1/threads",
   chat: "/api/v1/chats",
 
@@ -25,9 +27,11 @@ const ROUTING = {
   LOGIN: "/login",
   REGISTER: "/api/v1/auth/register",
   LOGOUT: "/logout",
-  FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
-  RESET_PASSWORD: "/api/v1/auth/reset-password",
+  FORGOT_PASSWORD: "/forgot-password",
+  CHANGE_PASSWORD: "/change-password",
+  RESET_PASSWORD: "/reset-password",
   VERIFY_EMAIL: "/api/v1/auth/verify-email",
+  VERIFY_FORGOT_PASSWORD: "/verify-forgot-password",
   REFRESH_TOKEN: "/refresh-token",
 
   //*Mail
