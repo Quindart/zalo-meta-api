@@ -14,7 +14,7 @@ class MessageSocket {
     }
     async sendMessage(data) {
         const chat = await chatController.findOrCreateChat([data.senderId, data.receiverId]);
-        const chatId = chat._id;
+        const chatId = chat?._id;
 
         const message = {
             id: Date.now().toString(),
@@ -27,7 +27,7 @@ class MessageSocket {
         };
         const newMessage = new Message(message);
         await newMessage.save();
-        console.log("💲💲💲 ~ MessageSocket ~ sendMessage ~ message:", message)
+
         this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, message);
     }
 
