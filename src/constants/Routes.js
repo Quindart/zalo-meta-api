@@ -4,7 +4,7 @@ const ROUTING = {
   API: "/api/v1/",
   BY_ID: "/:id",
   SWAGGER: "/api/v1/swagger",
-
+  ME:'/api/v1/me',
   // Member of channel
   MEMBER: "/:id/members",
   OUT_CHANNEL: "/:id/out-channel",
@@ -25,7 +25,7 @@ const ROUTING = {
   //*Auth
   AUTHEN: "/api/v1/auth",
   LOGIN: "/login",
-  REGISTER: "/api/v1/auth/register",
+  REGISTER: "/register",
   LOGOUT: "/logout",
   FORGOT_PASSWORD: "/forgot-password",
   CHANGE_PASSWORD: "/change-password",

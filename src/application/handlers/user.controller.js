@@ -44,6 +44,22 @@ class UserController {
       Error.sendError(res, error);
     }
   }
+  async getMe(req, res) {
+    try {
+      const userRequest = req.user
+      const { queries } = req.query;
+      const user = await User.findById(userRequest.id).select(responseEntity(queries)).lean();
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: "Get all users success",
+        user,
+      });
+    } catch (error) {
+      console.log("💲💲💲 ~ UserController ~ getMe ~ error:", error)
+      Error.sendError(res, error)
+    }
+  }
   //TODO: [POST]
   async createUser(req, res) {
     try {

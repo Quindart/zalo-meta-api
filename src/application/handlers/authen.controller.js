@@ -8,6 +8,8 @@ import { generateRefreshToken } from '../middleware/authentication.middleware.js
 import { HTTP_STATUS } from '../../constants/index.js';
 import { sendMail, verifyOTP } from '../middleware/mail.middleware.js';
 import OTP from '../../infrastructure/mongo/model/OTP.js';
+import Error from '../../utils/errors.js'
+
 dotenv.config();
 
 class AuthenController {
@@ -71,7 +73,10 @@ class AuthenController {
                     user: {
                         id: user._id,
                         phone: user.phone,
-                        email: user.email,
+                        avatar:user.avatar,
+                        firstName:user.firstName,
+                        lastName: user.lastName,
+                        gender: user.gender
                     },
                     tokens: {
                         accessToken,
@@ -89,19 +94,19 @@ class AuthenController {
             });
         }
     }
-    async register(req,res){
-            try {
-              const {
+    async register(req, res) {
+        try {
+            const {
                 email,
                 password,
                 phone,
                 firstName,
                 lastName,
                 dateOfBirth,
-              } = req.body;
-              const hashedPassword = await bcrypt.hash(password, 10);
-              
-              const user = await User.create({
+            } = req.body;
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const user = await User.create({
                 email,
                 password: hashedPassword,
                 phone,
@@ -109,17 +114,22 @@ class AuthenController {
                 lastName,
                 dateOfBirth,
                 isTwoFactorAuthenticationEnabled: true,
-              }).lean();
-        
-              return res.status(HTTP_STATUS.CREATED).json({
+            });
+
+            if (!user) {
+                return Error.sendConflict(res, "Email or Phone number already exist")
+            }
+
+            return res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
                 success: true,
                 message: "Register successfully !!",
                 user,
-              });
-            } catch (error) {
-              Error.sendError(res, error);
-            }
+            });
+
+        } catch (error) {
+            Error.sendError(res, error);
+        }
     }
     async refreshToken(req, res) {
         try {

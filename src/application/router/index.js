@@ -9,6 +9,7 @@ import { authenticateToken } from "../middleware/authentication.middleware.js";
 import { imageUpload } from "../middleware/cloudinary.middleware.js"
 
 import messageRouter from "./message.router.js";
+import meRouter from "./me.router.js"
 
 function routing(app) {
   app.use(imageUpload);
@@ -18,6 +19,8 @@ function routing(app) {
   app.use(ROUTING.MAIL, mailRouter);
   app.use(swaggerRouter);
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
+  app.use(ROUTING.ME, authenticateToken, meRouter);
+
 }
 
 export default routing;
