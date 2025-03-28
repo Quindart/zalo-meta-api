@@ -1,12 +1,15 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import chatController from "../../../application/handlers/chat.controller.js";
 import Message from "../../mongo/model/Message.js";
+import { UserRepository } from "../../../domain/repository/User.repository.js";
 
 class MessageSocket {
+    userRepo
     constructor(io, socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
+        this.userRepo  = new UserRepository()
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
@@ -16,10 +19,14 @@ class MessageSocket {
         const chat = await chatController.findOrCreateChat([data.senderId, data.receiverId]);
         const chatId = chat?._id;
 
+        const sender = await  this.userRepo.findUserSelect(data.senderId,['avatar','firstName','lastName','id'])
+        const receiver = await  this.userRepo.findUserSelect(data.receiverId,['avatar','firstName','lastName','id'])
+
+
         const message = {
             id: Date.now().toString(),
-            senderId: data.senderId,
-            receiverId: data.receiverId,
+            sender,
+            receiver,
             content: data.content,
             chatId: chatId,
             status: "sent",

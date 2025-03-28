@@ -47,7 +47,6 @@ class UserController {
   //TODO: [POST]
   async createUser(req, res) {
     try {
-
       const {
         email,
         password,

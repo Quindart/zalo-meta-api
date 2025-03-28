@@ -20,7 +20,6 @@ class AuthenController {
     async login(req, res) {
         try {
             const { phone, password } = req.body;
-
             if (!phone || !password) {
                 return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
@@ -90,7 +89,38 @@ class AuthenController {
             });
         }
     }
-
+    async register(req,res){
+            try {
+              const {
+                email,
+                password,
+                phone,
+                firstName,
+                lastName,
+                dateOfBirth,
+              } = req.body;
+              const hashedPassword = await bcrypt.hash(password, 10);
+              
+              const user = await User.create({
+                email,
+                password: hashedPassword,
+                phone,
+                firstName,
+                lastName,
+                dateOfBirth,
+                isTwoFactorAuthenticationEnabled: true,
+              }).lean();
+        
+              return res.status(HTTP_STATUS.CREATED).json({
+                status: HTTP_STATUS.CREATED,
+                success: true,
+                message: "Register successfully !!",
+                user,
+              });
+            } catch (error) {
+              Error.sendError(res, error);
+            }
+    }
     async refreshToken(req, res) {
         try {
             const { refreshToken } = req.body;

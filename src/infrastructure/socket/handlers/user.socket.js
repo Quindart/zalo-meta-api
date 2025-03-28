@@ -1,4 +1,5 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
+import { UserRepository } from "../../../domain/repository/User.repository.js";
 
 class UserSocket {
     constructor(io, socket) {

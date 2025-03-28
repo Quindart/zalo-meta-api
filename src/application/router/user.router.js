@@ -1,5 +1,4 @@
 import express from "express";
-import { HTTP_STATUS } from "../../constants/index.js";
 import ROUTING from "../../constants/Routes.js";
 import userController from "../handlers/user.controller.js";
 const router = express.Router();
