@@ -73,8 +73,8 @@ class AuthenController {
                     user: {
                         id: user._id,
                         phone: user.phone,
-                        avatar:user.avatar,
-                        firstName:user.firstName,
+                        avatar: user.avatar,
+                        firstName: user.firstName,
                         lastName: user.lastName,
                         gender: user.gender
                     },
@@ -105,7 +105,10 @@ class AuthenController {
                 dateOfBirth,
             } = req.body;
             const hashedPassword = await bcrypt.hash(password, 10);
-
+            const oldUser = await User.findOne({ phone: phone }).select({_id:1}).lean()
+            if (oldUser) {
+                return Error.sendConflict(res, "Phone number already exist!")
+            }
             const user = await User.create({
                 email,
                 password: hashedPassword,

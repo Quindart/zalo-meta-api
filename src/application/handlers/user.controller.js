@@ -74,6 +74,11 @@ class UserController {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const avatar = req.uploadedImages && req.uploadedImages.avatar ? req.uploadedImages.avatar.url : null;
+
+      const oldUser = await User.findOne({ phone: phone }).lean()
+      if (oldUser) {
+        return Error.sendConflict(res, "Phone number already exist!")
+      }
       const user = await User.create({
         email,
         password: hashedPassword,
@@ -150,6 +155,29 @@ class UserController {
     } catch (error) {
       Error.sendError(res, error);
     }
+  }
+
+  async searchUsers(req, res) {
+    const { type, keywords } = req.query
+    const searchQuery = {
+      [type]: { $regex: keywords, $options: "i" }
+    };
+
+    const users = await User.find(searchQuery).select({
+      avatar: 1,
+      id: 1,
+      firstName: 1,
+      lastName: 1,
+      phone: 1,
+      email: 1
+    }).lean()
+
+    return res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: `Search by type: ${type} and keywords ${keywords}`,
+      users,
+      totalItems: users.length
+    })
   }
 }
 

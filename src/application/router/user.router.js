@@ -5,6 +5,7 @@ const router = express.Router();
 
 //TODO [GET]
 router.get(ROUTING.INDEX, userController.getUsers);
+router.get(ROUTING.SEARCH,userController.searchUsers)
 router.get(ROUTING.BY_ID, userController.getUserById);
 //TODO [POST]
 router.post(ROUTING.INDEX, userController.createUser);
