@@ -9,7 +9,7 @@ class MessageSocket {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
-        this.userRepo  = new UserRepository()
+        this.userRepo = new UserRepository()
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
@@ -19,15 +19,11 @@ class MessageSocket {
         const chat = await chatController.findOrCreateChat([data.senderId, data.receiverId]);
         const chatId = chat?._id;
 
-        const sender = await  this.userRepo.findUserSelect(data.senderId,['avatar','firstName','lastName','id'])
-        const receiver = await  this.userRepo.findUserSelect(data.receiverId,['avatar','firstName','lastName','id'])
-
-
         const message = {
             id: Date.now().toString(),
-            sender,
-            receiver,
             content: data.content,
+            senderId: data.senderId,
+            receiverId: data.receiverId,
             chatId: chatId,
             status: "sent",
             timestamp: new Date(),

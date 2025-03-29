@@ -15,9 +15,7 @@ class ChatController{
                     participants: objectIdUserIds,
                 });
                 await chat.save();
-                console.log("Chat created:", chat);
             }
-            console.log("Chat find:", chat);
             return chat;
         } catch (error) {
             console.error("Error in findOrCreateChat:", error);
