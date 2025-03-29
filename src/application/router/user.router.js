@@ -7,6 +7,7 @@ const router = express.Router();
 router.get(ROUTING.INDEX, userController.getUsers);
 router.get(ROUTING.SEARCH,userController.searchUsers)
 router.get(ROUTING.BY_ID, userController.getUserById);
+router.get(ROUTING.BY_PHONE, userController.getUserByPhone);
 //TODO [POST]
 router.post(ROUTING.INDEX, userController.createUser);
 router.put(ROUTING.BY_ID, userController.updateUser);

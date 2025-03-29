@@ -10,6 +10,8 @@ const ROUTING = {
   OUT_CHANNEL: "/:id/out-channel",
   ASSIGN_ROLE: "/:id/assign-role",
 
+  //User
+  BY_PHONE: "/phone/:phone",
 
   //*Schema
   USER: "/api/v1/users",
