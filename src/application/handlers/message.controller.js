@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from '../../constants/index.js';
 import Message from '../../infrastructure/mongo/model/Message.js';
 import mongoose from 'mongoose';
 
@@ -20,19 +21,13 @@ class MessageController {
                     { senderId: new mongoose.Types.ObjectId(receiverId), receiverId: new mongoose.Types.ObjectId(senderId) }
                 ]
             }).populate('senderId receiverId');
-
             if (!messages) {
                 return res.status(200).json([]);
             }
-
-            const formattedMessages = messages.map(message => ({
-                ...message._doc,
-                senderId: message.senderId._id,
-                receiverId: message.receiverId._id,
-                senderId: message.senderId,
-                receiver: message.receiverId
-            }));
-            return res.status(200).json(formattedMessages);
+            return res.status(200).json({
+                status:HTTP_STATUS.OK,
+                messages:messages
+            });
         } catch (error) {
             console.error('Error fetching messages:', error);
             return res.status(200).json([]);
