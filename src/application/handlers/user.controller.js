@@ -27,6 +27,26 @@ class UserController {
       Error.sendError(res, error);
     }
   }
+  async getUserByPhone(req, res) {
+    try {
+      const phone = req.params.phone;
+      const { queries } = req.query;
+      const user = await User.findOne({ phone: phone })
+        .select(responseEntity(queries))
+        .lean();
+      if (!user) {
+        return Error.sendNotFound(res, "No user found");
+      }
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: "Get user by phone success",
+        user,
+      });
+    } catch (error) {
+      Error.sendError(res, error);
+    }
+  }
   async getUsers(req, res) {
     try {
       const { queries } = req.query;
