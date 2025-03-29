@@ -13,7 +13,8 @@ import messageRouter from "./message.router.js";
 function routing(app) {
   app.use(imageUpload);
   app.use(ROUTING.AUTHEN, authRouter);
-  app.use(ROUTING.USER, authenticateToken, userRouter);
+  // app.use(ROUTING.USER, authenticateToken, userRouter);
+  app.use(ROUTING.USER, userRouter);
   app.use(ROUTING.CHANNEL, authenticateToken, channelRouter)
   app.use(ROUTING.MAIL, mailRouter);
   app.use(swaggerRouter);
