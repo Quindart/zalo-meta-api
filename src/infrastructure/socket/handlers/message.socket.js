@@ -1,5 +1,5 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
-import chatController from "../../../application/handlers/chat.controller.js";
+import chatRepository from "../../../domain/repository/Chat.repository.js";
 import Message from "../../mongo/model/Message.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
 
@@ -16,7 +16,7 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.READ, this.readMessage.bind(this));
     }
     async sendMessage(data) {
-        const chat = await chatController.findOrCreateChat([data.senderId, data.receiverId]);
+        const chat = await chatRepository.findOrCreateChat([data.senderId, data.receiverId]);
         const chatId = chat?._id;
 
         const message = {

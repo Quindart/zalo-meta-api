@@ -10,7 +10,7 @@ import { imageUpload } from "../middleware/cloudinary.middleware.js"
 
 import messageRouter from "./message.router.js";
 import meRouter from "./me.router.js"
-
+import chatRouter from "./chat.router.js"
 function routing(app) {
   app.use(imageUpload);
   app.use(ROUTING.AUTHEN, authRouter);
@@ -21,7 +21,7 @@ function routing(app) {
   app.use(swaggerRouter);
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
   app.use(ROUTING.ME, authenticateToken, meRouter);
-
+  app.use(ROUTING.CHAT, authenticateToken, chatRouter)
 }
 
 export default routing;

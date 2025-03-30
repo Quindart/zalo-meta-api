@@ -4,7 +4,7 @@ const ROUTING = {
   API: "/api/v1/",
   BY_ID: "/:id",
   SWAGGER: "/api/v1/swagger",
-  ME:'/api/v1/me',
+  ME: '/api/v1/me',
   // Member of channel
   MEMBER: "/:id/members",
   OUT_CHANNEL: "/:id/out-channel",
@@ -22,8 +22,8 @@ const ROUTING = {
   MESSAGE_BY_CHAT_ID: "/chat/:chatId",
   MESSAGE_BY_RECEIVERID_SENDERID: "/:receiverId/:senderId",
   THREAD: "/api/v1/threads",
-  chat: "/api/v1/chats",
-  SEARCH:"/search",
+  CHAT: "/api/v1/chats",
+  SEARCH: "/search",
 
   //*Auth
   AUTHEN: "/api/v1/auth",

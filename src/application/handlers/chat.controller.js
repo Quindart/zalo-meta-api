@@ -1,36 +1,64 @@
-import mongoose from 'mongoose';
 import Chat from '../../infrastructure/mongo/model/Chat.js';
-
-
-class ChatController{
-    async findOrCreateChat (userIds){
+import { HTTP_STATUS } from '../../constants/index.js';
+import Error from "../../utils/errors.js";
+class ChatController {
+    async getMyChat(req, res) {
         try {
+            const currentUserId = req.user.id;
+            const chat = await Chat.findOne({
+                participants: { $in: [currentUserId] }
+            })
+                .populate({
+                    path: 'participants',
+                })
+                .lean();
 
-            console.log("userIds", userIds);
-            const objectIdUserIds = userIds.map(id => new mongoose.Types.ObjectId(id));
-    
-            let chat = await Chat.findOne({ participants: { $all: objectIdUserIds, $size: objectIdUserIds.length } });
             if (!chat) {
-                chat = new Chat({
-                    participants: objectIdUserIds,
-                });
-                await chat.save();
+                Error.sendNotFound(res, [])
             }
-            return chat;
+            const secondUser = chat.participants.find(
+                user => user._id.toString() !== currentUserId.toString()
+            );
+
+            const responseChat = {
+                _id: chat._id,
+                secondUser: secondUser,
+                createdAt: chat.createdAt,
+                updatedAt: chat.updatedAt,
+            };
+
+            return res.status(200).json({
+                status: 200,
+                success: true,
+                message: "Get chats success",
+                chats: [responseChat]
+            });
         } catch (error) {
-            console.error("Error in findOrCreateChat:", error);
+            console.error("Error in getChat:", error);
+            Error.sendError(error);
         }
     };
 
-    async getChat (chatId){
+    async getChatById(req, res) {
         try {
-            const chat = await Chat.findById(chatId).populate('participants');
+            const chatId = req.params.id;
+            const chat = await Chat.findById(chatId).lean();
             if (!chat) {
-                throw new Error("Chat not found");
+                return res.status(HTTP_STATUS.NOT_FOUND).json({
+                    status: HTTP_STATUS.NOT_FOUND,
+                    success: false,
+                    message: "Get chat failed",
+                })
             }
-            return chat;
+            return res.status(HTTP_STATUS.OK).json({
+                status: HTTP_STATUS.OK,
+                success: true,
+                message: "Get chat success",
+                chat
+            })
         } catch (error) {
             console.error("Error in getChat:", error);
+            Error.sendError(error);
         }
     };
 }
