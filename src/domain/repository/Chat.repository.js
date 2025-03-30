@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Chat from '../../infrastructure/mongo/model/Chat';
+import Chat from "../../infrastructure/mongo/model/Chat.js"
 
 
 class ChatRepository {
