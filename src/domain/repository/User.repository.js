@@ -11,7 +11,7 @@ export class UserRepository {
     async findUserSelect(userId, select) {
         return await User.findById(userId).select(select.join(' ')).lean()
     }
-    async searchUser(type, keywords){
+    async searchUser(type, keywords) {
         const regex = {}
         regex[`${type}`] = keywords
         return await User.find(regex).select(select.join(' ')).lean()
