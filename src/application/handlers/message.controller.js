@@ -25,8 +25,9 @@ class MessageController {
                 return res.status(200).json([]);
             }
             return res.status(200).json({
-                status:HTTP_STATUS.OK,
-                messages:messages
+                status: HTTP_STATUS.OK,
+                success: true,
+                messages: messages
             });
         } catch (error) {
             console.error('Error fetching messages:', error);
