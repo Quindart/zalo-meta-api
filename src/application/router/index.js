@@ -20,7 +20,7 @@ function routing(app) {
   app.use(ROUTING.MAIL, mailRouter);
   app.use(swaggerRouter);
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
-  app.use(ROUTING.ME, authenticateToken, meRouter);
+  app.use(ROUTING.INDEX, authenticateToken, meRouter);
 
 }
 
