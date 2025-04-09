@@ -93,7 +93,7 @@ class UserController {
       } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const avatar = req.uploadedImages && req.uploadedImages.avatar ? req.uploadedImages.avatar.url : null;
+      const avatar = req?.uploadedImages && req?.uploadedImages?.avatar ? req.uploadedImages?.avatar?.url : null;
 
       const oldUser = await User.findOne({ phone: phone }).lean()
       if (oldUser) {
@@ -121,11 +121,90 @@ class UserController {
     }
   }
   //TODO: [PUT]
+  async updateMe(req, res) {
+    try {
+      const file = req.uploadedImages ? req.uploadedImages : null
+      const id = req.user.id;
+      const { firstName, lastName, dateOfBirth } = req.body;
+
+      const oldUser = await User.findById(id).select(id).lean();
+
+      if (!oldUser) {
+        return Error.sendNotFound(res, "No user found");
+      }
+
+      const bodyRequest = file ? {
+        firstName,
+        lastName,
+        dateOfBirth,
+        avatar: file.avatar.url
+      } : {
+        firstName,
+        lastName,
+        dateOfBirth,
+      }
+      const user = await User.findByIdAndUpdate(
+        id,
+        {
+          ...bodyRequest
+        },
+        {
+          new: true,
+        }
+      ).lean();
+
+      return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        success: true,
+        message: "Update user success",
+        user,
+      });
+    } catch (error) {
+      Error.sendError(res, error);
+    }
+  }
+
+  //TODO: [PUT]
+  async changePassword(req, res) {
+    try {
+      const user = req.user
+      const id = user.id
+      const { password, newPassword } = req.body
+
+      const oldUser = await User.findById(user.id)
+
+      const isPasswordValids = await bcrypt.compare(password, oldUser.password);
+
+      if (!isPasswordValids) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          status: HTTP_STATUS.UNAUTHORIZED,
+          success: false,
+          message: 'Invalid password'
+        });
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await User.findByIdAndUpdate(id, {
+        password: hashedPassword
+      }, {
+        new: true,
+      }).select(id).lean()
+
+      return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        success: true,
+        message: 'Change password success',
+      })
+
+    } catch (error) {
+      Error.sendError(res, error)
+    }
+  }
+  //TODO: [PUT]
   async updateUser(req, res) {
     try {
       const id = req.params.id;
       const { email, phone, firstName, lastName } = req.body;
-
       const oldUser = await User.findById(id).select(_id).lean();
 
       if (!oldUser) {

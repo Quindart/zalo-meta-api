@@ -6,3 +6,4 @@ const router = express.Router();
 // router.use(ROUTING.SWAGGER, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 export default router;
+    

@@ -3,12 +3,11 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import User from '../../infrastructure/mongo/model/User.js';
 import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.js';
-import { generateAccessToken } from '../middleware/authentication.middleware.js';
-import { generateRefreshToken } from '../middleware/authentication.middleware.js';
 import { HTTP_STATUS } from '../../constants/index.js';
 import { sendMail, verifyOTP } from '../middleware/mail.middleware.js';
 import OTP from '../../infrastructure/mongo/model/OTP.js';
 import Error from '../../utils/errors.js'
+import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index.js';
 
 dotenv.config();
 
@@ -41,11 +40,11 @@ class AuthenController {
 
             if (!isPasswordValids) {
                 return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                    status: HTTP_STATUS.UNAUTHORIZED,
                     success: false,
                     message: 'Invalid login credentials'
                 });
             }
-
 
             const payload = {
                 id: user._id,
@@ -105,7 +104,7 @@ class AuthenController {
                 dateOfBirth,
             } = req.body;
             const hashedPassword = await bcrypt.hash(password, 10);
-            const oldUser = await User.findOne({ phone: phone }).select({_id:1}).lean()
+            const oldUser = await User.findOne({ phone: phone }).select({ _id: 1 }).lean()
             if (oldUser) {
                 return Error.sendConflict(res, "Phone number already exist!")
             }
@@ -167,7 +166,7 @@ class AuthenController {
 
             // Xác thực refresh token
             try {
-                const decoded = jwt.verify(refreshToken, this.REFRESH_TOKEN_SECRET);
+                const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
 
                 // Lấy thông tin user từ decoded token
                 const user = await User.findById(decoded.id);

@@ -22,12 +22,13 @@ const ROUTING = {
   MESSAGE_BY_CHAT_ID: "/chat/:chatId",
   MESSAGE_BY_RECEIVERID_SENDERID: "/:receiverId/:senderId",
   THREAD: "/api/v1/threads",
-  CHAT: "/api/v1/chats",
+  chat: "/api/v1/chats",
   SEARCH: "/search",
 
   //*Auth
   AUTHEN: "/api/v1/auth",
   LOGIN: "/login",
+  QR: "/QR",
   REGISTER: "/register",
   LOGOUT: "/logout",
   FORGOT_PASSWORD: "/forgot-password",

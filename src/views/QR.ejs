@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Example</title>
+  </head>
+  <body>
+    <h1>Mã QR của bạn</h1>
+    <% if (qrCode) { %>
+    <img  style="object-fit: cover;" src="<%= qrCode %>" alt="QR Code" />
+    <% } else { %>
+    <p>Không có mã QR để hiển thị.</p>
+    <% } %>
+  </body>
+</html>

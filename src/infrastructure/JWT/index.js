@@ -1,4 +1,6 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken"
+import dotenv from "dotenv"
+dotenv.config()
 
 function generatePasswordTimer(payload) {
   const key = process.env.TOKEN_PASS_REFRESH_MAIL_KEY;
@@ -30,7 +32,7 @@ function generateToken(type = "access", payload, tokenLife) {
   });
 }
 
-function verifyToken(type = "access", token) {
+export function verifyToken(type = "access", token) {
   const key = type
     ? process.env.TOKEN_SECRET_KEY
     : process.env.REFRESH_TOKEN_SECRET_KEY;
@@ -53,9 +55,28 @@ function randomTokenString() {
   return Crypto.randomBytes(40).toString("hex");
 }
 
+
+
+
+export const generateAccessToken = (user) => {
+  return jwt.sign(user, process.env.TOKEN_SECRET_KEY, { expiresIn: user.expiry_accesstoken });
+};
+
+export const generateRefreshToken = (user) => {
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: user.expiry_refreshtoken });
+};
+
+
+export const generateQRToken = (desktopInfo) => {
+  return jwt.sign(desktopInfo, process.env.TOKEN_SECRET_KEY, { expiresIn: desktopInfo.expiryTimes });
+}
+
 export default {
   verifyToken,
   generateToken,
+  generateAccessToken,
+  generateRefreshToken,
+  generateQRToken,
   randomTokenString,
   signatureToken,
   generatePasswordTimer,
