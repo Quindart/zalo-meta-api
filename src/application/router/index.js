@@ -8,7 +8,7 @@ import ROUTING from "../../constants/Routes.js";
 
 import messageRouter from "./message.router.js";
 import meRouter from "./me.router.js"
-import chatRouter from "./chat.router.js"
+// import chatRouter from "./chat.router.js"
 import { authenticateToken } from "../middleware/authentication.middleware.js";
 
 function routing(app) {
@@ -21,7 +21,7 @@ function routing(app) {
 
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
   app.use(ROUTING.ME, meRouter);
-  app.use(ROUTING.CHAT, authenticateToken, chatRouter)
+  // app.use(ROUTING.CHAT, authenticateToken, chatRouter)
 }
 
 export default routing;
