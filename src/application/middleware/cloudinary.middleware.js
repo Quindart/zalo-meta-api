@@ -19,8 +19,7 @@ export const imageUpload = (req, res, next) => {
             });
         }
         req.uploadedImages = {};
-
-        if (Array.isArray(req.files).length > 0) {
+        if (Array.isArray(req.files) && req.files.length > 0) {
             req.files.forEach(file => {
                 const fieldName = file.fieldname;
                 const imageInfo = {
