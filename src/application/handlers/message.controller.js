@@ -34,6 +34,26 @@ class MessageController {
             return res.status(200).json([]);
         }
     }
+    async getMessageById(req, res) {
+        try {
+            const messageId = req.params.id;
+            if (!messageId) {
+                return res.status(400).json({ message: 'Message ID is required' });
+            }
+            const message = await Message.findById(messageId).populate('senderId').lean();
+            if (!message) {
+                return res.status(404).json({ message: 'Message not found' });
+            }
+            return res.status(200).json({
+                status: HTTP_STATUS.OK,
+                success: true,
+                message: message
+            });
+        } catch (error) {
+            console.error('Error fetching message by ID:', error);
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }
 
 export default new MessageController();

@@ -4,5 +4,6 @@ import messageController from "../handlers/message.controller.js";
 const router = express.Router();
 
 router.get(ROUTING.MESSAGE_BY_RECEIVERID_SENDERID, (req, res) => messageController.getMessages(req, res));
+router.get(ROUTING.BY_ID, (req, res) => messageController.getMessageById(req, res));
 
 export default router;
