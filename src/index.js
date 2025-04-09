@@ -10,12 +10,18 @@ import socketService from "./infrastructure/socket/connection/ConnectionSocketIO
 import http from "http";
 import redisService from "./infrastructure/redis/RedisService.js";
 import mongoService from "./infrastructure/mongo/connection/MongoService.js";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const app = express();
 const server = http.createServer(app);
 
 import { blacklistMiddleware, whitelistMiddleware } from '../config/access-list.js';
 import onSocketControllerTesting from "./demo.socket.io.js";
+import QRService from "./infrastructure/QR/index.js";
 
 express.static(".");
 
@@ -31,6 +37,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "./views"))
+
+
 //TODO: Routing service
 routing(app);
 function runningService() {
@@ -44,10 +54,10 @@ function runningService() {
     );
   });
 
-//TODO: socket
-const appSocket = new socketService(server);
-//  onSocketControllerTesting(app,appSocket)
-appSocket.start()
+  //TODO: socket
+  const appSocket = new socketService(server);
+  //  onSocketControllerTesting(app,appSocket)
+  appSocket.start()
 
   //TODO: Redis
   redisService.connect();
@@ -66,4 +76,7 @@ appSocket.start()
 }
 
 runningService();
+
+
+
 export default app;

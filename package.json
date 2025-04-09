@@ -38,9 +38,12 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.1",
     "socket.io": "^4.8.1",
     "swagger-ui-express": "^5.0.1",
     "twilio": "^5.4.5",
+    "useragent": "^2.3.0",
     "yaml": "^2.7.0",
     "zalo-meta-api": "file:"
   }

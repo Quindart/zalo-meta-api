@@ -155,14 +155,48 @@ class UserController {
       Error.sendError(res, error);
     }
   }
+
+  //TODO: [PUT]
+  async changePassword(req, res) {
+    try {
+      const user = req.user
+      const id = user.id
+      const { password, newPassword } = req.body
+
+      const oldUser = await User.findById(user.id)
+
+      const isPasswordValids = await bcrypt.compare(password, oldUser.password);
+
+      if (!isPasswordValids) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          status: HTTP_STATUS.UNAUTHORIZED,
+          success: false,
+          message: 'Invalid password'
+        });
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await User.findByIdAndUpdate(id, {
+        password: hashedPassword
+      }, {
+        new: true,
+      }).select(id).lean()
+
+      return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        success: true,
+        message: 'Change password success',
+      })
+
+    } catch (error) {
+      Error.sendError(res, error)
+    }
+  }
   //TODO: [PUT]
   async updateUser(req, res) {
     try {
-      const file = req.file
-      console.log("💲💲💲 ~ UserController ~ updateUser ~ file:", file)
       const id = req.params.id;
       const { email, phone, firstName, lastName } = req.body;
-
       const oldUser = await User.findById(id).select(_id).lean();
 
       if (!oldUser) {
