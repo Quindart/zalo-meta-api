@@ -13,7 +13,7 @@ const otpSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 300 // Tự động xóa document sau 5 phút (300 giây)
+        expires: 300 
     },
     isVerified: {
         type: Boolean,

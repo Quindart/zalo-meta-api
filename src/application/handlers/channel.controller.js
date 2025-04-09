@@ -3,25 +3,31 @@ import Channel from "../../infrastructure/mongo/model/Channel.js";
 import Error from "../../utils/errors.js";
 import { ROLE_MEMBER_OF_CHANNEL } from "../../constants/index.js";
 import authenController from "./authen.controller.js";
+import User from "../../infrastructure/mongo/model/User.js";
+import ChannelRepository from "../../domain/repository/Channel.repository.js";
 
 class ChannelController {
     //TODO: CREATE CHANNEl
     async createGroup(req, res) {
         try {
             const { name, members } = req.body;
-            const userId = req.user.id;
-            const createMembers = [{
-                user: userId,
-                role: ROLE_MEMBER_OF_CHANNEL[0]
-            }, ...members.map(memId => ({ user: memId, role: ROLE_MEMBER_OF_CHANNEL[2] }))]
+            
+            let createMembers = ChannelRepository.createMembersOfChannel(members)
 
             const channel = await Channel.create({ name, members: createMembers });
+            if (!channel) {
+                return Error.sendError(res, 'Failed to create channel')
+            }
+
+            await ChannelRepository.updateUserChannels(channel)
+
             return res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
                 success: true,
-                message: "Create group success",
+                message: "Create channel success",
                 channel
             })
+
         } catch (error) {
             return Error.sendError(res, error)
         }

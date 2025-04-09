@@ -163,7 +163,6 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-
   //TODO: [PUT]
   async changePassword(req, res) {
     try {

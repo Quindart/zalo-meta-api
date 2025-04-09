@@ -17,6 +17,7 @@ export const authorizeAdmin = (req, res, next) => {
 export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    
     if (!token) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Access token required' });
     }
