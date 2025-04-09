@@ -93,7 +93,7 @@ class UserController {
       } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const avatar = req.uploadedImages && req.uploadedImages.avatar ? req.uploadedImages.avatar.url : null;
+      const avatar = req?.uploadedImages && req?.uploadedImages?.avatar ? req.uploadedImages?.avatar?.url : null;
 
       const oldUser = await User.findOne({ phone: phone }).lean()
       if (oldUser) {
@@ -123,7 +123,7 @@ class UserController {
   //TODO: [PUT]
   async updateMe(req, res) {
     try {
-      const file = req.uploadedImages
+      const file = req.uploadedImages ? req.uploadedImages : null
       const id = req.user.id;
       const { firstName, lastName, dateOfBirth } = req.body;
 
@@ -132,13 +132,21 @@ class UserController {
       if (!oldUser) {
         return Error.sendNotFound(res, "No user found");
       }
+
+      const bodyRequest = file ? {
+        firstName,
+        lastName,
+        dateOfBirth,
+        avatar: file.avatar.url
+      } : {
+        firstName,
+        lastName,
+        dateOfBirth,
+      }
       const user = await User.findByIdAndUpdate(
         id,
         {
-          firstName,
-          lastName,
-          dateOfBirth,
-          avatar: file.avatar.url
+          ...bodyRequest
         },
         {
           new: true,

@@ -8,6 +8,10 @@ export const imageUpload = (req, res, next) => {
     if (!contentType.includes('multipart/form-data')) {
         return next();
     }
+    if (!req.files) {
+        return next();
+    }
+
     const multerAny = upload.any();
     multerAny(req, res, (err) => {
         if (err) {
