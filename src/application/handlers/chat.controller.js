@@ -15,7 +15,12 @@ class ChatController {
                 })
                 .lean();
             if (!chats || chats.length === 0) {
-                return Error.sendNotFound(res, []);
+                return res.status.json({
+                    status: 200,
+                    success: true,
+                    message: "Get chats success",
+                    chats: responseChats
+                })
             }
             const chatPromises = chats.map(async (chat) => {
                 const secondUser = chat.participants.find(
