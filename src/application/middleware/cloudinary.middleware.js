@@ -8,9 +8,7 @@ export const imageUpload = (req, res, next) => {
     if (!contentType.includes('multipart/form-data')) {
         return next();
     }
-    if (!req.files) {
-        return next();
-    }
+
 
     const multerAny = upload.any();
     multerAny(req, res, (err) => {
@@ -21,7 +19,8 @@ export const imageUpload = (req, res, next) => {
             });
         }
         req.uploadedImages = {};
-        if (req.files && req.files.length > 0) {
+
+        if (Array.isArray(req.files).length > 0) {
             req.files.forEach(file => {
                 const fieldName = file.fieldname;
                 const imageInfo = {
@@ -39,7 +38,9 @@ export const imageUpload = (req, res, next) => {
                     req.uploadedImages[fieldName].push(imageInfo);
                 }
             });
+            next();
         }
-        next();
+        else
+            next();
     });
 };

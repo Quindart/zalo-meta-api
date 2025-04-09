@@ -21,7 +21,6 @@ export const authenticateToken = (req, res, next) => {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Access token required' });
     }
 
-
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {

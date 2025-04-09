@@ -137,7 +137,7 @@ class UserController {
         firstName,
         lastName,
         dateOfBirth,
-        avatar: file.avatar.url
+        avatar: file?.avatar?.url
       } : {
         firstName,
         lastName,
