@@ -121,8 +121,45 @@ class UserController {
     }
   }
   //TODO: [PUT]
+  async updateMe(req, res) {
+    try {
+      const file = req.uploadedImages
+      const id = req.user.id;
+      const { firstName, lastName, dateOfBirth } = req.body;
+
+      const oldUser = await User.findById(id).select(id).lean();
+
+      if (!oldUser) {
+        return Error.sendNotFound(res, "No user found");
+      }
+      const user = await User.findByIdAndUpdate(
+        id,
+        {
+          firstName,
+          lastName,
+          dateOfBirth,
+          avatar: file.avatar.url
+        },
+        {
+          new: true,
+        }
+      ).lean();
+
+      return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        success: true,
+        message: "Update user success",
+        user,
+      });
+    } catch (error) {
+      Error.sendError(res, error);
+    }
+  }
+  //TODO: [PUT]
   async updateUser(req, res) {
     try {
+      const file = req.file
+      console.log("💲💲💲 ~ UserController ~ updateUser ~ file:", file)
       const id = req.params.id;
       const { email, phone, firstName, lastName } = req.body;
 

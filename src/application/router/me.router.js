@@ -5,5 +5,6 @@ const router = express.Router();
 import { authenticateToken } from "../middleware/authentication.middleware.js";
 
 router.get(ROUTING.ME, authenticateToken, userController.getMe);
+router.put(ROUTING.ME, authenticateToken, userController.updateMe);
 
 export default router
