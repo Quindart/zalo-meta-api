@@ -13,11 +13,11 @@ import chatRouter from "./chat.router.js"
 function routing(app) {
   app.use(imageUpload);
   app.use(ROUTING.AUTHEN, authRouter);
-  // app.use(ROUTING.USER, authenticateToken, userRouter);
   app.use(ROUTING.USER, userRouter);
   app.use(ROUTING.CHANNEL, channelRouter)
   app.use(ROUTING.MAIL, mailRouter);
   app.use(swaggerRouter);
+
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
   app.use(ROUTING.ME, authenticateToken, meRouter);
   app.use(ROUTING.CHAT, authenticateToken, chatRouter)

@@ -22,7 +22,7 @@ const ROUTING = {
   MESSAGE_BY_CHAT_ID: "/chat/:chatId",
   MESSAGE_BY_RECEIVERID_SENDERID: "/:receiverId/:senderId",
   THREAD: "/api/v1/threads",
-  chat: "/api/v1/chats",
+  CHAT: "/api/v1/chats",
   SEARCH: "/search",
 
   //*Auth
