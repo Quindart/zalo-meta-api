@@ -11,14 +11,18 @@ class ChannelController {
     async createGroup(req, res) {
         try {
             const { name, members } = req.body;
-            
-            let createMembers = ChannelRepository.createMembersOfChannel(members)
+            const userCreateChannelId = req.user.id
+
+            //TODO: đây là mảng members
+            let createMembers = ChannelRepository.createMembersOfChannel(members, userCreateChannelId)
 
             const channel = await Channel.create({ name, members: createMembers });
+
             if (!channel) {
                 return Error.sendError(res, 'Failed to create channel')
             }
 
+            //TODO: Lưu ds channel vào trong list member user
             await ChannelRepository.updateUserChannels(channel)
 
             return res.status(HTTP_STATUS.CREATED).json({
@@ -176,9 +180,6 @@ class ChannelController {
         try {
             let { id } = req.params
             let { userId, role } = req.body;
-            console.log("check data: ", id);
-            console.log("check userId:", userId);
-            console.log("check role:", role);
 
             role = role.trim();
             if (!ROLE_MEMBER_OF_CHANNEL.includes(role)) {

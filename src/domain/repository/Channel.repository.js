@@ -1,6 +1,5 @@
-import mongoose from 'mongoose';
-import Chat from "../../infrastructure/mongo/model/Chat.js"
 import Channel from '../../infrastructure/mongo/model/Channel.js';
+import User from '../../infrastructure/mongo/model/User.js';
 
 
 class ChannelRepository {
@@ -23,16 +22,19 @@ class ChannelRepository {
         }
     };
 
-    createMembersOfChannel(members) {
+
+    //TODO: nếu 2 thành viên => mặc định là 2role member, còn không thì người tạo là role cao nhất 
+    createMembersOfChannel(members, userCreateChannelId) {
         let createMembers
         if (members.length >= 3) {
             createMembers = [{
-                user: userId,
-                role: ROLE_MEMBER_OF_CHANNEL[0]
-            }, ...members.map(memId => ({ user: memId, role: ROLE_MEMBER_OF_CHANNEL[2] }))]
+                user: userCreateChannelId,
+                role: ROLE_MEMBER_OF_CHANNEL[0]  //TODO: CAPTAIN
+            }, ...members.map(memId => ({ user: memId, role: ROLE_MEMBER_OF_CHANNEL[2] }))] // TODO: MEMBER
         }
         createMembers = members.map(memId => ({ user: memId, role: ROLE_MEMBER_OF_CHANNEL[2] }))
         return createMembers
+
     }
 
     async findOrCreateChannel(memberRequest, userCreateId, nameChannel) {
@@ -47,7 +49,7 @@ class ChannelRepository {
             return channel
         }
 
-        let createMembers = this.createMembersOfChannel(memberRequest)
+        let createMembers = this.createMembersOfChannel(memberRequest, userCreateId)
 
         channel = await Channel.create({
             name: nameChannel ? nameChannel : '',
