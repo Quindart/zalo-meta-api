@@ -1,4 +1,5 @@
 import User from "../../infrastructure/mongo/model/User.js"
+import mongoose from 'mongoose';
 
 export class UserRepository {
     constructor() {
@@ -6,7 +7,7 @@ export class UserRepository {
         this.selectedFields = [];
     }
     async findOne(userId) {
-        return await User.findById(userId)
+        return await User.findById(new mongoose.Types.ObjectId(userId))
     }
     async findUserSelect(userId, select) {
         return await User.findById(userId).select(select.join(' ')).lean()
