@@ -25,9 +25,10 @@ const UserSchema = new mongoose.Schema({
   },
   isEmailNotificationEnabled: { type: Boolean, default: true },
   emailSentAt: { type: Date },
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "friends" }]
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "Friend" }],
+  channels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Channel" }]
 },
   { timestamps: true }
 );
 
-export default mongoose.model("users", UserSchema);
+export default mongoose.model("User", UserSchema);

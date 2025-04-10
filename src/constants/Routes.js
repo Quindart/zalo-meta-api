@@ -29,6 +29,7 @@ const ROUTING = {
   AUTHEN: "/api/v1/auth",
   LOGIN: "/login",
   QR: "/QR",
+  QR_LOGIN: "/QR/login",
   REGISTER: "/register",
   LOGOUT: "/logout",
   FORGOT_PASSWORD: "/forgot-password",

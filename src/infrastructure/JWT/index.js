@@ -56,8 +56,6 @@ function randomTokenString() {
 }
 
 
-
-
 export const generateAccessToken = (user) => {
   return jwt.sign(user, process.env.TOKEN_SECRET_KEY, { expiresIn: user.expiry_accesstoken });
 };

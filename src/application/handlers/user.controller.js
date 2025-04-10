@@ -21,7 +21,14 @@ class UserController {
         status: HTTP_STATUS.OK,
         success: true,
         message: "Get user by id success",
-        user,
+        user:{
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          email: user.email,
+          avatar: user.avatar,
+        },
       });
     } catch (error) {
       Error.sendError(res, error);
@@ -73,7 +80,14 @@ class UserController {
         status: HTTP_STATUS.OK,
         success: true,
         message: "Get all users success",
-        user,
+        user:{
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          email: user.email,
+          avatar: user.avatar,
+        },
       });
     } catch (error) {
       console.log("💲💲💲 ~ UserController ~ getMe ~ error:", error)
@@ -163,7 +177,6 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-
   //TODO: [PUT]
   async changePassword(req, res) {
     try {

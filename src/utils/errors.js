@@ -18,9 +18,9 @@ class ErrorHandler {
   }
 
   sendUnauthenticated(res) {
-    res.status(HTTP_STATUS.UNAUTHENTICATED).json({
+    res.status(HTTP_STATUS.UNAUTHORIZED).json({
       success: false,
-      status: HTTP_STATUS.UNAUTHENTICATED,
+      status: HTTP_STATUS.UNAUTHORIZED,
       message: "Unauthenticated",
     });
   }
