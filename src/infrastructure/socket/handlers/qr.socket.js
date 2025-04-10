@@ -4,17 +4,18 @@ class QRSocket {
     constructor(io, socket) {
         this.io = io;
         this.socket = socket;
+        this.registerEvents();
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.QR.ACCEPTED_LOGIN, this.acceptedLogin.bind(this));
         this.socket.on(SOCKET_EVENTS.QR.VERIFY, this.verify.bind(this));
     }
 
-    verify(detectInfo) {
+    async verify(detectInfo) {
         console.log("💲💲💲 ~ QRSocket ~ verify ~ detectInfo:", detectInfo)
         this.io.emit(SOCKET_EVENTS.QR.VERIFY, detectInfo)
     }
-    acceptedLogin(loginQR) {
+    async acceptedLogin(loginQR) {
         console.log("💲💲💲 ~ QRSocket ~ verify ~ detectInfo:", loginQR)
         this.io.emit(SOCKET_EVENTS.QR.ACCEPTED_LOGIN, loginQR)
     }
