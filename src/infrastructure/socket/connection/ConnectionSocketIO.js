@@ -1,7 +1,11 @@
 import { Server } from "socket.io";
 import MessageSocket from "../handlers/message.socket.js";
 import UserSocket from "../handlers/user.socket.js";
+<<<<<<< HEAD
 import QRSocket from "../handlers/qr.socket.js";
+=======
+import ChannelSocket from "../handlers/channel.socket.js";
+>>>>>>> f5eaa060f12a4d3fc635aedce0ccd5de945586dd
 class SocketService {
   io;
   messageSocket;
@@ -25,6 +29,8 @@ class SocketService {
       this.userSocket = new UserSocket(this.io, socket)
       this.qrSocket = new QRSocket(this.io, socket)
       
+      this.channelSocket = new ChannelSocket(this.io, socket)
+
       socket.on("disconnect", () => {
         console.log(`🔥: A user disconnected`);
       });
