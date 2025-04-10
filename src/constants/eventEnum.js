@@ -2,6 +2,10 @@
 const SOCKET_EVENTS = Object.freeze({
     CONNECTION: "connection",
     DISCONNECT: "disconnect",
+    QR: {
+        VERIFY: 'qr:verify',
+        ACCEPTED_LOGIN: 'qr:accpeted-login',
+    },
     MESSAGE: {
         SEND: "message:send",
         RECEIVED: "message:received",
