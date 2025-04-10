@@ -28,6 +28,11 @@ class SocketService {
 
       this.channelSocket = new ChannelSocket(this.io, socket)
 
+      
+      socket.on("send_message", (data) => {
+        console.log("Tin nhắn nhận được:", data);
+        this.io.emit("receive_message", data);
+      });
       socket.on("disconnect", () => {
         console.log(`🔥: A user disconnected`);
       });

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat - <%= userName %></title>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Welcome, <%= userName %>! <%= localIP %></h1>
+    <p>Server running on port: <%= port %></p>
+
+    <input id="message" type="text" placeholder="Nhập tin nhắn..." />
+    <button onclick="sendMessage()">Gửi</button>
+
+    <ul id="messages"></ul>
+
+    <script>
+      const socket = io("<%= localIP %>" + ":5000");
+
+      function sendMessage() {
+        const message = document.getElementById("message").value;
+        socket.emit("send_message", {
+          userId: "<%= userName %>  - <%= port %>",
+          message,
+        });
+      }
+
+      socket.on("receive_message", (data) => {
+        const messagesList = document.getElementById("messages");
+        const newMessage = document.createElement("li");
+        newMessage.textContent = `${data.userId}: ${data.message}`;
+        messagesList.appendChild(newMessage);
+      });
+    </script>
+  </body>
+</html>
