@@ -58,9 +58,9 @@ class ChannelSocket {
 
     findByIdChannel(params) {
         const { channelId, currentUserId } = params;
+        console.log("Finding channel by ID:", channelId, "for user:", currentUserId);
         channelRepository.getChannel(channelId, currentUserId)
             .then((channel) => {
-                console.log("FIND_BY_ID_RESPONSE:", channel);
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.FIND_BY_ID_RESPONSE, {
                     success: true,
                     data: channel,
@@ -74,9 +74,9 @@ class ChannelSocket {
 
     loadChannel(params) {
         const { currentUserId } = params;
+        console.log("Loading channels for user:", currentUserId);
         channelRepository.getChannels(currentUserId)
             .then((channels) => {
-                console.log("LOAD_CHANNEL_RESPONSE:", channels);
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
                     success: true,
                     data: channels,

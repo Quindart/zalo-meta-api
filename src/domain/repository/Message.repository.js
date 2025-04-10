@@ -15,10 +15,29 @@ class MessageRepository {
 
     async getMessages(channelId) {
         const messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
-            .populate('senderId', 'firstName lastName avatar')
-            .lean();
-        console.log("messages", messages)
-        return messages;
+        .populate('senderId', 'firstName lastName avatar')
+        .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
+        .limit(10) // Giới hạn 10 tin nhắn
+        .lean();
+
+        const messagesFormat = messages.map((message) => {
+            return {
+                ...message,
+                sender: {
+                    id: message.senderId._id,
+                    name: message.senderId.lastName + " " + message.senderId.firstName,
+                    avatar: message.senderId.avatar,
+                },
+                channelId: message.channelId,
+                status: "send",
+                timestamp: message.createdAt,
+                isMe: true,
+            };
+        });
+
+        messagesFormat.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        return messagesFormat;
     }
 }
 
