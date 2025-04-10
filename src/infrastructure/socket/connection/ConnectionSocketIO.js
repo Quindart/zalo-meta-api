@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import MessageSocket from "../handlers/message.socket.js";
 import UserSocket from "../handlers/user.socket.js";
+import ChannelSocket from "../handlers/channel.socket.js";
 class SocketService {
   io;
   messageSocket;
@@ -21,6 +22,7 @@ class SocketService {
       console.log(`${socket.id} user just connected!`);
       this.messageSocket = new MessageSocket(this.io, socket)
       this.userSocket = new UserSocket(this.io, socket)
+      this.channelSocket = new ChannelSocket(this.io, socket)
 
       socket.on("disconnect", () => {
         console.log(`🔥: A user disconnected`);
