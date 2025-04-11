@@ -20,12 +20,12 @@ class Server {
 
 const serverMeta = new Server(zaloService);
 
-//TODO: Testing client
-[
-  { port: 3000, name: "Quang" },
-  { port: 3001, name: "Phong" },
-  { port: 3002, name: "Tuyen" },
-  { port: 3003, name: "Huy" },
-  { port: 3004, name: "Hieu" },
-].forEach((item) => new Client(item.port, item.name).onInit());
+// //TODO: Testing client
+// [
+//   { port: 3000, name: "Quang" },
+//   { port: 3001, name: "Phong" },
+//   { port: 3002, name: "Tuyen" },
+//   { port: 3003, name: "Huy" },
+//   { port: 3004, name: "Hieu" },
+// ].forEach((item) => new Client(item.port, item.name).onInit());
 
