@@ -13,21 +13,10 @@ class ChannelSocket {
     }
 
     registerEvents() {
-        this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN, this.joinChannel.bind(this));
-        this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE, this.leaveChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.FIND_ORCREATE, this.findOrCreateChat.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.FIND_BY_ID, this.findByIdChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL, this.loadChannel.bind(this));
-    }
-
-    joinChannel(channelId) {
-        console.log(`User joined channel: ${channelId}`);
-        this.socket.join(channelId);
-    }
-
-    leaveChannel(channelId) {
-        console.log(`User left channel: ${channelId}`);
-        this.socket.leave(channelId);
+        this.socket.on(SOCKET_EVENTS.CHANNEL.CREATE, this.createChannel.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -85,6 +74,22 @@ class ChannelSocket {
             })
             .catch((error) => {
                 console.error("Error finding channels:", error);
+            });
+    }
+
+    createChannel(params){
+        const { name, currentUserId, members } = params;
+        channelRepository.createChannel(name, currentUserId, members)
+            .then((channel) => {
+                console.log("Channel created:", channel);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.CREATE_RESPONSE, {
+                    success: true,
+                    data: channel,
+                    message: "Channel created successfully",
+                });
+            })
+            .catch((error) => {
+                console.error("Error creating channel:", error);
             });
     }
 

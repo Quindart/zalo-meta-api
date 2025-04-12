@@ -181,6 +181,7 @@
 
 import Channel from '../../infrastructure/mongo/model/Channel.js';
 import User from '../../infrastructure/mongo/model/User.js';
+import Message from '../../infrastructure/mongo/model/Message.js';
 import mongoose from 'mongoose';
 
 // Constants
@@ -190,6 +191,35 @@ const ROLE_TYPES = {
 };
 
 class ChannelRepository {
+
+  async createChannel(name, currentUserId, members) {
+    const creatorId = currentUserId;
+    const membersList = this.createMembersOfChannel(members, creatorId);
+
+    const channel = new Channel({
+      name,
+      type: 'group',
+      members: membersList,
+      lastMessage: "",
+      avatar: "https://img.freepik.com/free-photo/people-office-work-day_23-2150690162.jpg?semt=ais_hybrid&w=740",
+    });
+
+    // TẠO LASTMESSAGE TRONG CHANNEL
+    const lastMessage = new Message({
+      senderId: creatorId,
+      content: "Welcome to the group!",
+      status: "sent",
+      channelId: channel._id,
+    });
+
+    await lastMessage.save();
+    channel.lastMessage = lastMessage._id;
+    await channel.save();
+
+    return this._formatChannelResponse(channel);
+  }
+
+
   async updateUserChannels(channel) {
     if (!channel) return;
     
@@ -221,7 +251,7 @@ class ChannelRepository {
   }
 
   createMembersOfChannel(members, creatorId) {
-    if (members.length >= 3) {
+    if (members.length >= 2) {
       return [
         { user: creatorId, role: ROLE_TYPES.CAPTAIN },
         ...members.map(memberId => ({ 
