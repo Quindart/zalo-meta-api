@@ -1,4 +1,3 @@
-import { da } from "@faker-js/faker";
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import channelRepository from "../../../domain/repository/Channel.repository.js";
 import messageRepository from "../../../domain/repository/Message.repository.js";
@@ -49,7 +48,6 @@ class ChannelSocket {
 
     findByIdChannel(params) {
         const { channelId, currentUserId } = params;
-        console.log("Finding channel by ID:", channelId, "for user:", currentUserId);
         channelRepository.getChannel(channelId, currentUserId)
             .then((channel) => {
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.FIND_BY_ID_RESPONSE, {
@@ -65,7 +63,6 @@ class ChannelSocket {
 
     loadChannel(params) {
         const { currentUserId } = params;
-        console.log("Loading channels for user:", currentUserId);
         channelRepository.getChannels(currentUserId)
             .then((channels) => {
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
@@ -83,12 +80,15 @@ class ChannelSocket {
         const { name, currentUserId, members } = params;
         channelRepository.createChannel(name, currentUserId, members)
             .then((channel) => {
-                console.log("Channel created:", channel);
-                this.socket.emit(SOCKET_EVENTS.CHANNEL.CREATE_RESPONSE, {
-                    success: true,
-                    data: channel,
-                    message: "Channel created successfully",
+                const allMembers = [...members, currentUserId];
+                allMembers.forEach((memberId) => {
+                    this.io.to(memberId).emit(SOCKET_EVENTS.CHANNEL.CREATE_RESPONSE, {
+                        success: true,
+                        data: channel,
+                        message: "Channel created successfully",
+                    });
                 });
+                
             })
             .catch((error) => {
                 console.error("Error creating channel:", error);
@@ -97,7 +97,6 @@ class ChannelSocket {
 
     joinRoom(params) {
         const { channelId, currentUserId } = params;
-        console.log("Joining room:", channelId, "for user:", currentUserId);
         Promise.all([
             messageRepository.getMessages(channelId),
             channelRepository.getChannel(channelId, currentUserId)
@@ -111,10 +110,7 @@ class ChannelSocket {
                     },
                     message: "Joined room successfully"
                 });
-
-                console.log(`Emitted JOIN_ROOM_RESPONSE to socket ${this.socket.id} with channel ID: ${channelId}`);
                 this.socket.join(channelId);
-                console.log(`Socket ${this.socket.id} joined room: ${channelId}`);
             })
             .catch((error) => {
                 console.error("Error joining room:", error);
