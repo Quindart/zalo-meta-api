@@ -1,6 +1,7 @@
 import { da } from "@faker-js/faker";
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import channelRepository from "../../../domain/repository/Channel.repository.js";
+import messageRepository from "../../../domain/repository/Message.repository.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
 
 class ChannelSocket {
@@ -17,6 +18,7 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.FIND_BY_ID, this.findByIdChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL, this.loadChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.CREATE, this.createChannel.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN_ROOM, this.joinRoom.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -77,7 +79,7 @@ class ChannelSocket {
             });
     }
 
-    createChannel(params){
+    createChannel(params) {
         const { name, currentUserId, members } = params;
         channelRepository.createChannel(name, currentUserId, members)
             .then((channel) => {
@@ -90,6 +92,37 @@ class ChannelSocket {
             })
             .catch((error) => {
                 console.error("Error creating channel:", error);
+            });
+    }
+
+    joinRoom(params) {
+        const { channelId, currentUserId } = params;
+        console.log("Joining room:", channelId, "for user:", currentUserId);
+        Promise.all([
+            messageRepository.getMessages(channelId),
+            channelRepository.getChannel(channelId, currentUserId)
+        ])
+            .then(([messages, channel]) => {
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_ROOM_RESPONSE, {
+                    success: true,
+                    data: {
+                        channel: channel,
+                        messages: messages
+                    },
+                    message: "Joined room successfully"
+                });
+
+                console.log(`Emitted JOIN_ROOM_RESPONSE to socket ${this.socket.id} with channel ID: ${channelId}`);
+                this.socket.join(channelId);
+                console.log(`Socket ${this.socket.id} joined room: ${channelId}`);
+            })
+            .catch((error) => {
+                console.error("Error joining room:", error);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_ROOM_RESPONSE, {
+                    success: false,
+                    message: "Failed to join room",
+                    error: error.message
+                });
             });
     }
 

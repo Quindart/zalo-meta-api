@@ -48,6 +48,21 @@ class MessageSocket {
         };
 
         this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+
+        // await channelRepository.getChannels(data.senderId)
+        //     .then((channels) => {
+        //         this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, {
+        //             success: true,
+        //             data: {
+        //                 channels: channels,
+        //                 message: messageResponse,
+        //             },
+        //             message: "Message sent successfully",
+        //         });
+        //     })
+        //     .catch((error) => {
+        //         console.error("Error finding channels:", error);
+        //     });
     }
 
     async readMessage(data) {

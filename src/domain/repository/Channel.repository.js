@@ -201,7 +201,7 @@ class ChannelRepository {
       type: 'group',
       members: membersList,
       lastMessage: "",
-      avatar: "https://img.freepik.com/free-photo/people-office-work-day_23-2150690162.jpg?semt=ais_hybrid&w=740",
+      avatar: "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg",
     });
 
     // TẠO LASTMESSAGE TRONG CHANNEL
@@ -216,7 +216,18 @@ class ChannelRepository {
     channel.lastMessage = lastMessage._id;
     await channel.save();
 
-    return this._formatChannelResponse(channel);
+    return {
+      id: channel._id.toString(),
+      name: channel.name,
+      avatar: channel.avatar,
+      type: channel.type,
+      members: channel.members.map(member => ({
+        userId: typeof member.user === 'object' ? member.user._id.toString() : member.user,
+        role: member.role
+      })),
+      time: lastMessage.createdAt,
+      message: lastMessage.content,
+    };
   }
 
 
@@ -342,20 +353,85 @@ class ChannelRepository {
 
   async getChannels(currentUserId) {
     try {
-      const channels = await Channel.find({
-        'members.user': new mongoose.Types.ObjectId(currentUserId),
-        'lastMessage': { $ne: null }
-      })
-        .sort({ createdAt: -1 }) // Changed from createAt to createdAt for consistency
-        .populate({
-          path: "members.user",
-          select: "firstName lastName avatar email"
-        })
-        .populate({
-          path: "lastMessage",
-          select: "content senderId createdAt status"
-        })
-        .lean();
+      const channels = await Channel.aggregate([
+        {
+          $match: {
+            "members.user": new mongoose.Types.ObjectId(currentUserId),
+            "$and": [
+              { deletedAt: null },
+              { lastMessage: { $ne: null } }
+            ]
+          },
+        },
+        {
+          $lookup: {
+            from: "messages",
+            localField: "lastMessage",
+            foreignField: "_id",
+            as: "lastMessageData",
+          },
+        },
+        {
+          $unwind: {
+            path: "$lastMessageData",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "members.user",
+            foreignField: "_id",
+            as: "membersData",
+          },
+        },
+        {
+          $sort: {
+            "lastMessageData.createdAt": -1,
+            createdAt: -1,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            type: 1,
+            name: 1,
+            avatar: 1,
+            description: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            deletedAt: 1,
+            lastMessage: {
+              _id: "$lastMessageData._id",
+              content: "$lastMessageData.content",
+              senderId: "$lastMessageData.senderId",
+              createdAt: "$lastMessageData.createdAt",
+              status: "$lastMessageData.status",
+            },
+            members: {
+              $map: {
+                input: "$members",
+                as: "member",
+                in: {
+                  user: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$membersData",
+                          as: "userData",
+                          cond: { $eq: ["$$userData._id", "$$member.user"] },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                  role: "$$member.role",
+                },
+              },
+            },
+          },
+        },
+      ]).exec();
       
       console.log('channels', channels)
 
