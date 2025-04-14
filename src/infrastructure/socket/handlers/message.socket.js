@@ -35,6 +35,7 @@ class MessageSocket {
         await channelRepository.updateLastMessage(channel.id, newMessage._id);
 
         const messageResponse = {
+            id:newMessage._id,
             content: data.content,
             sender: {
                 id: sender._id,
@@ -47,7 +48,15 @@ class MessageSocket {
             timestamp: new Date(),
             isMe: true,
         };
-        this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== data.senderId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+            }
+        });
+
+        
     }
 
     async readMessage(data) {

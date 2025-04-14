@@ -15,8 +15,13 @@ class FriendRepository {
           .populate('user', 'firstName lastName email avatar') 
           .populate('friend', 'firstName lastName email avatar')
           .lean();
-      
-        return friends.map(friend => {
+
+       
+        const validFriends = friends.filter(item => 
+          item.user && item.friend
+        );
+
+        return validFriends.map(friend => {
           const isUser = friend.user._id.toString() === userId.toString();
           const friendData = isUser ? friend.friend : friend.user;
       
