@@ -49,6 +49,11 @@ const SOCKET_EVENTS = Object.freeze({
         LIST_FRIEND: "friend:list",
         LIST_FRIEND_RESPONSE: "friend:listResponse",
     },
+    EMOJI: {
+        LOAD_EMOJIS_OF_MESSAGE: "emoji:loadEmojis",
+        INTERACT_EMOJI: "emoji:interactEmoji",
+        REMOVE_MY_EMOJI: "emoji:removeMyEmoji"
+    }
 });
 
 export default SOCKET_EVENTS;
