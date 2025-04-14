@@ -55,7 +55,7 @@ class FriendSocket {
 
     async listFriend(params) {
         const { userId } = params;
-        friendRepository.getFriendByUserId(userId)
+        friendRepository.getFriendByUserIdByType(userId, 'ACCEPTED')
             .then((friends) => {
                 this.socket.emit(SOCKET_EVENTS.FRIEND.LIST_FRIEND_RESPONSE, {
                     success: true,
@@ -70,7 +70,7 @@ class FriendSocket {
                     message: "Error retrieving friend list",
                 });
             });
-       
+
     }
 
 }
