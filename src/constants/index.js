@@ -59,3 +59,5 @@ export const HTTP_STATUS = {
 
 export const ROLE_MEMBER_OF_CHANNEL = ["CAPTAIN MEM", "SUB MEM", "MEM"];
 export const ROLE_MEMBER_VNESE = ["Trưởng nhóm", "Phó nhóm", "Thành viên"];
+
+export const EMOJI = ["LIKE", "LOVE", "WOW", "HAHA", "SAD", "ANGRY"];
