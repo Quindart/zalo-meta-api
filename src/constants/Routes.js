@@ -25,6 +25,28 @@ const ROUTING = {
   CHAT: "/api/v1/chats",
   SEARCH: "/search",
 
+  // Friend
+  FRIEND: "/api/v1/friends",
+  FRIEND_REQUEST: "/friend-request",
+  FRIEND_REQUEST_ACCEPT: "/accept",
+  FRIEND_REQUEST_REJECT: "/reject",
+  FRIEND_REQUEST_CANCEL: "/cancel",
+  FRIEND_REQUEST_BLOCK: "/block",
+  FRIEND_REQUEST_UNBLOCK: "/unblock",
+  FRIEND_REQUEST_UNFRIEND: "/unfriend",
+  FRIEND_REQUEST_LIST: "/list",
+  FRIEND_REQUEST_LIST_ACCEPTED: "/accepted",
+  FRIEND_REQUEST_LIST_PENDING: "/pending",
+  FRIEND_REQUEST_LIST_BLOCKED: "/blocked",
+  FRIEND_REQUEST_LIST_UNFRIEND: "/unfriend",
+  FRIEND_REQUEST_LIST_ALL: "/all",
+  FRIEND_REQUEST_LIST_FRIEND: "/friend",
+  FRIEND_REQUEST_LIST_SUGGEST: "/suggest",
+  FRIEND_REQUEST_LIST_SUGGESTED: "/suggested",
+  FRIEND_REQUEST_LIST_FRIENDS: "/friends",
+  FRIEND_REQUEST_LIST_FRIENDS_ACCEPTED: "/friends/accepted",
+  
+
   //*Auth
   AUTHEN: "/api/v1/auth",
   LOGIN: "/login",

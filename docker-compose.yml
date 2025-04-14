@@ -1,24 +1,25 @@
-version: "1.0"
 services:
-  mongodb:
-    image: "mongo"
-    container_name: mongo-zalo-db
+  app:
+    build:
+      context: .
+    container_name: zalo-backend-nodejs
     ports:
-      - "27017:27017"
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env   
+
+  nginx:
+    image: nginx
+    container_name: nginx-zalo
+    ports:
+      - "8080:80"
+      - "443:443"
     volumes:
-      - ./data/zalo:/data/db
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
     restart: always
-  # nginx:
-  #   image: nginx
-  #   container_name: nginx-zalo
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./nginx/conf.d:/etc/nginx/conf.d
-  #     - ./nginx/ssl:/etc/nginx/ssl
-  #   restart: always
+
   redis:
     image: redis
     container_name: redis-cache

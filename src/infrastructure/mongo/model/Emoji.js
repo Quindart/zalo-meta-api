@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const EmojiSchema = new mongoose.Schema({
   createAt: { type: Date, default: Date.now },
   deleteAt: { type: Date },
@@ -8,6 +7,8 @@ const EmojiSchema = new mongoose.Schema({
   quantity: { type: Number, default: 0 },
   updateAt: { type: Date, default: Date.now },
   thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
+  messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
 export default mongoose.model("Emoji", EmojiSchema);

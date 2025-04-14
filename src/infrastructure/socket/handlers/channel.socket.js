@@ -1,6 +1,6 @@
-import { da } from "@faker-js/faker";
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import channelRepository from "../../../domain/repository/Channel.repository.js";
+import messageRepository from "../../../domain/repository/Message.repository.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
 
 class ChannelSocket {
@@ -13,21 +13,11 @@ class ChannelSocket {
     }
 
     registerEvents() {
-        this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN, this.joinChannel.bind(this));
-        this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE, this.leaveChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.FIND_ORCREATE, this.findOrCreateChat.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.FIND_BY_ID, this.findByIdChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL, this.loadChannel.bind(this));
-    }
-
-    joinChannel(channelId) {
-        console.log(`User joined channel: ${channelId}`);
-        this.socket.join(channelId);
-    }
-
-    leaveChannel(channelId) {
-        console.log(`User left channel: ${channelId}`);
-        this.socket.leave(channelId);
+        this.socket.on(SOCKET_EVENTS.CHANNEL.CREATE, this.createChannel.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN_ROOM, this.joinRoom.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -60,7 +50,6 @@ class ChannelSocket {
         const { channelId, currentUserId } = params;
         channelRepository.getChannel(channelId, currentUserId)
             .then((channel) => {
-                console.log("FIND_BY_ID_RESPONSE:", channel);
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.FIND_BY_ID_RESPONSE, {
                     success: true,
                     data: channel,
@@ -76,7 +65,6 @@ class ChannelSocket {
         const { currentUserId } = params;
         channelRepository.getChannels(currentUserId)
             .then((channels) => {
-                console.log("LOAD_CHANNEL_RESPONSE:", channels);
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
                     success: true,
                     data: channels,
@@ -85,6 +73,52 @@ class ChannelSocket {
             })
             .catch((error) => {
                 console.error("Error finding channels:", error);
+            });
+    }
+
+    createChannel(params) {
+        const { name, currentUserId, members } = params;
+        channelRepository.createChannel(name, currentUserId, members)
+            .then((channel) => {
+                const allMembers = [...members, currentUserId];
+                allMembers.forEach((memberId) => {
+                    this.io.to(memberId).emit(SOCKET_EVENTS.CHANNEL.CREATE_RESPONSE, {
+                        success: true,
+                        data: channel,
+                        message: "Channel created successfully",
+                    });
+                });
+                
+            })
+            .catch((error) => {
+                console.error("Error creating channel:", error);
+            });
+    }
+
+    joinRoom(params) {
+        const { channelId, currentUserId } = params;
+        Promise.all([
+            messageRepository.getMessages(channelId),
+            channelRepository.getChannel(channelId, currentUserId)
+        ])
+            .then(([messages, channel]) => {
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_ROOM_RESPONSE, {
+                    success: true,
+                    data: {
+                        channel: channel,
+                        messages: messages
+                    },
+                    message: "Joined room successfully"
+                });
+                this.socket.join(channelId);
+            })
+            .catch((error) => {
+                console.error("Error joining room:", error);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_ROOM_RESPONSE, {
+                    success: false,
+                    message: "Failed to join room",
+                    error: error.message
+                });
             });
     }
 

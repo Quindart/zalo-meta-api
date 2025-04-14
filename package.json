@@ -8,6 +8,7 @@
     "view-chat": "",
     "start": "nodemon server.js",
     "gen-swagger": "node scripts/generate-swagger.js",
+    "docker-zalo":"node tools/start_docker.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "c-key": "node tools/generate_secret_key.js"
   },
@@ -20,7 +21,7 @@
     "@faker-js/faker": "^9.5.0",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",
-    "cloudinary": "^2.6.0",
+    "cloudinary": "^1.30.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",

@@ -3,6 +3,7 @@ import authRouter from "./authen.router.js";
 import swaggerRouter from "./swagger.router.js";
 import mailRouter from "./mail.router.js";
 import channelRouter from "./channel.route.js";
+import friendRouter from "./friend.router.js";
 import ROUTING from "../../constants/Routes.js";
 
 
@@ -20,6 +21,7 @@ function routing(app) {
 
   app.use(ROUTING.MESSAGE, authenticateToken, messageRouter);
   app.use(ROUTING.ME, meRouter);
+  app.use(ROUTING.FRIEND, authenticateToken, friendRouter);
 }
 
 export default routing;

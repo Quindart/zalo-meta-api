@@ -6,11 +6,13 @@ const ChannelSchema = new mongoose.Schema({
     enum: ["personal", "group"],
     default: "personal",
   },   
-  createAt: { type: Date, default: Date.now },
-  deleteAt: { type: Date },
+  createdAt: { type: Date, default: Date.now },
+  deletedAt: { type: Date },
   name: { type: String },
-  updateAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
   avatar: { type: String },
+  description: { type: String },
+  lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
   members: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
