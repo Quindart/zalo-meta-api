@@ -4,7 +4,14 @@ const ROUTING = {
   API: "/api/v1/",
   BY_ID: "/:id",
   SWAGGER: "/api/v1/swagger",
+
+  //TODO: Me 
   ME: '/api/v1/me',
+  MY_ACCEPT_FRIENDS_REQUEST: "/accept-friends",
+  MY_INVITE_FRIENDS_REQUEST: "/invite-friends",
+  MY_FRIENDS_REQUEST: '/friends',
+
+
   // Member of channel
   MEMBER: "/:id/members",
   OUT_CHANNEL: "/:id/out-channel",
@@ -45,7 +52,7 @@ const ROUTING = {
   FRIEND_REQUEST_LIST_SUGGESTED: "/suggested",
   FRIEND_REQUEST_LIST_FRIENDS: "/friends",
   FRIEND_REQUEST_LIST_FRIENDS_ACCEPTED: "/friends/accepted",
-  
+
 
   //*Auth
   AUTHEN: "/api/v1/auth",
