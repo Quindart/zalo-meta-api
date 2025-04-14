@@ -37,6 +37,18 @@ const SOCKET_EVENTS = Object.freeze({
         FRIEND_REQUEST: "notification:friend_request",
         MESSAGE_NEW: "notification:message_new",
     },
+    FRIEND: {
+        ADD_FRIEND: "friend:add",
+        ADD_FRIEND_RESPONSE: "friend:addResponse",
+        REMOVE_FRIEND: "friend:remove",
+        REMOVE_FRIEND_RESPONSE: "friend:removeResponse",
+        ACCEPT_FRIEND: "friend:accept",
+        ACCEPT_FRIEND_RESPONSE: "friend:acceptResponse",
+        REJECT_FRIEND: "friend:reject",
+        REJECT_FRIEND_RESPONSE: "friend:rejectResponse",
+        LIST_FRIEND: "friend:list",
+        LIST_FRIEND_RESPONSE: "friend:listResponse",
+    },
 });
 
 export default SOCKET_EVENTS;

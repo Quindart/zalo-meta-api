@@ -233,10 +233,10 @@ class ChannelRepository {
 
   async updateUserChannels(channel) {
     if (!channel) return;
-    
+
     const memberIds = channel.members.map(member => member.user);
-    
-    const updatePromises = memberIds.map(memberId => 
+
+    const updatePromises = memberIds.map(memberId =>
       User.findByIdAndUpdate(
         memberId,
         {
@@ -246,7 +246,7 @@ class ChannelRepository {
         { new: true }
       )
     );
-    
+
     await Promise.all(updatePromises);
   }
 
@@ -265,16 +265,16 @@ class ChannelRepository {
     if (members.length >= 2) {
       return [
         { user: creatorId, role: ROLE_TYPES.CAPTAIN },
-        ...members.map(memberId => ({ 
-          user: memberId, 
-          role: ROLE_TYPES.MEMBER 
+        ...members.map(memberId => ({
+          user: memberId,
+          role: ROLE_TYPES.MEMBER
         }))
       ];
     }
-    
-    return members.map(memberId => ({ 
-      user: memberId, 
-      role: ROLE_TYPES.MEMBER 
+
+    return members.map(memberId => ({
+      user: memberId,
+      role: ROLE_TYPES.MEMBER
     }));
   }
 
@@ -283,7 +283,7 @@ class ChannelRepository {
       new mongoose.Types.ObjectId(memberRequestId),
       new mongoose.Types.ObjectId(userCreateId)
     ];
-    
+
     let channel = await Channel.findOne({
       type: typeChannel,
       members: {
@@ -323,21 +323,21 @@ class ChannelRepository {
         throw new Error("Channel not found");
       }
 
-      const otherMembers = this._getOtherMembersInfo(channel, currentUserId);
-      
-      // For personal channels, use the other person's details
-      const displayName = channel.type === 'personal' && otherMembers.length > 0
-        ? `${otherMembers[0].lastName} ${otherMembers[0].firstName}`
-        : channel.name;
-        
-      const displayAvatar = channel.type === 'personal' && otherMembers.length > 0
-        ? otherMembers[0].avatar
-        : channel.avatar;
+      let name = channel.name;
+      let avatar = channel.avatar;
+      if (channel.type === 'personal') {
+        const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
+
+        if (otherMember) {
+          name = `${otherMember.lastName} ${otherMember.firstName}`;
+          avatar = otherMember.avatar;
+        }
+      }
 
       return {
         id: channel._id.toString(),
-        name: displayName,
-        avatar: displayAvatar,
+        name: name,
+        avatar: avatar,
         type: channel.type,
         members: channel.members.map(member => ({
           userId: member.user._id.toString(),
@@ -432,16 +432,16 @@ class ChannelRepository {
           },
         },
       ]).exec();
-      
+
       console.log('channels', channels)
 
       return channels.map(channel => {
         let name = channel.name;
         let avatar = channel.avatar;
-        
+
         if (channel.type === 'personal') {
           const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
-          
+
           if (otherMember) {
             name = `${otherMember.lastName} ${otherMember.firstName}`;
             avatar = otherMember.avatar;
@@ -470,8 +470,8 @@ class ChannelRepository {
   _getOtherMembersInfo(channel, currentUserId) {
     return channel.members
       .filter(member => {
-        const memberId = typeof member.user === 'object' 
-          ? member.user._id.toString() 
+        const memberId = typeof member.user === 'object'
+          ? member.user._id.toString()
           : member.user.toString();
         return memberId !== currentUserId;
       })
