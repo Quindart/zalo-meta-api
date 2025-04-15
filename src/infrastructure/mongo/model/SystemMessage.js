@@ -13,7 +13,8 @@ const SystemMessageSchema = new mongoose.Schema({
       'pinned_message',
       'unpinned_message',
       'group_icon_updated',
-      'announcement'
+      'announcement',
+      'group_dissolved'
     ],
     required: true
   },

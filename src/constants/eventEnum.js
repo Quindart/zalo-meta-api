@@ -34,6 +34,8 @@ const SOCKET_EVENTS = Object.freeze({
         JOIN_ROOM_RESPONSE: "joinRoomResponse",
         LEAVE_ROOM: "leaveRoom",
         LEAVE_ROOM_RESPONSE: "leaveRoomResponse",
+        DISSOLVE_GROUP: "channel:dissolveGroup",
+        DISSOLVE_GROUP_RESPONSE: "channel:dissolveGroupResponse",
     },
     NOTIFICATION: {
         FRIEND_REQUEST: "notification:friend_request",

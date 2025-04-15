@@ -19,6 +19,7 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.CREATE, this.createChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN_ROOM, this.joinRoom.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM, this.leaveRoom.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP, this.dissolveGroup.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -161,6 +162,43 @@ class ChannelSocket {
                     error: error.message
                 });
             });
+    }
+
+
+    async dissolveGroup(params) {
+        const { channelId, userId } = params;
+        try {
+            const result = await channelRepository.dissolveGroup(channelId, userId);
+            const messageResponse = {
+                content: result.data.content,
+                sender: result.data.sender,
+                members: result.data.members,
+                channelId: result.data.channelId,
+                status: result.data.status,
+                timestamp: result.data.timestamp,
+                isMe: result.data.isMe,
+                messageType: result.data.messageType,
+            };
+            result.data.members.forEach((member) => {
+                if (member.userId.toString() !== userId) {
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                }
+            })
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
+                success: true,
+                message: "Group dissolved successfully",
+                data: {
+                    id: channelId,
+                }
+            });
+        } catch (error) {
+            console.error("Error dissolving group:", error);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
+                success: false,
+                message: "Failed to dissolve group",
+                error: error.message
+            });
+        }
     }
 
 }
