@@ -61,19 +61,23 @@ class ChannelSocket {
             });
     }
 
-    loadChannel(params) {
+    async loadChannel(params) {
         const { currentUserId } = params;
-        channelRepository.getChannels(currentUserId)
-            .then((channels) => {
-                this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
-                    success: true,
-                    data: channels,
-                    message: "Channels found successfully",
-                });
-            })
-            .catch((error) => {
-                console.error("Error finding channels:", error);
+        try {
+            const channels = await channelRepository.getChannels(currentUserId);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
+                success: true,
+                data: channels,
+                message: "Channels found successfully",
             });
+        } catch (error) {
+            console.error("Error finding channels:", error);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
+                success: false,
+                message: "Failed to load channels",
+                error: error.message
+            });
+        }
     }
 
     createChannel(params) {
@@ -88,7 +92,7 @@ class ChannelSocket {
                         message: "Channel created successfully",
                     });
                 });
-                
+
             })
             .catch((error) => {
                 console.error("Error creating channel:", error);

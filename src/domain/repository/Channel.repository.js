@@ -433,7 +433,7 @@ class ChannelRepository {
         },
       ]).exec();
 
-      console.log('channels', channels)
+      // console.log('channels', channels)
 
       return channels.map(channel => {
         let name = channel.name;
