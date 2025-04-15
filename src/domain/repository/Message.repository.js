@@ -23,6 +23,7 @@ class MessageRepository {
         const messagesFormat = messages.map((message) => {
             return {
                 ...message,
+                id: message._id,
                 sender: {
                     id: message.senderId._id,
                     name: message.senderId.lastName + " " + message.senderId.firstName,
@@ -32,6 +33,7 @@ class MessageRepository {
                 status: "send",
                 timestamp: message.createdAt,
                 isMe: true,
+                messageType: message.messageType,
             };
         });
 
