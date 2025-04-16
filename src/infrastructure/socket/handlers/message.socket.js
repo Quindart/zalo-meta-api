@@ -2,8 +2,10 @@ import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import channelRepository from "../../../domain/repository/Channel.repository.js";
 import messageRepository from "../../../domain/repository/Message.repository.js";
 import Message from "../../mongo/model/Message.js";
-import Channel from "../../mongo/model/Channel.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
+import File from "../../mongo/model/File.js";
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
 
 class MessageSocket {
     userRepo
@@ -17,6 +19,7 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.READ, this.readMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.LOAD, this.loadMessage.bind(this));
+        this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
     }
     async sendMessage(data) {
         const channel = await channelRepository.getChannel(data.channelId);
@@ -35,6 +38,7 @@ class MessageSocket {
         await channelRepository.updateLastMessage(channel.id, newMessage._id);
 
         const messageResponse = {
+            id: newMessage._id,
             content: data.content,
             sender: {
                 id: sender._id,
@@ -47,7 +51,15 @@ class MessageSocket {
             timestamp: new Date(),
             isMe: true,
         };
-        this.io.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== data.senderId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+            }
+        });
+
+
     }
 
     async readMessage(data) {
@@ -74,6 +86,122 @@ class MessageSocket {
                 success: false,
                 data: [],
                 message: "Failed to load messages",
+            });
+        }
+    }
+
+    async uploadFile(data) {
+        const { channelId, senderId, fileName, fileData, timestamp } = data;
+        try {
+            const channel = await channelRepository.getChannel(channelId);
+            if (!channel) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
+                    success: false,
+                    message: "Channel not found",
+                });
+                return;
+            }
+
+            const sender = await this.userRepo.findOne(senderId);
+            if (!sender) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
+                    success: false,
+                    message: "Sender not found",
+                });
+                return;
+            }
+
+            // Tải file lên Cloudinary
+            const uploadResult = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        resource_type: "auto", // Let Cloudinary auto-detect the resource type
+                        folder: "zalo-meta-storage",
+                        public_id: `file_${Date.now()}_${fileName.replace(/[^a-zA-Z0-9.]/g, '_')}`, // Sanitize filename
+                        transformation: [{ quality: "auto:good", fetch_format: "auto" }],
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                streamifier.createReadStream(Buffer.from(fileData)).pipe(stream);
+            });
+            if (!uploadResult || uploadResult.error) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
+                    success: false,
+                    message: "File upload failed",
+                });
+                return;
+            }
+
+            const fileExtension = fileName.split('.').pop() || '';
+            const fileNameWithoutExtension = fileName.split('.').slice(0, -1).join('.') || fileName;
+            const file = new File({
+                filename: fileNameWithoutExtension,
+                path: uploadResult.secure_url,
+                size: uploadResult.bytes,
+                thread: channelId,
+                extension: fileExtension,
+            });
+
+            const newMessage = new Message({
+                content: fileName,
+                senderId: data.senderId,
+                channelId: channel.id,
+                status: "send",
+                timestamp: new Date(),
+                fileId: file._id,
+                messageType: "file",
+            });
+           
+            await file.save();
+            await newMessage.save();
+            await channelRepository.updateLastMessage(channelId, newMessage._id);
+
+            const messageResponse = {
+                id: newMessage._id,
+                content: fileName,
+                sender: {
+                    id: sender._id,
+                    name: sender.lastName + " " + sender.firstName,
+                    avatar: sender.avatar,
+                },
+                messageType:newMessage.messageType,
+                file: {
+                    id: file._id,
+                    filename: file.filename,
+                    size: file.size,
+                    path: file.path,
+                    extension: file.extension,
+                },
+                members: channel.members,
+                channelId: channel.id,
+                status: "send",
+                timestamp: new Date(),
+                isMe: true,
+            };
+
+            console.log("File uploaded successfully:", messageResponse);
+
+            this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
+                success: true,
+                message: "File uploaded successfully",
+                data: {
+                    message: messageResponse,
+                },
+            });
+
+            channel.members.forEach((member) => {
+                if (member.userId.toString() !== data.senderId) {
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                }
+            });
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
+                success: false,
+                message: "File upload failed",
             });
         }
     }

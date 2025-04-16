@@ -18,6 +18,8 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL, this.loadChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.CREATE, this.createChannel.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN_ROOM, this.joinRoom.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM, this.leaveRoom.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP, this.dissolveGroup.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -64,11 +66,17 @@ class ChannelSocket {
     async loadChannel(params) {
         const { currentUserId } = params;
         try {
-            const channels = await channelRepository.getChannels(currentUserId);
-            this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
-                success: true,
-                data: channels,
-                message: "Channels found successfully",
+        console.log("Loading channels for user:", currentUserId);
+        channelRepository.getChannels(currentUserId)
+            .then((channels) => {
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
+                    success: true,
+                    data: channels,
+                    message: "Channels found successfully",
+                });
+            })
+            .catch((error) => {
+                console.error("Error finding channels:", error);
             });
         } catch (error) {
             console.error("Error finding channels:", error);
@@ -124,6 +132,82 @@ class ChannelSocket {
                     error: error.message
                 });
             });
+    }
+
+    leaveRoom(params) {
+        const { channelId, userId } = params;
+        this.socket.leave(channelId);
+        channelRepository.leaveChannel(channelId, userId)
+            .then((result) => {
+                const messageResponse = {
+                    content: result.data.content,
+                    sender: result.data.sender,
+                    members: result.data.members,
+                    channelId: result.data.channelId,
+                    status: result.data.status,
+                    timestamp: result.data.timestamp,
+                    isMe: result.data.isMe,
+                    messageType: result.data.messageType,
+                };
+                result.data.members.forEach((member) => {
+                    if (member.userId.toString() !== userId) {
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                    }
+                })
+
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM_RESPONSE, {
+                    success: true,
+                    message: "Left room successfully",
+                    data: {
+                        id: channelId,
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Error leaving room:", error);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM_RESPONSE, {
+                    success: false,
+                    message: "Failed to leave room",
+                    error: error.message
+                });
+            });
+    }
+
+
+    async dissolveGroup(params) {
+        const { channelId, userId } = params;
+        try {
+            const result = await channelRepository.dissolveGroup(channelId, userId);
+            const messageResponse = {
+                content: result.data.content,
+                sender: result.data.sender,
+                members: result.data.members,
+                channelId: result.data.channelId,
+                status: result.data.status,
+                timestamp: result.data.timestamp,
+                isMe: result.data.isMe,
+                messageType: result.data.messageType,
+            };
+            result.data.members.forEach((member) => {
+                if (member.userId.toString() !== userId) {
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                }
+            })
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
+                success: true,
+                message: "Group dissolved successfully",
+                data: {
+                    id: channelId,
+                }
+            });
+        } catch (error) {
+            console.error("Error dissolving group:", error);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
+                success: false,
+                message: "Failed to dissolve group",
+                error: error.message
+            });
+        }
     }
 
 }
