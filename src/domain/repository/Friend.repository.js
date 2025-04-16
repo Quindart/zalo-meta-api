@@ -30,12 +30,10 @@ class FriendRepository {
       $or: [{ user: userId }, { friend: userId }],
       status: type
     })
-      .populate('user', 'firstName lastName email avatar')
-      .populate('friend', 'firstName lastName email avatar')
+      .populate('user', 'firstName lastName  avatar phone')
+      .populate('friend', 'firstName lastName  avatar phone')
       .select('user friend status')
       .lean();
-
-    console.log("💲💲💲 ~ FriendRepository ~ getFriendByUserIdByType ~ friends:", friends)
 
     return friends.map(friend => {
       const isUser = friend.user._id.toString() === userId.toString();
@@ -45,15 +43,45 @@ class FriendRepository {
         id: friendData._id,
         name: `${friendData.lastName} ${friendData.firstName}`,
         avatar: friendData.avatar,
-        email: friendData.email
+        phone: friendData.phone
       };
     });
   }
+  // lấy danh sách lời mời kết bạn của tôi
+  async getInviteOfUser(userId) {
+    const invites = await Friend.find({
+      friend: userId,
+      status: 'PENDING'
+    })
+      .populate('user', 'firstName lastName  avatar phone')
+      .populate('friend', 'firstName lastName  avatar phone')
+      .select('user friend status')
+      .lean();
+
+    //Xác định người gửi
+    const users = this._defineSender(invites, userId);
+    return users
+  }
+
+  // lấy danh sách lời mời kết bạn mà tôi đã gửi
+  async getInviteOfUserSending(userId) {
+    const invites = await Friend.find({
+      user: userId,
+      status: 'PENDING'
+    })
+      .populate('user', 'firstName lastName  avatar phone')
+      .populate('friend', 'firstName lastName  avatar phone')
+      .select('user friend status')
+      .lean();
+    const reciveders = this._defineReciveders(invites);
+    return reciveders
+  }
+
   async getById(userId) {
     const friend = await Friend.findOne({
       $or: [{ user: userId }, { friend: userId }],
       status: type
-    }).populate('user', 'name email')
+    }).populate('user', 'name phone')
     return friend;
   }
 
@@ -68,8 +96,29 @@ class FriendRepository {
       throw new Error('Friend not found');
     }
     friend.status = type;
-    console.log("💲💲💲 ~ FriendRepository ~ updateFriendStatus ~ friend:", friend)
     return await friend.save();
+  }
+
+  _defineSender(usersOfFriendData) {
+    return usersOfFriendData.map(item => {
+      return {
+        id: item.user._id,
+        name: `${item.user.lastName} ${item.user.firstName}`,
+        avatar: item.user.avatar,
+        phone: item.user.phone
+      };
+    });
+  }
+  
+  _defineReciveders(usersOfFriendData) {
+    return usersOfFriendData.map(item => {
+      return {
+        id: item.friend._id,
+        name: `${item.friend.lastName} ${item.friend.firstName}`,
+        avatar: item.friend.avatar,
+        phone: item.friend.phone
+      };
+    });
   }
 }
 

@@ -46,8 +46,15 @@ const SOCKET_EVENTS = Object.freeze({
         ACCEPT_FRIEND_RESPONSE: "friend:acceptResponse",
         REJECT_FRIEND: "friend:reject",
         REJECT_FRIEND_RESPONSE: "friend:rejectResponse",
+
         LIST_FRIEND: "friend:list",
         LIST_FRIEND_RESPONSE: "friend:listResponse",
+
+        LIST_SEND_INVITE: "friend:listSendInvite",
+        LIST_SEND_INVITE_RESPONSE: "friend:listSendInvite",
+
+        LIST_RECEIVED_INVITE: "friend:listReceviedInvite",
+        LIST_RECEIVED_INVITE_RESPONSE: "friend:listReceviedInviteResponse",
     },
     EMOJI: {
         LOAD_EMOJIS_OF_MESSAGE: "emoji:loadEmojis",

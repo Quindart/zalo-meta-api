@@ -17,6 +17,8 @@ router.delete(ROUTING.INDEX, authenticateToken, friendController.rejectAcceptFri
 
 //TODO: INVITE FRIEND
 router.get(ROUTING.MY_INVITE_FRIENDS_REQUEST, authenticateToken, friendController.getMyInviteFriends);
+router.get(ROUTING.MY_INVITED_SENDING_REQUEST, authenticateToken, friendController.getMyInvitedSending);
+router.post(ROUTING.ALL_INVITED_REQUEST, authenticateToken, friendController.inviteFriend);
 router.post(ROUTING.MY_INVITE_FRIENDS_REQUEST, authenticateToken, friendController.inviteFriend);
 router.delete(ROUTING.MY_INVITE_FRIENDS_REQUEST, authenticateToken, friendController.removeIniviteFriend);
 

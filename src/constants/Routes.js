@@ -9,6 +9,8 @@ const ROUTING = {
   ME: '/api/v1/me',
   MY_ACCEPT_FRIENDS_REQUEST: "/accept-friends",
   MY_INVITE_FRIENDS_REQUEST: "/invite-friends",
+  MY_INVITED_SENDING_REQUEST: "/my-invited-sending",
+  ALL_INVITED_REQUEST: "/all-invite",
   MY_FRIENDS_REQUEST: '/friends',
 
 
