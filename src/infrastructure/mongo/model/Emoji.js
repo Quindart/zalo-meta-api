@@ -6,7 +6,7 @@ const EmojiSchema = new mongoose.Schema({
   id: { type: String, unique: true },
   quantity: { type: Number, default: 0 },
   updateAt: { type: Date, default: Date.now },
-  thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
+  // thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
   messageId: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
