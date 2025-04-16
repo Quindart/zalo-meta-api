@@ -13,11 +13,12 @@ class MessageRepository {
         return message;
     }
 
-    async getMessages(channelId) {
+    async getMessages(channelId, offset) {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
+            .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
             .lean();
 
