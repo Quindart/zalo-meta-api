@@ -56,8 +56,8 @@ class FriendRepository {
       $or: [{ user: userId }, { friend: userId }],
       status: type
     })
-      .populate('user', 'firstName lastName email avatar')
-      .populate('friend', 'firstName lastName email avatar')
+      .populate('user', 'firstName lastName email avatar phone')
+      .populate('friend', 'firstName lastName email avatar phone')
       .select('user friend status')
       .lean();
 
@@ -71,7 +71,8 @@ class FriendRepository {
         id: friendData._id,
         name: `${friendData.lastName} ${friendData.firstName}`,
         avatar: friendData.avatar,
-        email: friendData.email
+        email: friendData.email,
+        phone: friendData.phone,
       };
     });
   }

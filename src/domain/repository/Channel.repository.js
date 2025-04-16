@@ -4,6 +4,7 @@ import Message from '../../infrastructure/mongo/model/Message.js';
 import SystemMessage from '../../infrastructure/mongo/model/SystemMessage.js';
 import mongoose from 'mongoose';
 import { content } from 'googleapis/build/src/apis/content/index.js';
+import { is } from 'useragent';
 
 const ROLE_TYPES = {
   CAPTAIN: 'captain',
@@ -181,6 +182,7 @@ class ChannelRepository {
           role: member.role
         })),
         createdAt: channel.createdAt,
+        isDeleted: channel.isDeleted,
       };
     } catch (error) {
       console.error("Error in getChannel:", error);
@@ -195,7 +197,7 @@ class ChannelRepository {
           $match: {
             "members.user": new mongoose.Types.ObjectId(currentUserId),
             "$and": [
-              { deletedAt: null },
+              // { deletedAt: null },
               { lastMessage: { $ne: null } }
             ]
           },
@@ -293,6 +295,7 @@ class ChannelRepository {
           })),
           time: channel.lastMessage.createdAt,
           message: channel.lastMessage.content,
+          isDeleted: channel.isDeleted,
         };
       })
     } catch (error) {
@@ -306,39 +309,39 @@ class ChannelRepository {
       if (!channelId || !userId) {
         throw new Error('Channel ID and User ID are required');
       }
-  
+
       const channelObjectId = new mongoose.Types.ObjectId(channelId);
       const userObjectId = new mongoose.Types.ObjectId(userId);
-      
+
       const channel = await Channel.findById(channelObjectId);
       if (!channel) {
         throw new Error('Channel not found');
       }
-      
+
       const memberIndex = channel.members.findIndex(
         member => member.user.toString() === userObjectId.toString()
       );
-      
+
       if (memberIndex === -1) {
         throw new Error('User is not a member of this channel');
       }
-      
+
       const userRole = channel.members[memberIndex].role;
 
       const user = await User.findById(userObjectId);
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       if (channel.type === 'personal') {
         channel.deletedAt = new Date();
         await channel.save();
       } else {
         channel.members.splice(memberIndex, 1);
-        
+
         if (channel.members.length === 0) {
           channel.deletedAt = new Date();
-        } 
+        }
         else if (userRole === ROLE_TYPES.CAPTAIN && channel.members.length > 0) {
           channel.members[0].role = ROLE_TYPES.CAPTAIN;
         }
@@ -346,7 +349,7 @@ class ChannelRepository {
         const systemMessage = new SystemMessage({
           actionType: "member_removed",
         });
-        
+
         const leaveMessage = new Message({
           senderId: userObjectId,
           content: `${user.firstName} ${user.lastName} has left the channel`,
@@ -362,16 +365,16 @@ class ChannelRepository {
         await systemMessage.save();
         await channel.save();
       }
-      
+
       await User.findByIdAndUpdate(
         userObjectId,
         { $pull: { channels: channelObjectId } }
       );
-      
+
       return {
         success: true,
         message: 'Successfully left the channel',
-        data:{
+        data: {
           messageType: MEMBER_TYPES.SYSTEM,
           content: `${user.lastName} ${user.firstName} has left the channel`,
           sender: {
@@ -391,6 +394,88 @@ class ChannelRepository {
       };
     } catch (error) {
       console.error('Error in leaveChannel:', error);
+      throw error;
+    }
+  }
+
+  async dissolveGroup(channelId, userId) {
+    try {
+      if (!channelId || !userId) {
+        throw new Error('Channel ID and User ID are required');
+      }
+
+      const channelObjectId = new mongoose.Types.ObjectId(channelId);
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+
+      const user = await User.findById(userObjectId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+     
+      // Check if the user is the captain of the channel
+      const channel = await Channel.findById(channelObjectId);
+      if (!channel) {
+        throw new Error('Channel not found');
+      }
+
+      const memberIndex = channel.members.findIndex(
+        member => member.user.toString() === userObjectId.toString()
+      );
+
+      const member = channel.members.find(member => member.user.toString() === userObjectId.toString());
+      if (!member || member.role !== ROLE_TYPES.CAPTAIN) {
+        throw new Error('Only the captain can dissolve the group');
+      }
+
+      const systemMessage = new SystemMessage({
+        actionType: "group_dissolved",
+      });
+
+      const dissolveMessage = new Message({
+        senderId: userObjectId,
+        content: `Trưởng nhóm ${user.lastName} ${user.firstName} đã giải tán nhóm`,
+        status: "system",
+        channelId: channelObjectId,
+        messageType: MEMBER_TYPES.SYSTEM,
+        systemMessageId: systemMessage._id,
+      });
+      systemMessage.messageId = dissolveMessage._id;
+      channel.lastMessage = dissolveMessage._id;
+      channel.deletedAt = new Date();
+      channel.isDeleted = true;
+      channel.members.splice(memberIndex, 1);
+      await systemMessage.save();
+      await dissolveMessage.save();
+      await channel.save();
+
+      await User.findByIdAndUpdate(
+        userObjectId,
+        { $pull: { channels: channelObjectId } }
+      );
+
+      return {
+        success: true,
+        message: 'Group dissolved successfully',
+        data:{
+          messageType: MEMBER_TYPES.SYSTEM,
+          content: dissolveMessage.content,
+          sender: {
+            id: userObjectId,
+            name: `${user.lastName} ${user.firstName}`,
+            avatar: user.avatar,
+          },
+          members: channel.members.map(member => ({
+            userId: member.user._id.toString(),
+            role: member.role
+          })),
+          channelId: channelObjectId,
+          status: "send",
+          timestamp: new Date(),
+          isMe: true,
+        }
+      };
+    } catch (error) {
+      console.error('Error in dissolveGroup:', error);
       throw error;
     }
   }

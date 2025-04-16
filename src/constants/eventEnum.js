@@ -34,6 +34,8 @@ const SOCKET_EVENTS = Object.freeze({
         JOIN_ROOM_RESPONSE: "joinRoomResponse",
         LEAVE_ROOM: "leaveRoom",
         LEAVE_ROOM_RESPONSE: "leaveRoomResponse",
+        DISSOLVE_GROUP: "channel:dissolveGroup",
+        DISSOLVE_GROUP_RESPONSE: "channel:dissolveGroupResponse",
     },
     NOTIFICATION: {
         FRIEND_REQUEST: "notification:friend_request",
@@ -55,7 +57,11 @@ const SOCKET_EVENTS = Object.freeze({
         LOAD_EMOJIS_OF_MESSAGE: "emoji:loadEmojis",
         INTERACT_EMOJI: "emoji:interactEmoji",
         REMOVE_MY_EMOJI: "emoji:removeMyEmoji"
-    }
+    },
+    FILE: {
+        UPLOAD: "file:upload",
+        UPLOAD_RESPONSE: "file:uploadResponse",
+    },
 });
 
 export default SOCKET_EVENTS;
