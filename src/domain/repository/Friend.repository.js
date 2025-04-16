@@ -3,6 +3,32 @@ import Friend from '../../infrastructure/mongo/model/Friend.js';
 
 class FriendRepository {
 
+  async getFriendByUserId(userId) {
+    const friends = await Friend.find({
+      $or: [{ user: userId }, { friend: userId }],
+      status: 'ACCEPTED'
+    })
+      .populate('user', 'firstName lastName email avatar')
+      .populate('friend', 'firstName lastName email avatar')
+      .lean();
+
+
+    const validFriends = friends.filter(item =>
+      item.user && item.friend
+    );
+
+    return validFriends.map(friend => {
+      const isUser = friend.user._id.toString() === userId.toString();
+      const friendData = isUser ? friend.friend : friend.user;
+
+      return {
+        id: friendData._id,
+        name: `${friendData.lastName} ${friendData.firstName}`,
+        avatar: friendData.avatar,
+        email: friendData.email
+      };
+    });
+  }
   async createFriend(userId, userFriendId) {
     const friend = new Friend({ user: userId, friend: userFriendId, status: 'PENDING' });
     return await friend.save()
@@ -30,8 +56,8 @@ class FriendRepository {
       $or: [{ user: userId }, { friend: userId }],
       status: type
     })
-      .populate('user', 'firstName lastName  avatar phone')
-      .populate('friend', 'firstName lastName  avatar phone')
+      .populate('user', 'firstName lastName email avatar phone')
+      .populate('friend', 'firstName lastName email avatar phone')
       .select('user friend status')
       .lean();
 
@@ -43,7 +69,8 @@ class FriendRepository {
         id: friendData._id,
         name: `${friendData.lastName} ${friendData.firstName}`,
         avatar: friendData.avatar,
-        phone: friendData.phone
+        email: friendData.email,
+        phone: friendData.phone,
       };
     });
   }
@@ -98,7 +125,6 @@ class FriendRepository {
     friend.status = type;
     return await friend.save();
   }
-
   _defineSender(usersOfFriendData) {
     return usersOfFriendData.map(item => {
       return {
@@ -109,7 +135,7 @@ class FriendRepository {
       };
     });
   }
-  
+
   _defineReciveders(usersOfFriendData) {
     return usersOfFriendData.map(item => {
       return {
