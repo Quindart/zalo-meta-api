@@ -29,6 +29,7 @@ class FriendRepository {
       };
     });
   }
+  
   async createFriend(userId, userFriendId) {
     const friend = new Friend({ user: userId, friend: userFriendId, status: 'PENDING' });
     return await friend.save()
