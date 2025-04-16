@@ -70,18 +70,23 @@ class MessageSocket {
         this.io.to(data.senderId).emit(SOCKET_EVENTS.MESSAGE.READ, messageUpdate);
     }
 
-    loadMessage(channelId) {
-        messageRepository.getMessages(channelId)
-            .then((messages) => {
-                this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
-                    success: true,
-                    data: messages,
-                    message: "Messages loaded successfully",
-                });
-            })
-            .catch((error) => {
-                console.error("Error loading messages:", error);
+    async loadMessage(params) {
+        try {
+            const { channelId } = params;
+            const messages = await messageRepository.getMessages(channelId);
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
+                success: true,
+                data: messages,
+                message: "Messages loaded successfully",
             });
+        } catch (error) {
+            console.error("Error loading messages:", error);
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
+                success: false,
+                data: [],
+                message: "Failed to load messages",
+            });
+        }
     }
 
     async uploadFile(data) {

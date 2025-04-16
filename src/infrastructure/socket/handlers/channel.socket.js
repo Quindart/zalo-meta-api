@@ -63,8 +63,9 @@ class ChannelSocket {
             });
     }
 
-    loadChannel(params) {
+    async loadChannel(params) {
         const { currentUserId } = params;
+        try {
         console.log("Loading channels for user:", currentUserId);
         channelRepository.getChannels(currentUserId)
             .then((channels) => {
@@ -77,6 +78,14 @@ class ChannelSocket {
             .catch((error) => {
                 console.error("Error finding channels:", error);
             });
+        } catch (error) {
+            console.error("Error finding channels:", error);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
+                success: false,
+                message: "Failed to load channels",
+                error: error.message
+            });
+        }
     }
 
     createChannel(params) {

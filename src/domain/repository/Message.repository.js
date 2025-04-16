@@ -14,12 +14,12 @@ class MessageRepository {
     }
 
     async getMessages(channelId) {
-        const messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
-        .populate('senderId', 'firstName lastName avatar')
-        .populate('fileId', 'filename path size extension')
-        .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
-        .limit(10) // Giới hạn 10 tin nhắn
-        .lean();
+        channelId = new mongoose.Types.ObjectId(channelId);
+        const messages = await Message.find({ channelId: channelId })
+            .populate('senderId', 'firstName lastName avatar')
+            .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
+            .limit(10) // Giới hạn 10 tin nhắn
+            .lean();
 
         const messagesFormat = messages.map((message) => {
 
@@ -51,6 +51,7 @@ class MessageRepository {
         });
 
         messagesFormat.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        console.log("check message from repo: ", messagesFormat);
 
         return messagesFormat;
     }

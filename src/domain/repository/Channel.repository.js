@@ -271,7 +271,6 @@ class ChannelRepository {
           },
         },
       ]).exec();
-
       return channels.map(channel => {
         let name = channel.name;
         let avatar = channel.avatar;
