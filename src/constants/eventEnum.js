@@ -14,6 +14,10 @@ const SOCKET_EVENTS = Object.freeze({
         ERROR: "message:error",
         LOAD: "message:load",
         LOAD_RESPONSE: "message:loadResponse",
+        RECALL: "message:recall",
+        RECALL_RESPONSE: "message:recallResponse",
+        DELETE: "message:delete",
+        DELETE_RESPONSE: "message:deleteResponse",
     },
     USER: {
         ONLINE: "user:online",

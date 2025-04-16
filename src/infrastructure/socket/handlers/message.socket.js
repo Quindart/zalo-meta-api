@@ -19,8 +19,11 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.READ, this.readMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.LOAD, this.loadMessage.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
     }
+
     async sendMessage(data) {
         const channel = await channelRepository.getChannel(data.channelId);
         const sender = await this.userRepo.findOne(data.senderId);
@@ -73,7 +76,6 @@ class MessageSocket {
     async loadMessage(params) {
         try {
             const { channelId, offset } = params;
-            console.log("check params load message: ", params);
             const messages = await messageRepository.getMessages(channelId, offset);
             this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
                 success: true,
@@ -154,7 +156,7 @@ class MessageSocket {
                 fileId: file._id,
                 messageType: "file",
             });
-           
+
             await file.save();
             await newMessage.save();
             await channelRepository.updateLastMessage(channelId, newMessage._id);
@@ -167,7 +169,7 @@ class MessageSocket {
                     name: sender.lastName + " " + sender.firstName,
                     avatar: sender.avatar,
                 },
-                messageType:newMessage.messageType,
+                messageType: newMessage.messageType,
                 file: {
                     id: file._id,
                     filename: file.filename,
@@ -205,6 +207,30 @@ class MessageSocket {
             });
         }
     }
+
+    //TODO: Xoa tin nhan
+    async recallMessage(data) {
+        const { senderId, messageId } = data
+        await messageRepository.recallMessage(senderId, messageId);
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.RECALL_RESPONSE, {
+            success: true,
+            data: {
+                messageId,
+            },
+        });
+    }
+    //TODO: thu hoi tin nhan
+    async deleteMessage(data) {
+        const { senderId, messageId } = data
+        await messageRepository.deleteMessage(senderId, messageId);
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
+            success: true,
+            data: {
+                messageId,
+            },
+        });
+    }
+
 }
 
 export default MessageSocket
