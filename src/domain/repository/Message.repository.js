@@ -22,17 +22,31 @@ class MessageRepository {
             .lean();
 
         const messagesFormat = messages.map((message) => {
+
+            let file = null;
+            if (message.messageType === "file") {
+                file = {
+                    id: message.fileId._id,
+                    filename: message.fileId.filename,
+                    path: message.fileId.path,
+                    size: message.fileId.size,
+                    extension: message.fileId.extension,
+                };
+            }
             return {
-                ...message,
+                id: message._id,
                 sender: {
                     id: message.senderId._id,
                     name: message.senderId.lastName + " " + message.senderId.firstName,
                     avatar: message.senderId.avatar,
                 },
+                file: file,
                 channelId: message.channelId,
                 status: "send",
                 timestamp: message.createdAt,
                 isMe: true,
+                messageType: message.messageType,
+                content: message.content,
             };
         });
 

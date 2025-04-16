@@ -88,6 +88,7 @@ class UserController {
           phone: user.phone,
           email: user.email,
           avatar: user.avatar,
+          dateOfBirth: user.dateOfBirth,
         },
       });
     } catch (error) {

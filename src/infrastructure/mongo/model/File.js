@@ -8,6 +8,7 @@ const FileSchema = new mongoose.Schema({
   size: { type: String },
   updateAt: { type: Date, default: Date.now },
   thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
+  extension: { type: String },
 });
 
 export default mongoose.model("File", FileSchema);
