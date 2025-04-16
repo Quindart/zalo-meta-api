@@ -60,8 +60,9 @@ class MessageSocket {
 
     async loadMessage(params) {
         try {
-            const { channelId } = params;
-            const messages = await messageRepository.getMessages(channelId);
+            const { channelId, offset } = params;
+            console.log("check params load message: ", params);
+            const messages = await messageRepository.getMessages(channelId, offset);
             this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
                 success: true,
                 data: messages,
