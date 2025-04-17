@@ -35,6 +35,7 @@ class MessageRepository {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
+            .populate('emojis')
             .populate('fileId', 'filename path size extension')
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
@@ -59,6 +60,7 @@ class MessageRepository {
                     name: message.senderId.lastName + " " + message.senderId.firstName,
                     avatar: message.senderId.avatar,
                 },
+                emojis: message.emojis ? message.emojis : [],
                 file: file,
                 channelId: message.channelId,
                 status: "send",
