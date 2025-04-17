@@ -221,8 +221,19 @@ class MessageSocket {
     }
     //TODO: thu hoi tin nhan
     async deleteMessage(data) {
-        const { senderId, messageId } = data
+        const { senderId, messageId, channelId } = data
         await messageRepository.deleteMessage(senderId, messageId);
+        const channel = await channelRepository.getChannel(channelId);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== senderId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
+                    success: true,
+                    data: {
+                        messageId,
+                    },
+                });
+            }
+        });
         this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
             success: true,
             data: {
