@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "../../constants/index.js";
+import FriendRepository from "../../domain/repository/Friend.repository.js";
 import User from "../../infrastructure/mongo/model/User.js";
 import Error from "../../utils/errors.js";
 import { responseEntity } from "../../utils/query.js";
@@ -21,7 +22,7 @@ class UserController {
         status: HTTP_STATUS.OK,
         success: true,
         message: "Get user by id success",
-        user:{
+        user: {
           id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -81,7 +82,7 @@ class UserController {
         status: HTTP_STATUS.OK,
         success: true,
         message: "Get all users success",
-        user:{
+        user: {
           id: user._id,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -270,7 +271,41 @@ class UserController {
       Error.sendError(res, error);
     }
   }
+  async searchUserWithFriends(req, res) {
+    const { type, keywords } = req.query
+    const user = req.user
+    const userId = user.id
+    if (!type || !keywords) {
+      return Error.sendConflict(res, "Type and keywords are required")
+    }
+    const searchQuery = {
+      [type]: { $regex: keywords, $options: "i" }
+    };
 
+    const userFriendListIds = (await FriendRepository.getFriendByUserId(userId)).map(user => user.id.toString())
+    const users = await User.find(searchQuery).select({
+      avatar: 1,
+      id: 1,
+      firstName: 1,
+      lastName: 1,
+      phone: 1,
+      email: 1
+    }).lean()
+
+    const usersFilter = users.filter(user => user._id.toString() !== userId).map(user => {
+      return {
+        ...user,
+        isFriend: userFriendListIds.includes(user._id.toString())
+      }
+    })
+
+    return res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: `Search by type: ${type} and keywords ${keywords}`,
+      users: usersFilter,
+      totalItems: usersFilter.length
+    })
+  }
   async searchUsers(req, res) {
     const { type, keywords } = req.query
     const searchQuery = {

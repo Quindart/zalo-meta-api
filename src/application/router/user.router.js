@@ -1,11 +1,13 @@
 import express from "express";
 import ROUTING from "../../constants/Routes.js";
 import userController from "../handlers/user.controller.js";
+import { authenticateToken } from "../middleware/authentication.middleware.js";
 const router = express.Router();
 
 //TODO [GET]
 router.get(ROUTING.INDEX, userController.getUsers);
-router.get(ROUTING.SEARCH,userController.searchUsers)
+router.get(ROUTING.SEARCH, userController.searchUsers)
+router.get(ROUTING.SEARCH_FRIEND, authenticateToken, userController.searchUserWithFriends);
 router.get(ROUTING.BY_ID, userController.getUserById);
 router.get(ROUTING.BY_PHONE, userController.getUserByPhone);
 //TODO [POST]

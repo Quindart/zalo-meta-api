@@ -33,6 +33,7 @@ const ROUTING = {
   THREAD: "/api/v1/threads",
   CHAT: "/api/v1/chats",
   SEARCH: "/search",
+  SEARCH_FRIEND: "/search-friends",
 
   // Friend
   FRIEND: "/api/v1/friends",
