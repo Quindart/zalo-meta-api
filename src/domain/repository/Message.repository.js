@@ -35,6 +35,7 @@ class MessageRepository {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
+            .populate('fileId', 'filename path size extension')
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
@@ -42,7 +43,7 @@ class MessageRepository {
         const messagesFormat = messages.map((message) => {
 
             let file = null;
-            if (message.messageType === "file") {
+            if (message.messageType === "file" && message.fileId) {
                 file = {
                     id: message.fileId._id,
                     filename: message.fileId.filename,
