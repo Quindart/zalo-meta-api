@@ -147,8 +147,8 @@ class MessageSocket {
                 extension: fileExtension,
             });
 
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'];
-            const videoExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm', 'mkv'];
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const videoExtensions = ['mp4', 'mov', 'avi', 'webm'];
             const audioExtensions = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'];
             const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'];
             let messageType = "";
