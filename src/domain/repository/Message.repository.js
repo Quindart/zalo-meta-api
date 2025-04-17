@@ -35,11 +35,8 @@ class MessageRepository {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
-<<<<<<< HEAD
             .populate('emojis')
-=======
             .populate('fileId', 'filename path size extension')
->>>>>>> 13cd417046199cc65ff1be4bfb8096c0b439c412
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
