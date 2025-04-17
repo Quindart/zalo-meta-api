@@ -50,16 +50,25 @@ const SOCKET_EVENTS = Object.freeze({
         ACCEPT_FRIEND_RESPONSE: "friend:acceptResponse",
         REJECT_FRIEND: "friend:reject",
         REJECT_FRIEND_RESPONSE: "friend:rejectResponse",
+        REVOKE_FRIEND: "friend:revoke",
+        REVOKE_FRIEND_RESPONSE: "friend:revokeResponse",
+
         LIST_FRIEND: "friend:list",
         LIST_FRIEND_RESPONSE: "friend:listResponse",
+
+        LIST_SEND_INVITE: "friend:listSendInvite",
+        LIST_SEND_INVITE_RESPONSE: "friend:listSendInviteResponse",
+
+        LIST_RECEIVED_INVITE: "friend:listReceviedInvite",
+        LIST_RECEIVED_INVITE_RESPONSE: "friend:listReceviedInviteResponse",
     },
     EMOJI: {
         LOAD_EMOJIS_OF_MESSAGE: "emoji:loadEmojis",
         INTERACT_EMOJI: "emoji:interactEmoji",
         REMOVE_MY_EMOJI: "emoji:removeMyEmoji",
-        LOAD_EMOJIS_OF_MESSAGE_RESPONSE: "emoji:loadEmojis",
-        INTERACT_EMOJI_RESPONSE: "emoji:interactEmoji",
-        REMOVE_MY_EMOJI_RESPONSE: "emoji:removeMyEmoji"
+        LOAD_EMOJIS_OF_MESSAGE_RESPONSE: "emoji:loadEmojisResponse",
+        INTERACT_EMOJI_RESPONSE: "emoji:interactEmojiResponse",
+        REMOVE_MY_EMOJI_RESPONSE: "emoji:removeMyEmojiResponse"
     },
     FILE: {
         UPLOAD: "file:upload",

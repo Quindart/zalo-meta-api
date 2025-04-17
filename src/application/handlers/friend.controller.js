@@ -131,9 +131,9 @@ class FriendController {
     async getMyFriends(req, res) {
         const { user } = req
         if (!user) {
-          return Error.sendNotFound(res, "User not found")
+            return Error.sendNotFound(res, "User not found")
         }
-        const friends = await FriendRepository.getFriendByUserIdByType(user.id, 'ACCEPTED')
+        const friends = await FriendRepository.getFriendByUserIdByType(new mongoose.Types.ObjectId(user.id), 'ACCEPTED')
 
         return res.status(HTTP_STATUS.OK).json({
             status: HTTP_STATUS.OK,
@@ -151,14 +151,29 @@ class FriendController {
         if (!user) {
             return Error.sendNotFound(res, "User not found")
         }
-        const friends = await FriendRepository.getFriendByUserIdByType(user.id, 'PENDING')
+        const friends = await FriendRepository.getInviteOfUser(new mongoose.Types.ObjectId(user.id))
         return res.status(HTTP_STATUS.OK).json({
             success: true,
             status: HTTP_STATUS.OK,
             message: "Get invite friends success",
             data: {
                 friends: friends,
-                totalItem: friends.length
+            }
+        })
+    }
+
+    async getMyInvitedSending(req, res) {
+        const { user } = req
+        if (!user) {
+            return Error.sendNotFound(res, "User not found")
+        }
+        const friends = await FriendRepository.getInviteOfUserSending(new mongoose.Types.ObjectId(user.id))
+        return res.status(HTTP_STATUS.OK).json({
+            success: true,
+            status: HTTP_STATUS.OK,
+            message: "Get invite friends success",
+            data: {
+                friends: friends,
             }
         })
     }
