@@ -4,10 +4,12 @@ import UserSocket from "../handlers/user.socket.js";
 import QRSocket from "../handlers/qr.socket.js";
 import ChannelSocket from "../handlers/channel.socket.js";
 import FriendSocket from "../handlers/friend.socket.js";
+import EmojiSocket from "../handlers/emoji.socket.js";
 class SocketService {
   io;
   messageSocket;
   userSocket;
+  emojiSocket;
   getIO() {
     return this.io
   }
@@ -34,6 +36,7 @@ class SocketService {
       this.messageSocket = new MessageSocket(this.io, socket)
       this.userSocket = new UserSocket(this.io, socket)
       this.qrSocket = new QRSocket(this.io, socket)
+      this.emojiSocket = new EmojiSocket(this.io, socket)
 
       this.channelSocket = new ChannelSocket(this.io, socket)
       this.friendSocket = new FriendSocket(this.io, socket)

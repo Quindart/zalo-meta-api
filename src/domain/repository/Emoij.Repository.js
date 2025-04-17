@@ -1,5 +1,6 @@
 import { EMOJI } from "../../constants/index.js";
 import Emoji from "../../infrastructure/mongo/model/Emoji.js";
+import Message from "../../infrastructure/mongo/model/Message.js";
 import Error from "../../utils/errors.js";
 
 class EmojiRepository {
@@ -14,13 +15,13 @@ class EmojiRepository {
                 };
             }
 
-            // Tìm emoji của userId cho messageId
-            let emojiRecord = await Emoji.findOne({ messageId, emoji, userId });
+            // Tìm emoji của userId cho messageId, bỏ qua các bản ghi đã soft delete
+            let emojiRecord = await Emoji.findOne({ messageId, emoji, userId, deleteAt: { $exists: false } });
 
             if (emojiRecord) {
                 // Nếu đã tồn tại, tăng quantity
                 emojiRecord.quantity += 1;
-                emojiRecord.updateAt = Date.now();
+                emojiRecord.updateAt = new Date();
                 await emojiRecord.save();
             } else {
                 // Nếu chưa có, tạo mới
@@ -29,19 +30,49 @@ class EmojiRepository {
                     emoji,
                     userId,
                     quantity: 1,
+                    createAt: new Date(),
+                    updateAt: new Date(),
                 });
                 await emojiRecord.save();
             }
 
+            // Cập nhật mảng emojis trong Message
+            const updatedMessage = await Message.findById(messageId);
+            if (!updatedMessage) {
+                return {
+                    success: false,
+                    message: "Message not found.",
+                };
+            }
+
+            // Tìm xem user đã thả emoji nào trong mảng emojis chưa
+            const emojiDocs = await Emoji.find({ _id: { $in: updatedMessage.emojis }, userId, deleteAt: { $exists: false } });
+            const index = emojiDocs.findIndex(e => e.emoji === emoji);
+
+            if (index !== -1) {
+                // Nếu user đã thả emoji này, cập nhật tại vị trí đó
+                updatedMessage.emojis[updatedMessage.emojis.findIndex(eId => eId.equals(emojiDocs[index]._id))] = emojiRecord._id;
+            } else {
+                // Nếu chưa có, thêm mới
+                updatedMessage.emojis.push(emojiRecord._id);
+            }
+
+            updatedMessage.updateAt = new Date(); // Cập nhật thời gian
+            await updatedMessage.save();
+
+            // Populate emojis để trả về dữ liệu đầy đủ
+            const populatedMessage = await Message.findById(messageId).populate('emojis');
+
             return {
                 success: true,
                 message: "Emoji added successfully.",
-                data: emojiRecord,
+                data: populatedMessage,
             };
         } catch (error) {
+            console.error("Error in addEmoji:", error);
             return {
                 success: false,
-                message: error.message,
+                message: error.message || "Failed to add emoji.",
             };
         }
     }
@@ -56,20 +87,30 @@ class EmojiRepository {
                     message: "messageId and userId are required.",
                 };
             }
-
+            //Xóa emoji của userId trong Message
+            const message = await Message.findById(messageId);
+            if (!message) {
+                return {
+                    success: false,
+                    message: "Message not found.",
+                };
+            }
+            else {
+                message.emojis = message.emojis.filter(emoji => emoji.userId !== userId);
+                await message.save();
+            }
             // Xóa tất cả emoji của userId cho messageId
             const result = await Emoji.deleteMany({ messageId, userId });
-
             if (result.deletedCount === 0) {
                 return {
                     success: false,
                     message: "No emojis found for this user and message.",
                 };
             }
-
             return {
                 success: true,
                 message: `Successfully deleted ${result.deletedCount} emojis.`,
+                data: message
             };
         } catch (error) {
             return {

@@ -16,17 +16,17 @@ class EmojiSocket {
     async interactEmoji(params) {
         const { messageId, emoji, userId } = params;
         const result = await emojiRepository.addEmoji(messageId, emoji, userId);
-        this.socket.emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI, result);
+        this.socket.emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
     }
     async removeMyEmoji(params) {
         const { messageId, userId } = params;
         const result = await emojiRepository.deleteMyEmoji(messageId, userId);
-        this.socket.emit(SOCKET_EVENTS.EMOJI.REMOVE_MY_EMOJI, result);
+        this.socket.emit(SOCKET_EVENTS.EMOJI.REMOVE_MY_EMOJI_RESPONSE, result);
     }
     async loadEmojiOfMessage(params) {
         const { messageId } = params;
         const result = await emojiRepository.getAllEmojiOfMessage(messageId);
-        this.socket.emit(SOCKET_EVENTS.EMOJI.LOAD_EMOJIS_OF_MESSAGE, result);
+        this.socket.emit(SOCKET_EVENTS.EMOJI.LOAD_EMOJIS_OF_MESSAGE_RESPONSE, result);
     }
 }
 

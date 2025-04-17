@@ -65,7 +65,10 @@ const SOCKET_EVENTS = Object.freeze({
     EMOJI: {
         LOAD_EMOJIS_OF_MESSAGE: "emoji:loadEmojis",
         INTERACT_EMOJI: "emoji:interactEmoji",
-        REMOVE_MY_EMOJI: "emoji:removeMyEmoji"
+        REMOVE_MY_EMOJI: "emoji:removeMyEmoji",
+        LOAD_EMOJIS_OF_MESSAGE_RESPONSE: "emoji:loadEmojisResponse",
+        INTERACT_EMOJI_RESPONSE: "emoji:interactEmojiResponse",
+        REMOVE_MY_EMOJI_RESPONSE: "emoji:removeMyEmojiResponse"
     },
     FILE: {
         UPLOAD: "file:upload",

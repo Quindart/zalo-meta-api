@@ -73,7 +73,6 @@ class MessageSocket {
     async loadMessage(params) {
         try {
             const { channelId, offset } = params;
-            console.log("check params load message: ", params);
             const messages = await messageRepository.getMessages(channelId, offset);
             this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
                 success: true,
@@ -154,7 +153,7 @@ class MessageSocket {
                 fileId: file._id,
                 messageType: "file",
             });
-           
+
             await file.save();
             await newMessage.save();
             await channelRepository.updateLastMessage(channelId, newMessage._id);
@@ -167,7 +166,7 @@ class MessageSocket {
                     name: sender.lastName + " " + sender.firstName,
                     avatar: sender.avatar,
                 },
-                messageType:newMessage.messageType,
+                messageType: newMessage.messageType,
                 file: {
                     id: file._id,
                     filename: file.filename,
