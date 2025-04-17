@@ -19,8 +19,11 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.READ, this.readMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.LOAD, this.loadMessage.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
     }
+
     async sendMessage(data) {
         const channel = await channelRepository.getChannel(data.channelId);
         const sender = await this.userRepo.findOne(data.senderId);
@@ -204,6 +207,41 @@ class MessageSocket {
             });
         }
     }
+
+    //TODO: Xoa tin nhan
+    async recallMessage(data) {
+        const { senderId, messageId } = data
+        await messageRepository.recallMessage(senderId, messageId);
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.RECALL_RESPONSE, {
+            success: true,
+            data: {
+                messageId,
+            },
+        });
+    }
+    //TODO: thu hoi tin nhan
+    async deleteMessage(data) {
+        const { senderId, messageId, channelId } = data
+        await messageRepository.deleteMessage(senderId, messageId);
+        const channel = await channelRepository.getChannel(channelId);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== senderId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
+                    success: true,
+                    data: {
+                        messageId,
+                    },
+                });
+            }
+        });
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
+            success: true,
+            data: {
+                messageId,
+            },
+        });
+    }
+
 }
 
 export default MessageSocket

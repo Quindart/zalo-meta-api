@@ -8,8 +8,8 @@ class FriendRepository {
       $or: [{ user: userId }, { friend: userId }],
       status: 'ACCEPTED'
     })
-      .populate('user', 'firstName lastName email avatar')
-      .populate('friend', 'firstName lastName email avatar')
+      .populate('user', 'firstName lastName email avatar ')
+      .populate('friend', 'firstName lastName email avatar ')
       .lean();
 
 

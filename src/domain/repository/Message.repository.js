@@ -12,21 +12,42 @@ class MessageRepository {
 
         return message;
     }
-
+    //TODO: xoa tin nhan
+    async recallMessage(senderId, messageId) {
+        const mess = await Message.findById(messageId);
+        if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
+            return
+        }
+        mess.isDeletedById = senderId;
+        await mess.save();
+    }
+    //TODO: thu hoi tin nhan
+    async deleteMessage(senderId, messageId) {
+        const mess = await Message.findById(messageId);
+        if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
+            return
+        } 
+        mess.content = "Tin nhắn đã thu hồi";
+        mess.messageType = "text";
+        await mess.save();
+    }
     async getMessages(channelId, offset) {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
+<<<<<<< HEAD
             .populate('emojis')
+=======
+            .populate('fileId', 'filename path size extension')
+>>>>>>> 13cd417046199cc65ff1be4bfb8096c0b439c412
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
             .lean();
-
         const messagesFormat = messages.map((message) => {
 
             let file = null;
-            if (message.messageType === "file") {
+            if (message.messageType === "file" && message.fileId) {
                 file = {
                     id: message.fileId._id,
                     filename: message.fileId.filename,
@@ -50,6 +71,7 @@ class MessageRepository {
                 isMe: true,
                 messageType: message.messageType,
                 content: message.content,
+                isDeletedById: message.isDeletedById,
             };
         });
 
@@ -57,6 +79,10 @@ class MessageRepository {
         console.log("check message from repo: ", messagesFormat);
 
         return messagesFormat;
+    }
+
+    _checkIsNotYourMessage(senderId, senderStoredId) {
+        return senderStoredId.toString() !== senderId
     }
 }
 

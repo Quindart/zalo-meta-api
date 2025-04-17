@@ -25,7 +25,6 @@ const UserSchema = new mongoose.Schema({
   },
   isEmailNotificationEnabled: { type: Boolean, default: true },
   emailSentAt: { type: Date },
-  // friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "Friend" }],
   channels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Channel" }]
 },
   { timestamps: true }

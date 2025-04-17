@@ -163,6 +163,7 @@ class ChannelRepository {
 
       let name = channel.name;
       let avatar = channel.avatar;
+      let avatarGroup = channel.avatar;
       if (channel.type === 'personal') {
         const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
 
@@ -170,12 +171,15 @@ class ChannelRepository {
           name = `${otherMember.lastName} ${otherMember.firstName}`;
           avatar = otherMember.avatar;
         }
+      } else {
+        avatarGroup = await this._generateGroupAvatar(channel.members);
       }
 
       return {
         id: channel._id.toString(),
         name: name,
         avatar: avatar,
+        avatarGroup: avatarGroup,
         type: channel.type,
         members: channel.members.map(member => ({
           userId: member.user._id.toString(),
@@ -410,7 +414,7 @@ class ChannelRepository {
       if (!user) {
         throw new Error('User not found');
       }
-     
+
       // Check if the user is the captain of the channel
       const channel = await Channel.findById(channelObjectId);
       if (!channel) {
@@ -455,7 +459,7 @@ class ChannelRepository {
       return {
         success: true,
         message: 'Group dissolved successfully',
-        data:{
+        data: {
           messageType: MEMBER_TYPES.SYSTEM,
           content: dissolveMessage.content,
           sender: {
@@ -510,6 +514,36 @@ class ChannelRepository {
       createdAt: channel.createdAt,
       updatedAt: channel.updatedAt,
     };
+  }
+
+  async _generateGroupAvatar(members) {
+    try {
+      if (!members || members.length < 2) {
+        return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+      }
+
+      const memberIds = members.slice(0, 3).map(member =>
+        typeof member.user === 'object' ? member.user : member.user
+      );
+
+      const users = await User.find({
+        _id: { $in: memberIds }
+      }).select('avatar').lean();
+
+      if (!users || users.length === 0) {
+        return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+      }
+
+      const avatars = users
+        .filter(user => user.avatar)
+        .map(user => user.avatar)
+        .slice(0, 3);
+
+      return avatars;
+    } catch (error) {
+      console.error('Error generating group avatar:', error);
+      return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+    }
   }
 }
 
