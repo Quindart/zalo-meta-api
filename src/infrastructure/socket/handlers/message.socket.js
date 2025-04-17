@@ -147,6 +147,25 @@ class MessageSocket {
                 extension: fileExtension,
             });
 
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff'];
+            const videoExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm', 'mkv'];
+            const audioExtensions = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'];
+            const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'];
+            let messageType = "";
+
+            if (imageExtensions.includes(fileExtension)) {
+                messageType = "image";
+            } else if (videoExtensions.includes(fileExtension)) {
+                messageType = "video";
+            } else if (audioExtensions.includes(fileExtension)) {
+                messageType = "audio";
+            } else if (fileExtensions.includes(fileExtension)) {
+                messageType = "file";
+            } else {
+                messageType = "file";
+            }
+
+
             const newMessage = new Message({
                 content: fileName,
                 senderId: data.senderId,
@@ -154,7 +173,7 @@ class MessageSocket {
                 status: "send",
                 timestamp: new Date(),
                 fileId: file._id,
-                messageType: "file",
+                messageType: messageType,
             });
 
             await file.save();
