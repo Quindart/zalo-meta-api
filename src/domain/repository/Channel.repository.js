@@ -400,6 +400,7 @@ class ChannelRepository {
       throw error;
     }
   }
+  
 
   async dissolveGroup(channelId, userId) {
     try {

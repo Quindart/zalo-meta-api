@@ -22,6 +22,7 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.FORWARD, this.forwardMessage.bind(this))
     }
 
     async sendMessage(data) {
@@ -241,7 +242,77 @@ class MessageSocket {
             },
         });
     }
-
+    async forwardMessage(data) {
+        try {
+            const { messageId, channelId, senderId, content } = data;
+    
+            // Lấy message gốc
+            const originalMessage = await Message.findById(messageId).populate("fileId");
+            if (!originalMessage) throw new Error("Message not found");
+    
+            const channel = await channelRepository.getChannel(channelId);
+            if (!channel) throw new Error("Channel not found");
+    
+            const sender = await this.userRepo.findOne(senderId);
+    
+            const newMessageData = {
+                content: content || originalMessage.content,
+                senderId: senderId,
+                channelId: channelId,
+                messageType: originalMessage.messageType,
+                fileId: originalMessage.fileId || null,
+                status: "send",
+                timestamp: new Date(),
+            };
+    
+            const newMessage = new Message(newMessageData);
+            await newMessage.save();
+            await channelRepository.updateLastMessage(channelId, newMessage._id);
+    
+            const messageResponse = {
+                id: newMessage._id,
+                content: newMessage.content,
+                sender: {
+                    id: sender._id,
+                    name: `${sender.lastName} ${sender.firstName}`,
+                    avatar: sender.avatar,
+                },
+                messageType: newMessage.messageType,
+                file: newMessage.messageType === "file" && originalMessage.fileId
+                    ? {
+                        id: originalMessage.fileId._id,
+                        filename: originalMessage.fileId.filename,
+                        path: originalMessage.fileId.path,
+                        size: originalMessage.fileId.size,
+                        extension: originalMessage.fileId.extension,
+                    }
+                    : null,
+                members: channel.members,
+                channelId: channel.id,
+                status: "send",
+                timestamp: new Date(),
+                isMe: true,
+            };
+    
+            // Emit cho sender
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD, messageResponse);
+    
+            // Emit cho các thành viên khác trong channel
+            channel.members.forEach((member) => {
+                if (member.userId.toString() !== senderId) {
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.FORWARD, messageResponse);
+                }
+            });
+    
+        } catch (error) {
+            console.error("Error forwarding message:", error);
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD, {
+                success: false,
+                message: error.message || "Lỗi khi chuyển tiếp tin nhắn",
+            });
+        }
+    }
+    
 }
 
 export default MessageSocket
