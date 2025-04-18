@@ -44,7 +44,7 @@ class MessageRepository {
         const messagesFormat = messages.map((message) => {
 
             let file = null;
-            if (message.messageType === "file" && message.fileId) {
+            if (message.fileId) {
                 file = {
                     id: message.fileId._id,
                     filename: message.fileId.filename,
