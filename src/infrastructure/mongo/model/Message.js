@@ -35,10 +35,11 @@ const MessageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  isDeletedById: {
+
+  isDeletedById: [{
     type: mongoose.Schema.Types.ObjectId,
     default: null,
-  },
+  }],
 },
   { timestamps: true }
 );
