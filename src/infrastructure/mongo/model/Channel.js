@@ -15,6 +15,11 @@ const ChannelSchema = new mongoose.Schema({
   avatar: { type: String },
   description: { type: String },
   lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+  deletedForUsers: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
+  ],
   members: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

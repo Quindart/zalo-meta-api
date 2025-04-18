@@ -22,6 +22,7 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY, this.deleteHistoryMessage.bind(this));
     }
 
     async sendMessage(data) {
@@ -257,6 +258,18 @@ class MessageSocket {
             success: true,
             data: {
                 messageId,
+            },
+        });
+    }
+
+    //TODO: Xóa lịch sử trò chuyện
+    async deleteHistoryMessage(data) {
+        const { senderId, channelId } = data
+        await messageRepository.deleteHistoryMessage(senderId, channelId);
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY_RESPONSE, {
+            success: true,
+            data: {
+                channelId,
             },
         });
     }

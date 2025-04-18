@@ -11,7 +11,7 @@ const ROLE_TYPES = {
   MEMBER: 'member'
 };
 
-const MEMBER_TYPES = {
+const MESSAGE_TYPES = {
   TEXT: 'text',
   IMAGE: 'image',
   VIDEO: 'video',
@@ -45,7 +45,7 @@ class ChannelRepository {
       content: "Welcome to the group!",
       status: "sent",
       channelId: channel._id,
-      messageType: MEMBER_TYPES.SYSTEM,
+      messageType: MESSAGE_TYPES.SYSTEM,
       systemMessageId: systemMessage._id,
     });
     systemMessage.messageId = lastMessage._id;
@@ -95,6 +95,7 @@ class ChannelRepository {
 
     channel.lastMessage = lastMessageId;
     channel.updatedAt = Date.now();
+    channel.deletedForUsers = [];
     const updatedChannel = await channel.save();
     return updatedChannel;
   }
@@ -161,33 +162,7 @@ class ChannelRepository {
         throw new Error("Channel not found");
       }
 
-      let name = channel.name;
-      let avatar = channel.avatar;
-      let avatarGroup = channel.avatar;
-      if (channel.type === 'personal') {
-        const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
-
-        if (otherMember) {
-          name = `${otherMember.lastName} ${otherMember.firstName}`;
-          avatar = otherMember.avatar;
-        }
-      } else {
-        avatarGroup = await this._generateGroupAvatar(channel.members);
-      }
-
-      return {
-        id: channel._id.toString(),
-        name: name,
-        avatar: avatar,
-        avatarGroup: avatarGroup,
-        type: channel.type,
-        members: channel.members.map(member => ({
-          userId: member.user._id.toString(),
-          role: member.role
-        })),
-        createdAt: channel.createdAt,
-        isDeleted: channel.isDeleted,
-      };
+      return this._formatChannelResponse(channel, currentUserId);
     } catch (error) {
       console.error("Error in getChannel:", error);
       throw error;
@@ -200,11 +175,12 @@ class ChannelRepository {
         {
           $match: {
             "members.user": new mongoose.Types.ObjectId(currentUserId),
+            "deletedForUsers.user": { $nin: [new mongoose.Types.ObjectId(currentUserId)] },
             "$and": [
               // { deletedAt: null },
               { lastMessage: { $ne: null } }
             ]
-          },
+          }
         },
         {
           $lookup: {
@@ -275,32 +251,9 @@ class ChannelRepository {
           },
         },
       ]).exec();
-      return channels.map(channel => {
-        let name = channel.name;
-        let avatar = channel.avatar;
-
-        if (channel.type === 'personal') {
-          const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
-          if (otherMember) {
-            name = `${otherMember.lastName} ${otherMember.firstName}`;
-            avatar = otherMember.avatar;
-          }
-        }
-
-        return {
-          id: channel._id.toString(),
-          name,
-          avatar,
-          type: channel.type,
-          members: channel.members.map(member => ({
-            userId: typeof member.user === 'object' ? member.user._id.toString() : member.user,
-            role: member.role
-          })),
-          time: channel.lastMessage.createdAt,
-          message: channel.lastMessage.content,
-          isDeleted: channel.isDeleted,
-        };
-      })
+      return Promise.all(channels.map(channel => 
+        this._formatChannelResponse(channel, currentUserId)
+      ));
     } catch (error) {
       console.error('Error fetching channels:', error);
       throw error;
@@ -358,7 +311,7 @@ class ChannelRepository {
           content: `${user.firstName} ${user.lastName} has left the channel`,
           status: "system",
           channelId: channelObjectId,
-          messageType: MEMBER_TYPES.SYSTEM,
+          messageType: MESSAGE_TYPES.SYSTEM,
           systemMessageId: systemMessage._id,
         });
 
@@ -378,7 +331,7 @@ class ChannelRepository {
         success: true,
         message: 'Successfully left the channel',
         data: {
-          messageType: MEMBER_TYPES.SYSTEM,
+          messageType: MESSAGE_TYPES.SYSTEM,
           content: `${user.lastName} ${user.firstName} has left the channel`,
           sender: {
             id: userObjectId,
@@ -439,7 +392,7 @@ class ChannelRepository {
         content: `Trưởng nhóm ${user.lastName} ${user.firstName} đã giải tán nhóm`,
         status: "system",
         channelId: channelObjectId,
-        messageType: MEMBER_TYPES.SYSTEM,
+        messageType: MESSAGE_TYPES.SYSTEM,
         systemMessageId: systemMessage._id,
       });
       systemMessage.messageId = dissolveMessage._id;
@@ -460,7 +413,7 @@ class ChannelRepository {
         success: true,
         message: 'Group dissolved successfully',
         data: {
-          messageType: MEMBER_TYPES.SYSTEM,
+          messageType: MESSAGE_TYPES.SYSTEM,
           content: dissolveMessage.content,
           sender: {
             id: userObjectId,
@@ -501,25 +454,10 @@ class ChannelRepository {
       }));
   }
 
-  _formatChannelResponse(channel) {
-    return {
-      id: channel._id.toString(),
-      name: channel.name,
-      avatar: channel.avatar,
-      type: channel.type,
-      members: channel.members.map(member => ({
-        userId: typeof member.user === 'object' ? member.user.toString() : member.user.toString(),
-        role: member.role
-      })),
-      createdAt: channel.createdAt,
-      updatedAt: channel.updatedAt,
-    };
-  }
-
   async _generateGroupAvatar(members) {
     try {
       if (!members || members.length < 2) {
-        return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+        return ["https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg"];
       }
 
       const memberIds = members.slice(0, 3).map(member =>
@@ -531,7 +469,7 @@ class ChannelRepository {
       }).select('avatar').lean();
 
       if (!users || users.length === 0) {
-        return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+        return ["https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg"];
       }
 
       const avatars = users
@@ -542,9 +480,41 @@ class ChannelRepository {
       return avatars;
     } catch (error) {
       console.error('Error generating group avatar:', error);
-      return "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg";
+      return ["https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg"];
     }
   }
+
+  _formatChannelResponse = async (channel, currentUserId) => {
+    let name = channel.name;
+    let avatar = channel.avatar;
+    let avatarGroup = channel.avatar;
+    if (channel.type === 'personal') {
+      const otherMember = this._getOtherMembersInfo(channel, currentUserId)[0];
+
+      if (otherMember) {
+        name = `${otherMember.lastName} ${otherMember.firstName}`;
+        avatar = otherMember.avatar;
+      }
+    } else {
+      avatarGroup = await this._generateGroupAvatar(channel.members);
+    }
+    return {
+      id: channel._id.toString(),
+      name: name,
+      avatar: avatar,
+      avatarGroup: avatarGroup,
+      type: channel.type,
+      members: channel.members.map(member => ({
+        userId: member.user._id.toString(),
+        role: member.role
+      })),
+      time: channel.lastMessage ? channel.lastMessage.createdAt : null,
+      message: channel.lastMessage ? channel.lastMessage.content : null,
+      deletedForUsers: channel.deletedForUsers && channel.deletedForUsers.map(user => user.user.toString()),
+      isDeleted: channel.isDeleted,
+    };
+  }
+
 }
 
 export default new ChannelRepository();
