@@ -22,7 +22,10 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
+
         this.socket.on(SOCKET_EVENTS.MESSAGE.FORWARD, this.forwardMessage.bind(this))
+        this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY, this.deleteHistoryMessage.bind(this));
+
     }
 
     async sendMessage(data) {
@@ -148,6 +151,25 @@ class MessageSocket {
                 extension: fileExtension,
             });
 
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            const videoExtensions = ['mp4', 'mov', 'avi', 'webm'];
+            const audioExtensions = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'];
+            const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'];
+            let messageType = "";
+
+            if (imageExtensions.includes(fileExtension)) {
+                messageType = "image";
+            } else if (videoExtensions.includes(fileExtension)) {
+                messageType = "video";
+            } else if (audioExtensions.includes(fileExtension)) {
+                messageType = "audio";
+            } else if (fileExtensions.includes(fileExtension)) {
+                messageType = "file";
+            } else {
+                messageType = "file";
+            }
+
+
             const newMessage = new Message({
                 content: fileName,
                 senderId: data.senderId,
@@ -155,7 +177,7 @@ class MessageSocket {
                 status: "send",
                 timestamp: new Date(),
                 fileId: file._id,
-                messageType: "file",
+                messageType: messageType,
             });
 
             await file.save();
@@ -313,6 +335,19 @@ class MessageSocket {
         }
     }
     
+
+    //TODO: Xóa lịch sử trò chuyện
+    async deleteHistoryMessage(data) {
+        const { senderId, channelId } = data
+        await messageRepository.deleteHistoryMessage(senderId, channelId);
+        this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY_RESPONSE, {
+            success: true,
+            data: {
+                channelId,
+            },
+        });
+    }
+
 }
 
 export default MessageSocket

@@ -110,7 +110,7 @@ class ChannelSocket {
     joinRoom(params) {
         const { channelId, currentUserId } = params;
         Promise.all([
-            messageRepository.getMessages(channelId),
+            messageRepository.getMessages(channelId,currentUserId),
             channelRepository.getChannel(channelId, currentUserId)
         ])
             .then(([messages, channel]) => {

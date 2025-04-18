@@ -13,10 +13,12 @@ const MessageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Channel",
   },
-  emojiId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Emoji",
-  },
+  emojis: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Emoji",
+    }
+  ],
   fileId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "File",
@@ -33,10 +35,12 @@ const MessageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  isDeletedById: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: null,
-  },
+  isDeletedById: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ]
 },
   { timestamps: true }
 );
