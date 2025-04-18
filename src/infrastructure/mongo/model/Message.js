@@ -35,10 +35,12 @@ const MessageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  isDeletedById: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: null,
-  },
+  isDeletedById: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ]
 },
   { timestamps: true }
 );

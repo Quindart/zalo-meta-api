@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Message from '../../infrastructure/mongo/model/Message.js';
+import Channel from '../../infrastructure/mongo/model/Channel.js';
 
 
 class MessageRepository {
@@ -18,7 +19,7 @@ class MessageRepository {
         if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
             return
         }
-        mess.isDeletedById = senderId;
+        mess.isDeletedById.push(senderId);
         await mess.save();
     }
     //TODO: thu hoi tin nhan
@@ -26,12 +27,12 @@ class MessageRepository {
         const mess = await Message.findById(messageId);
         if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
             return
-        } 
+        }
         mess.content = "Tin nhắn đã thu hồi";
         mess.messageType = "text";
         await mess.save();
     }
-    async getMessages(channelId, offset) {
+    async getMessages(channelId, currentUserId, offset) {
         channelId = new mongoose.Types.ObjectId(channelId);
         const messages = await Message.find({ channelId: channelId })
             .populate('senderId', 'firstName lastName avatar')
@@ -41,7 +42,18 @@ class MessageRepository {
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
             .lean();
-        const messagesFormat = messages.map((message) => {
+
+        const messagesFilter = messages.filter((message) => {
+            if (message.isDeletedById && message.isDeletedById.length > 0) {
+                const isDeletedById = message.isDeletedById.find((deletedId) => deletedId.toString() === currentUserId.toString());
+                if (isDeletedById) {
+                    return false; // Nếu tin nhắn bị xóa bởi người gửi, không hiển thị
+                }
+            }
+            return true; // Nếu không bị xóa, hiển thị tin nhắn
+        });
+
+        const messagesFormat = messagesFilter.map((message) => {
 
             let file = null;
             if (message.fileId) {
@@ -68,7 +80,6 @@ class MessageRepository {
                 isMe: true,
                 messageType: message.messageType,
                 content: message.content,
-                isDeletedById: message.isDeletedById,
             };
         });
 
@@ -76,6 +87,19 @@ class MessageRepository {
         console.log("check message from repo: ", messagesFormat);
 
         return messagesFormat;
+    }
+
+    //TODO: xoa lich su trò chuyện
+    async deleteHistoryMessage(senderId, channelId) {
+        console.log("check delete history message: ", channelId, senderId);
+        const mess = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) });
+        mess.forEach((message) => {
+            message.isDeletedById.push(senderId);
+            message.save();
+        });
+        const channel = await Channel.findById(channelId);
+        channel.deletedForUsers.push({ user: senderId });
+        channel.save();
     }
 
     _checkIsNotYourMessage(senderId, senderStoredId) {
