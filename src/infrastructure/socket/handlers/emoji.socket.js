@@ -1,6 +1,6 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.js";
 import emojiRepository from "../../../domain/repository/Emoij.Repository.js";
-
+import channelRepository from "../../../domain/repository/Channel.repository.js";
 class EmojiSocket {
     constructor(io, socket) {
         this.io = io;
@@ -14,14 +14,26 @@ class EmojiSocket {
     }
 
     async interactEmoji(params) {
-        const { messageId, emoji, userId } = params;
+        const { messageId, emoji, userId, channelId } = params;
         const result = await emojiRepository.addEmoji(messageId, emoji, userId);
+        const channel = await channelRepository.getChannel(channelId);
         this.socket.emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== userId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
+            }
+        });
     }
     async removeMyEmoji(params) {
-        const { messageId, userId } = params;
+        const { messageId, userId, channelId } = params;
         const result = await emojiRepository.deleteMyEmoji(messageId, userId);
         this.socket.emit(SOCKET_EVENTS.EMOJI.REMOVE_MY_EMOJI_RESPONSE, result);
+        const channel = await channelRepository.getChannel(channelId);
+        channel.members.forEach((member) => {
+            if (member.userId.toString() !== userId) {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
+            }
+        });
     }
     async loadEmojiOfMessage(params) {
         const { messageId } = params;
