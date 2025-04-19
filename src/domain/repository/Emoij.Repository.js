@@ -100,7 +100,7 @@ class EmojiRepository {
                 await message.save();
             }
             // Xóa tất cả emoji của userId cho messageId
-            const result = await Emoji.deleteMany({ messageId, userId });
+            const result = await Emoji.deleteMany({ userId });
             if (result.deletedCount === 0) {
                 return {
                     success: false,
