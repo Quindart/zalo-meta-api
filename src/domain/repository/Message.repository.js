@@ -19,6 +19,7 @@ class MessageRepository {
         if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
             return
         }
+        mess.isDeletedById = mess.isDeletedById || [];
         mess.isDeletedById.push(senderId);
         await mess.save();
     }
