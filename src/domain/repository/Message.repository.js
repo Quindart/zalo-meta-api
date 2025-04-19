@@ -19,6 +19,7 @@ class MessageRepository {
         if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
             return
         }
+        mess.isDeletedById = mess.isDeletedById || [];
         mess.isDeletedById.push(senderId);
         await mess.save();
     }
@@ -92,16 +93,16 @@ class MessageRepository {
         try {
             // Convert string to ObjectId
             messageId = new mongoose.Types.ObjectId(messageId);
-    
+
             // Find message by ID and populate necessary fields (if needed)
             const message = await Message.findById(messageId)
                 .populate('senderId') // assuming senderId is a ref
                 .populate('fileId');  // assuming fileId is a ref
-    
+
             if (!message) {
                 return null;
             }
-    
+
             let file = null;
             if (message.messageType === "file" && message.fileId) {
                 file = {
@@ -112,7 +113,7 @@ class MessageRepository {
                     extension: message.fileId.extension,
                 };
             }
-    
+
             const formattedMessage = {
                 id: message._id,
                 sender: {
@@ -129,16 +130,16 @@ class MessageRepository {
                 content: message.content,
                 isDeletedById: message.isDeletedById,
             };
-    
+
             console.log("check message from repo: ", formattedMessage);
-    
+
             return formattedMessage;
         } catch (err) {
             console.error("Error in getMessagesByMessageId:", err);
             throw err;
         }
     }
-    
+
 
 
     //TODO: xoa lich su trò chuyện
@@ -146,6 +147,7 @@ class MessageRepository {
         console.log("check delete history message: ", channelId, senderId);
         const mess = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) });
         mess.forEach((message) => {
+            message.isDeletedById = message.isDeletedById || [];
             message.isDeletedById.push(senderId);
             message.save();
         });
