@@ -266,21 +266,38 @@ class MessageSocket {
     }
     async forwardMessage(data) {
         try {
-            const { messageId, channelId, senderId, content } = data;
+            const { messageId, channelId, senderId } = data;
+            const receiver = await this.userRepo.findOne(channelId); 
+            if (!receiver) {
+                console.error("Receiver not found:", channelId);
+                return;
+            }
+            const nameChannel = receiver.lastName + receiver.firstName;
+            const typeChannel = "personal";
+            const avatarChannel = receiver.avatar || null;
+    
+            // Kiểm tra kênh và tạo kênh mới nếu không tồn tại
+            let channel;
+            try {
+                channel = await channelRepository.findOrCreateChannel(channelId, senderId, nameChannel, typeChannel, avatarChannel);
+            } catch (error) {
+                console.error("Error finding or creating channel:", error);
+                return;
+            }
     
             // Lấy message gốc
             const originalMessage = await Message.findById(messageId).populate("fileId");
             if (!originalMessage) throw new Error("Message not found");
     
-            const channel = await channelRepository.getChannel(channelId);
+            // Nếu không tìm thấy kênh, trả về lỗi
             if (!channel) throw new Error("Channel not found");
     
             const sender = await this.userRepo.findOne(senderId);
     
             const newMessageData = {
-                content: content || originalMessage.content,
+                content: originalMessage.content || "",
                 senderId: senderId,
-                channelId: channelId,
+                channelId: channel.id,
                 messageType: originalMessage.messageType,
                 fileId: originalMessage.fileId || null,
                 status: "send",
@@ -289,7 +306,7 @@ class MessageSocket {
     
             const newMessage = new Message(newMessageData);
             await newMessage.save();
-            await channelRepository.updateLastMessage(channelId, newMessage._id);
+            await channelRepository.updateLastMessage(channel.id, newMessage._id);
     
             const messageResponse = {
                 id: newMessage._id,
@@ -334,6 +351,7 @@ class MessageSocket {
             });
         }
     }
+    
     
 
     //TODO: Xóa lịch sử trò chuyện
