@@ -20,6 +20,7 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.JOIN_ROOM, this.joinRoom.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM, this.leaveRoom.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP, this.dissolveGroup.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.ADD_MEMBER, this.addMember.bind(this));
     }
 
     async findOrCreateChat(params) {
@@ -66,18 +67,18 @@ class ChannelSocket {
     async loadChannel(params) {
         const { currentUserId } = params;
         try {
-        console.log("Loading channels for user:", currentUserId);
-        channelRepository.getChannels(currentUserId)
-            .then((channels) => {
-                this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
-                    success: true,
-                    data: channels,
-                    message: "Channels found successfully",
+            console.log("Loading channels for user:", currentUserId);
+            channelRepository.getChannels(currentUserId)
+                .then((channels) => {
+                    this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
+                        success: true,
+                        data: channels,
+                        message: "Channels found successfully",
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error finding channels:", error);
                 });
-            })
-            .catch((error) => {
-                console.error("Error finding channels:", error);
-            });
         } catch (error) {
             console.error("Error finding channels:", error);
             this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
@@ -110,7 +111,7 @@ class ChannelSocket {
     joinRoom(params) {
         const { channelId, currentUserId } = params;
         Promise.all([
-            messageRepository.getMessages(channelId,currentUserId),
+            messageRepository.getMessages(channelId, currentUserId),
             channelRepository.getChannel(channelId, currentUserId)
         ])
             .then(([messages, channel]) => {
@@ -209,6 +210,37 @@ class ChannelSocket {
             });
         }
     }
+
+
+    async addMember(params) {
+        const { channelId, userId } = params;
+        try {
+            // Gọi repository mới thêm
+            const channel = await channelRepository.addMemberToChannel(
+                channelId,
+                userId
+            );
+
+            // 4. Emit cho tất cả thành viên nhóm
+            channel.members.forEach((member) => {
+                this.io
+                    .to(member.userId) // assume room by userId
+                    .emit(SOCKET_EVENTS.CHANNEL.ADD_MEMBER_RESPONSE, {
+                        success: true,
+                        data: channel,
+                        message: "Thêm thành viên thành công",
+                    });
+            });
+        } catch (error) {
+            console.error("Error adding member:", error);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.ADD_MEMBER_RESPONSE, {
+                success: false,
+                message: error.message,
+            });
+        }
+    }
+
+
 
 }
 

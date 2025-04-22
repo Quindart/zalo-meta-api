@@ -437,6 +437,50 @@ class ChannelRepository {
     }
   }
 
+  async addMemberToChannel(channelId, userId) {
+    if (!channelId || !userId) {
+      throw new Error("Channel ID và User ID là bắt buộc");
+    }
+  
+    const channelObjectId = new mongoose.Types.ObjectId(channelId);
+    const userObjectId    = new mongoose.Types.ObjectId(userId);
+  
+    // 1. Tìm channel
+    const channel = await Channel.findById(channelObjectId);
+    if (!channel) {
+      throw new Error("Channel không tồn tại");
+    }
+  
+    // 2. Kiểm tra nếu user đã trong nhóm thì không thêm nữa
+    const alreadyMember = channel.members.some(
+      member => member.user.toString() === userObjectId.toString()
+    );
+    if (alreadyMember) {
+      throw new Error("User đã là thành viên của nhóm");
+    }
+  
+    // 3. Thêm vào members với role MEMBER
+    channel.members.push({
+      user: userObjectId,
+      role: ROLE_TYPES.MEMBER
+    });
+  
+    // 4. Cập nhật updatedAt
+    channel.updatedAt = Date.now();
+  
+    // 5. Lưu channel
+    await channel.save();
+  
+    // 6. Cập nhật mảng channels trong User (nếu cần)
+    await User.findByIdAndUpdate(
+      userObjectId,
+      { $addToSet: { channels: channelObjectId }, updatedAt: Date.now() }
+    );
+  
+    // 7. Trả về channel đã format
+    return this._formatChannelResponse(channel, userId);
+  }
+
   _getOtherMembersInfo(channel, currentUserId) {
     return channel.members
       .filter(member => {
