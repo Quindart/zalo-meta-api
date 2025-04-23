@@ -1,39 +1,29 @@
 pipeline {
     agent any
 
-    environment {
-        COMPOSE_PROJECT_NAME = "zalo-backend-nodejs"
-    }
-
     stages {
-        stage('Build Docker Containers') {
+        stage('Checkout Code') {
             steps {
-                script {
-                    sh 'docker-compose -f docker-compose.yml build'
+                git branch: 'PROD', url: 'https://github.com/Quindart/zalo-meta-api.git'
+            }
+        }
+
+        stage('Copy .env file') {
+            steps {
+                configFileProvider([configFile(fileId: 'zalo-meta-api-production', targetLocation: '.env')]) {
+                    sh 'ls -la && cat .env' 
                 }
             }
         }
 
-        stage('Start Docker Containers') {
+        stage('Build and Restart Docker Containers') {
             steps {
                 script {
-                    sh 'docker-compose -f docker-compose.yml up -d'
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh 'docker-compose exec -T app npm test'  
-                }
-            }
-        }
-
-        stage('Stop Containers') {
-            steps {
-                script {
-                    sh 'docker-compose -f docker-compose.yml down'
+                    sh '''
+                    cd docker
+                    docker-compose down
+                    docker-compose up --build -d
+                    '''
                 }
             }
         }
