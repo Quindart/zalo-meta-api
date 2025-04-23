@@ -20,9 +20,9 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl
     restart: always
 
-  redis:
-    image: redis
-    container_name: redis-cache
-    ports:
-      - "6379:6379"
-    restart: always
+  # redis:
+  #   image: redis
+  #   container_name: redis-cache
+  #   ports:
+  #     - "6379:6379"
+  #   restart: always

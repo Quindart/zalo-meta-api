@@ -7,6 +7,7 @@
   "scripts": {
     "view-chat": "",
     "start": "nodemon server.js",
+  "start-https": "set HTTPS=true&&nodemon server.js",
     "gen-swagger": "node scripts/generate-swagger.js",
     "docker-zalo": "node tools/start_docker.js",
     "test": "echo \"Error: no test specified\" && exit 1",
