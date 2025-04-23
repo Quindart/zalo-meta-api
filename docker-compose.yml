@@ -6,19 +6,24 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - .env   
+      - .env
+    networks:
+      - zalo-network
 
-  nginx:
-    image: nginx
-    container_name: nginx-zalo
-    ports:
-      - "8080:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-    restart: always
+  # nginx:
+  #   image: nginx
+  #   container_name: nginx-zalo
+  #   ports:
+  #     - "8080:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./nginx/conf.d:/etc/nginx/conf.d
+  #     - ./nginx/ssl:/etc/nginx/ssl
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro 
+  #   restart: always
+  #   networks:
+  #     - zalo-network
 
   # redis:
   #   image: redis
@@ -26,3 +31,9 @@ services:
   #   ports:
   #     - "6379:6379"
   #   restart: always
+  #   networks:
+  #     - zalo-network
+
+networks:
+  zalo-network:
+    driver: bridge
