@@ -90,23 +90,23 @@ class ChannelRepository {
   }
 
   async assignRoleChannelId(channelId, updatedMembers) {
-    console.log("💲💲💲 ~ ChannelRepository ~ updateRoleChannelId ~ updatedMembers:", this._formatChannelMembersRequest(updatedMembers))
-    // if (!channelId || !Array.isArray(updatedMembers)) {
-    //   return;
-    // }
-    // await Channel.findByIdAndUpdate(
-    //   channelId,
-    //   {
-    //     $set: {
-    //       members: this._formatChannelMembersRequest(updatedMembers),
-    //       updatedAt: Date.now(),
-    //     },
-    //   },
-    //   { new: true }
-    // );
+    if (!channelId || !Array.isArray(updatedMembers)) {
+      return;
+    }
 
+    const formattedMembers = await this._formatChannelMembersRequest(updatedMembers); // Chờ Promise resolve
+
+    await Channel.findByIdAndUpdate(
+      channelId,
+      {
+        $set: {
+          members: formattedMembers,
+          updatedAt: Date.now(),
+        },
+      },
+      { new: true }
+    );
   }
-
 
   async updateLastMessage(channelId, lastMessageId) {
     if (!channelId || !lastMessageId) return null;
@@ -279,6 +279,98 @@ class ChannelRepository {
       throw error;
     }
   }
+
+  async removeMember(channelId, senderId, userId) {
+    try {
+      if (!channelId || !userId || !senderId) {
+        throw new Error('Channel ID, Sender ID và User ID là bắt buộc');
+      }
+
+      const channelObjectId = new mongoose.Types.ObjectId(channelId);
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const senderObjectId = new mongoose.Types.ObjectId(senderId);
+
+      const channel = await Channel.findById(channelObjectId);
+      if (!channel) throw new Error('Channel không tồn tại');
+
+      const senderIndex = channel.members.findIndex(
+        member => member.user.toString() === senderObjectId.toString()
+      );
+      const userIndex = channel.members.findIndex(
+        member => member.user.toString() === userObjectId.toString()
+      );
+
+      if (senderIndex === -1 || userIndex === -1) {
+        throw new Error('Người gửi hoặc người cần xóa không nằm trong channel');
+      }
+
+      const sender = await User.findById(senderObjectId);
+      const user = await User.findById(userObjectId);
+
+
+      if (![ROLE_TYPES.CAPTAIN, ROLE_TYPES.SUB_CAPTAIN].includes(channel.members[senderIndex].role)) {
+        throw new Error('Bạn không có quyền xóa thành viên');
+      }
+
+      const userRole = channel.members[userIndex].role;
+      channel.members.splice(userIndex, 1);
+
+      if (channel.members.length === 0) {
+        channel.deletedAt = new Date();
+      } else if (userRole === ROLE_TYPES.CAPTAIN) {
+        channel.members[0].role = ROLE_TYPES.CAPTAIN;
+      }
+
+      const systemMessage = new SystemMessage({ actionType: "member_removed" });
+
+      const leaveMessage = new Message({
+        senderId: senderObjectId,
+        content: `${sender.firstName} ${sender.lastName} removed ${user.firstName} ${user.lastName} from group`,
+        status: "system",
+        channelId: channelObjectId,
+        messageType: MESSAGE_TYPES.SYSTEM,
+        systemMessageId: systemMessage._id,
+      });
+
+      systemMessage.messageId = leaveMessage._id;
+      channel.lastMessage = leaveMessage._id;
+
+      await leaveMessage.save();
+      await systemMessage.save();
+      await channel.save();
+
+      await User.findByIdAndUpdate(
+        userObjectId,
+        { $pull: { channels: channelObjectId } }
+      );
+
+      return {
+        success: true,
+        data: {
+          messageType: MESSAGE_TYPES.SYSTEM,
+          content: `${user.lastName} ${user.firstName} has been removed from the channel`,
+          sender: {
+            id: userObjectId,
+            name: `${user.lastName} ${user.firstName}`,
+            avatar: user.avatar,
+          },
+          members: channel.members.map(member => ({
+            userId: member.user.toString(),
+            role: member.role
+          })),
+          channelId: channelObjectId,
+          channel: this._formatChannelResponse(channel),
+          status: "send",
+          timestamp: new Date(),
+          isMe: true,
+        }
+      };
+
+    } catch (error) {
+      throw new Error(error.message || "Đã có lỗi xảy ra khi xóa thành viên");
+    }
+  }
+
 
   async leaveChannel(channelId, userId) {
     try {
@@ -550,15 +642,13 @@ class ChannelRepository {
   }
 
   _formatChannelMembersRequest = async (members) => {
-    return members.map((mem) => {
-      return {
-        user: {
-          _id: new mongoose.Types.ObjectId(mem.userId)
-        },
-        role: mem.role
-      }
-    })
-  }
+    return members.map(mem => ({
+      user: new mongoose.Types.ObjectId(mem.userId),
+      role: mem.role,
+    }));
+  };
+
+
   _formatChannelResponse = async (channel, currentUserId) => {
     let name = channel.name;
     let avatar = channel.avatar;
@@ -580,7 +670,7 @@ class ChannelRepository {
       avatarGroup: avatarGroup,
       type: channel.type,
       members: channel.members.map(member => ({
-        userId: member.user._id.toString(),
+        userId: member.user._id.toString() || member.user,
         role: member.role
       })),
       time: channel.lastMessage ? channel.lastMessage.createdAt : null,

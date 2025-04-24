@@ -47,6 +47,8 @@ const SOCKET_EVENTS = Object.freeze({
         ADD_MEMBER_RESPONSE: "channel:addMemberResponse",
         ASSIGN_ROLE: "channel:assignRole",
         ROLE_UPDATED: "channel:roleUpdated",
+        REMOVE_MEMBER: 'channel:removeMember',
+        REMOVE_MEMBER_RESPONSE: 'channel:removeMemberResponse',
     },
     NOTIFICATION: {
         FRIEND_REQUEST: "notification:friend_request",

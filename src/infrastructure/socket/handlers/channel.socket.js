@@ -26,6 +26,7 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM, this.leaveRoom.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP, this.dissolveGroup.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.ADD_MEMBER, this.addMember.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER, this.removeMember.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.ASSIGN_ROLE, this.assignRole.bind(this));
 
     }
@@ -181,6 +182,49 @@ class ChannelSocket {
             });
     }
 
+    removeMember(params) {
+        const { channelId, senderId, userId } = params;
+        // this.io.to(userId).socketsLeave(channelId);
+
+        channelRepository.removeMember(channelId, senderId, userId)
+            .then((result) => {
+                if (!result || !result.data) {
+                    throw new Error("Không nhận được dữ liệu từ removeMember");
+                }
+                const messageResponse = {
+                    content: result.data.content,
+                    sender: result.data.sender,
+                    members: result.data.members,
+                    channelId: result.data.channelId,
+                    status: result.data.status,
+                    timestamp: result.data.timestamp,
+                    isMe: result.data.isMe,
+                    messageType: result.data.messageType,
+                };
+
+                result.data.members.forEach((member) => {
+                    if (member.userId !== userId) {
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER_RESPONSE, {
+                            success: true,
+                            message: "Remove member successfully",
+                            data: result.data.channel,
+                        });
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Error leaving room:", error.message);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER_RESPONSE, {
+                    success: false,
+                    message: "Failed to remove member",
+                    error: error.message,
+                });
+            });
+    }
+
+
+
 
     async dissolveGroup(params) {
         const { channelId, userId } = params;
@@ -308,6 +352,7 @@ class ChannelSocket {
             }
             target.role = newRole;
             await channelRepository.assignRoleChannelId(channel.id, channel.members);
+
             channel.members.forEach(member => {
                 this.io.to(member.userId.toString()).emit(SOCKET_EVENTS.CHANNEL.ROLE_UPDATED, {
                     success: true,
