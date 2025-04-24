@@ -45,6 +45,8 @@ const SOCKET_EVENTS = Object.freeze({
         DISSOLVE_GROUP_RESPONSE: "channel:dissolveGroupResponse",
         ADD_MEMBER: "channel:addMember",
         ADD_MEMBER_RESPONSE: "channel:addMemberResponse",
+        ASSIGN_ROLE: "channel:assignRole",
+        ROLE_UPDATED: "channel:roleUpdated",
     },
     NOTIFICATION: {
         FRIEND_REQUEST: "notification:friend_request",
@@ -83,6 +85,12 @@ const SOCKET_EVENTS = Object.freeze({
         UPLOAD: "file:upload",
         UPLOAD_RESPONSE: "file:uploadResponse",
     },
+    LANGCHAIN: {
+        SEND: 'langchain:sendMessage',
+        RECEIVED: 'langchain:receivedMessage',
+        UPLOAD: "langchain:fileUpload",
+        UPLOAD_RESPONSE: "langchain:fileUploadResponse",
+    }
 });
 
 export default SOCKET_EVENTS;
