@@ -37,7 +37,6 @@ class SocketService {
       this.userSocket = new UserSocket(this.io, socket)
       this.qrSocket = new QRSocket(this.io, socket)
       this.emojiSocket = new EmojiSocket(this.io, socket)
-
       this.channelSocket = new ChannelSocket(this.io, socket)
       this.friendSocket = new FriendSocket(this.io, socket)
 

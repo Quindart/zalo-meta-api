@@ -6,7 +6,9 @@ import { UserRepository } from "../../../domain/repository/User.repository.js";
 import File from "../../mongo/model/File.js";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
-
+import FCM from "../../mongo/model/FCM.js";
+import { expo } from "../../../../config/expo-notify.js"
+import { Expo } from "expo-server-sdk";
 class MessageSocket {
     userRepo
     constructor(io, socket) {
@@ -31,6 +33,7 @@ class MessageSocket {
         const message = {
             content: data.content,
             senderId: data.senderId,
+            fcmToken: data.fcmToken,
             channelId: channel.id,
             status: "send",
             timestamp: new Date(),
@@ -57,9 +60,38 @@ class MessageSocket {
         };
 
         this.socket.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
-        channel.members.forEach((member) => {
+        channel.members.forEach(async (member) => {
             if (member.userId.toString() !== data.senderId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                const fcm = await FCM.findOne({ user: member.userId });
+                console.log("check fcm: ", fcm);
+
+                if (fcm && fcm.fcmToken) {
+                    if (Expo.isExpoPushToken(fcm.fcmToken)) {
+                        const messages = [{
+                            to: fcm.fcmToken,
+                            sound: 'default',
+                            title: `${sender.lastName} ${sender.firstName}`,
+                            body: message.content,
+                            data: {
+                                channelId: channel.id.toString(),
+                                messageId: newMessage._id.toString()
+                            },
+                        }];
+
+                        // Gửi thông báo qua Expo
+                        const chunks = expo.chunkPushNotifications(messages);
+                        for (let chunk of chunks) {
+                            try {
+                                await expo.sendPushNotificationsAsync(chunk);
+                            } catch (error) {
+                                console.error('Error sending Expo notification:', error);
+                            }
+                        }
+                    } else {
+                        console.log(`Invalid Expo token format for user ${member.userId}`);
+                    }
+                }
             }
         });
 
