@@ -198,7 +198,14 @@ class ChannelSocket {
             };
             result.data.members.forEach((member) => {
                 if (member.userId.toString() !== userId) {
-                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE_MEMBER, {
+                        success: true,
+                        message: "Group dissolved successfully",
+                        data: {
+                            channelId: channelId,
+                            message: messageResponse,
+                        }
+                    });
                 }
             })
             this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
