@@ -245,6 +245,7 @@ class MessageSocket {
     //TODO: thu hoi tin nhan
     async deleteMessage(data) {
         const { senderId, messageId, channelId } = data
+        console.log("check data delete message: ", data)
         await messageRepository.deleteMessage(senderId, messageId);
         const channel = await channelRepository.getChannel(channelId);
         channel.members.forEach((member) => {
