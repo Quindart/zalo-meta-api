@@ -8,7 +8,8 @@ import { is } from 'useragent';
 
 const ROLE_TYPES = {
   CAPTAIN: 'captain',
-  MEMBER: 'member'
+  MEMBER: 'member',
+  SUB_CAPTAIN: 'sub_captain'
 };
 
 const MESSAGE_TYPES = {
@@ -87,6 +88,25 @@ class ChannelRepository {
 
     await Promise.all(updatePromises);
   }
+
+  async assignRoleChannelId(channelId, updatedMembers) {
+    console.log("💲💲💲 ~ ChannelRepository ~ updateRoleChannelId ~ updatedMembers:", this._formatChannelMembersRequest(updatedMembers))
+    // if (!channelId || !Array.isArray(updatedMembers)) {
+    //   return;
+    // }
+    // await Channel.findByIdAndUpdate(
+    //   channelId,
+    //   {
+    //     $set: {
+    //       members: this._formatChannelMembersRequest(updatedMembers),
+    //       updatedAt: Date.now(),
+    //     },
+    //   },
+    //   { new: true }
+    // );
+
+  }
+
 
   async updateLastMessage(channelId, lastMessageId) {
     if (!channelId || !lastMessageId) return null;
@@ -251,7 +271,7 @@ class ChannelRepository {
           },
         },
       ]).exec();
-      return Promise.all(channels.map(channel => 
+      return Promise.all(channels.map(channel =>
         this._formatChannelResponse(channel, currentUserId)
       ));
     } catch (error) {
@@ -353,7 +373,7 @@ class ChannelRepository {
       throw error;
     }
   }
-  
+
 
   async dissolveGroup(channelId, userId) {
     try {
@@ -441,16 +461,16 @@ class ChannelRepository {
     if (!channelId || !userId) {
       throw new Error("Channel ID và User ID là bắt buộc");
     }
-  
+
     const channelObjectId = new mongoose.Types.ObjectId(channelId);
-    const userObjectId    = new mongoose.Types.ObjectId(userId);
-  
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
     // 1. Tìm channel
     const channel = await Channel.findById(channelObjectId);
     if (!channel) {
       throw new Error("Channel không tồn tại");
     }
-  
+
     // 2. Kiểm tra nếu user đã trong nhóm thì không thêm nữa
     const alreadyMember = channel.members.some(
       member => member.user.toString() === userObjectId.toString()
@@ -458,25 +478,25 @@ class ChannelRepository {
     if (alreadyMember) {
       throw new Error("User đã là thành viên của nhóm");
     }
-  
+
     // 3. Thêm vào members với role MEMBER
     channel.members.push({
       user: userObjectId,
       role: ROLE_TYPES.MEMBER
     });
-  
+
     // 4. Cập nhật updatedAt
     channel.updatedAt = Date.now();
-  
+
     // 5. Lưu channel
     await channel.save();
-  
+
     // 6. Cập nhật mảng channels trong User (nếu cần)
     await User.findByIdAndUpdate(
       userObjectId,
       { $addToSet: { channels: channelObjectId }, updatedAt: Date.now() }
     );
-  
+
     // 7. Trả về channel đã format
     return this._formatChannelResponse(channel, userId);
   }
@@ -529,6 +549,16 @@ class ChannelRepository {
     }
   }
 
+  _formatChannelMembersRequest = async (members) => {
+    return members.map((mem) => {
+      return {
+        user: {
+          _id: new mongoose.Types.ObjectId(mem.userId)
+        },
+        role: mem.role
+      }
+    })
+  }
   _formatChannelResponse = async (channel, currentUserId) => {
     let name = channel.name;
     let avatar = channel.avatar;
