@@ -39,6 +39,7 @@ class MessageRepository {
             .populate('senderId', 'firstName lastName avatar')
             .populate('emojis')
             .populate('fileId', 'filename path size extension')
+            .populate('imagesGroup', 'filename path size extension')
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
@@ -75,6 +76,7 @@ class MessageRepository {
                 },
                 emojis: message.emojis ? message.emojis : [],
                 file: file,
+                imagesGroup: message.imagesGroup ? message.imagesGroup : [],
                 channelId: message.channelId,
                 status: "send",
                 timestamp: message.createdAt,

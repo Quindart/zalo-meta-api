@@ -85,6 +85,8 @@ const SOCKET_EVENTS = Object.freeze({
     FILE: {
         UPLOAD: "file:upload",
         UPLOAD_RESPONSE: "file:uploadResponse",
+        UPLOAD_GROUP: "file:uploadGroup",        
+        UPLOAD_GROUP_RESPONSE: "file:uploadGroupResponse"
     },
     LANGCHAIN: {
         SEND: 'langchain:sendMessage',
