@@ -8,7 +8,7 @@ import { sendMail, verifyOTP } from '../middleware/mail.middleware.js';
 import OTP from '../../infrastructure/mongo/model/OTP.js';
 import Error from '../../utils/errors.js'
 import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index.js';
-
+import FCM from '../../infrastructure/mongo/model/FCM.js';
 dotenv.config();
 
 class AuthenController {
@@ -17,6 +17,53 @@ class AuthenController {
         this.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY;
         this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
+    }
+    async registerFcmToken(req, res) {
+        try {
+            const { fcmToken, userId } = req.body;
+
+            if (!fcmToken) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'FCM token là bắt buộc'
+                });
+            }
+            // const user = await User.findById(userId).select({ _id: 1 }).lean()
+            const existingFcm = await FCM.findOne({ fcmToken: fcmToken }).select({ _id: 1, user: 1 });
+            console.log("check existingFcm: ", existingFcm);
+            if (!existingFcm) {
+                const fcm = await FCM.create({
+                    user: userId,
+                    fcmToken: fcmToken
+                })
+                return res.status(HTTP_STATUS.OK).json({
+                    success: true,
+                    message: 'FCM token đã được cập nhật thành công',
+                    data: fcm.fcmToken
+                });
+            }
+            else {
+                const existUser = existingFcm.user.find((user) => user.toString() === userId);
+                if (!existUser) {
+                    existingFcm.user.push(userId);
+                    await existingFcm.save();
+                }
+            }
+
+            return res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: 'FCM token đã được cập nhật thành công',
+                data: existingFcm.fcmToken
+            });
+        } catch (error) {
+            console.error('Error in registerFcmToken:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+
+        }
     }
     async login(req, res) {
         try {
