@@ -75,5 +75,8 @@ const ROUTING = {
   MAIL: "/api/v1/mail",
   MAIL_SEND: "/send",
   MAIL_VERIFY: "/verify-otp",
+
+  //FCM
+  FCM: "/fcm",
 };
 export default ROUTING;

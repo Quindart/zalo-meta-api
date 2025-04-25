@@ -21,4 +21,6 @@ router.post(ROUTING.QR, detectDevice, QRController.generateQR);
 router.get(ROUTING.QR, QRController.getInfoQR);
 router.post(ROUTING.QR_LOGIN, (req, res) => QRController.loginQR(req, res));
 
+router.post(ROUTING.FCM, (req, res) => authenController.registerFcmToken(req, res));
+
 export default router;

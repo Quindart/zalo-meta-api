@@ -6,6 +6,10 @@ import { UserRepository } from "../../../domain/repository/User.repository.js";
 import File from "../../mongo/model/File.js";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
+import FCM from "../../mongo/model/FCM.js";
+import { expo } from "../../../../config/expo-notify.js"
+import { Expo } from "expo-server-sdk";
+import mongoose, { Mongoose } from 'mongoose';
 
 class MessageSocket {
     userRepo
@@ -22,6 +26,7 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.RECALL, this.recallMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
+        this.socket.on(SOCKET_EVENTS.FILE.UPLOAD_GROUP, this.uploadGroupImages.bind(this));
 
         this.socket.on(SOCKET_EVENTS.MESSAGE.FORWARD, this.forwardMessage.bind(this))
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY, this.deleteHistoryMessage.bind(this));
@@ -34,6 +39,7 @@ class MessageSocket {
         const message = {
             content: data.content,
             senderId: data.senderId,
+            fcmToken: data.fcmToken,
             channelId: channel.id,
             status: "send",
             timestamp: new Date(),
@@ -60,9 +66,38 @@ class MessageSocket {
         };
 
         this.socket.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
-        channel.members.forEach((member) => {
+        channel.members.forEach(async (member) => {
             if (member.userId.toString() !== data.senderId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                const fcm = await FCM.findOne({ user: member.userId });
+                console.log("check fcm: ", fcm);
+
+                if (fcm && fcm.fcmToken) {
+                    if (Expo.isExpoPushToken(fcm.fcmToken)) {
+                        const messages = [{
+                            to: fcm.fcmToken,
+                            sound: 'default',
+                            title: `${sender.lastName} ${sender.firstName}`,
+                            body: message.content,
+                            data: {
+                                channelId: channel.id.toString(),
+                                messageId: newMessage._id.toString()
+                            },
+                        }];
+
+                        // Gửi thông báo qua Expo
+                        const chunks = expo.chunkPushNotifications(messages);
+                        for (let chunk of chunks) {
+                            try {
+                                await expo.sendPushNotificationsAsync(chunk);
+                            } catch (error) {
+                                console.error('Error sending Expo notification:', error);
+                            }
+                        }
+                    } else {
+                        console.log(`Invalid Expo token format for user ${member.userId}`);
+                    }
+                }
             }
         });
 
@@ -245,6 +280,7 @@ class MessageSocket {
     //TODO: thu hoi tin nhan
     async deleteMessage(data) {
         const { senderId, messageId, channelId } = data
+        console.log("check data delete message: ", data)
         await messageRepository.deleteMessage(senderId, messageId);
         const channel = await channelRepository.getChannel(channelId);
         channel.members.forEach((member) => {
@@ -267,7 +303,7 @@ class MessageSocket {
     async forwardMessage(data) {
         try {
             const { messageId, channelId, senderId } = data;
-            const receiver = await this.userRepo.findOne(channelId); 
+            const receiver = await this.userRepo.findOne(channelId);
             if (!receiver) {
                 console.error("Receiver not found:", channelId);
                 return;
@@ -275,7 +311,7 @@ class MessageSocket {
             const nameChannel = receiver.lastName + receiver.firstName;
             const typeChannel = "personal";
             const avatarChannel = receiver.avatar || null;
-    
+
             // Kiểm tra kênh và tạo kênh mới nếu không tồn tại
             let channel;
             try {
@@ -284,30 +320,31 @@ class MessageSocket {
                 console.error("Error finding or creating channel:", error);
                 return;
             }
-    
+
             // Lấy message gốc
-            const originalMessage = await Message.findById(messageId).populate("fileId");
+            const originalMessage = await Message.findById(new mongoose.Types.ObjectId(messageId)).populate("fileId");
             if (!originalMessage) throw new Error("Message not found");
-    
+
             // Nếu không tìm thấy kênh, trả về lỗi
             if (!channel) throw new Error("Channel not found");
-    
+
             const sender = await this.userRepo.findOne(senderId);
-    
+
             const newMessageData = {
                 content: originalMessage.content || "",
                 senderId: senderId,
                 channelId: channel.id,
                 messageType: originalMessage.messageType,
                 fileId: originalMessage.fileId || null,
+                imagesGroup: originalMessage.imagesGroup || [],
                 status: "send",
                 timestamp: new Date(),
             };
-    
+
             const newMessage = new Message(newMessageData);
             await newMessage.save();
             await channelRepository.updateLastMessage(channel.id, newMessage._id);
-    
+
             const messageResponse = {
                 id: newMessage._id,
                 content: newMessage.content,
@@ -326,23 +363,30 @@ class MessageSocket {
                         extension: originalMessage.fileId.extension,
                     }
                     : null,
+                imagesGroup: newMessage.imagesGroup.map((file) => ({
+                    id: file._id,
+                    filename: file.filename,
+                    size: file.size,
+                    path: file.path,
+                    extension: file.extension,
+                })),
                 members: channel.members,
                 channelId: channel.id,
                 status: "send",
                 timestamp: new Date(),
                 isMe: true,
             };
-    
+
             // Emit cho sender
             this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD, messageResponse);
-    
+
             // Emit cho các thành viên khác trong channel
             channel.members.forEach((member) => {
                 if (member.userId.toString() !== senderId) {
                     this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.FORWARD, messageResponse);
                 }
             });
-    
+
         } catch (error) {
             console.error("Error forwarding message:", error);
             this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD, {
@@ -351,8 +395,8 @@ class MessageSocket {
             });
         }
     }
-    
-    
+
+
 
     //TODO: Xóa lịch sử trò chuyện
     async deleteHistoryMessage(data) {
@@ -364,6 +408,188 @@ class MessageSocket {
                 channelId,
             },
         });
+    }
+
+    async uploadGroupImages(data) {
+        const { channelId, senderId, files, timestamp } = data;
+        try {
+            if (!files || !Array.isArray(files) || files.length === 0) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                    success: false,
+                    message: "No files provided",
+                });
+                return;
+            }
+
+            // Validate file sizes before uploading
+            const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit per file
+            const oversizedFiles = files.filter(file => file.fileData.length > MAX_FILE_SIZE);
+            if (oversizedFiles.length > 0) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                    success: false,
+                    message: `${oversizedFiles.length} file(s) exceed the maximum size of 10MB`,
+                });
+                return;
+            }
+
+            const channel = await channelRepository.getChannel(channelId);
+            if (!channel) {
+                console.error("Channel not found:", channelId);
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                    success: false,
+                    message: "Channel not found",
+                });
+                return;
+            }
+
+            const sender = await this.userRepo.findOne(senderId);
+            if (!sender) {
+                console.error("Sender not found:", senderId);
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                    success: false,
+                    message: "Sender not found",
+                });
+                return;
+            }
+
+            // Upload files with progress tracking
+            const uploadedFiles = [];
+            let failedUploads = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    // Emit progress update
+                    this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_PROGRESS, {
+                        progress: Math.round((i / files.length) * 100),
+                        fileName: file.fileName,
+                        index: i + 1,
+                        total: files.length
+                    });
+
+                    // Set longer timeout for larger files
+                    const uploadResult = await new Promise((resolve, reject) => {
+                        const uploadOptions = {
+                            resource_type: "auto",
+                            folder: "zalo-meta-storage",
+                            public_id: `file_${Date.now()}_${file.fileName.replace(/[^a-zA-Z0-9.]/g, '_')}`,
+                            transformation: [{ quality: "auto:good", fetch_format: "auto" }],
+                            // Increase timeout for larger files
+                            timeout: 60000, // 60 seconds timeout
+                        };
+
+                        const stream = cloudinary.uploader.upload_stream(
+                            uploadOptions,
+                            (error, result) => {
+                                if (error) {
+                                    console.error("Cloudinary upload error:", error);
+                                    reject(error);
+                                } else {
+                                    resolve(result);
+                                }
+                            }
+                        );
+
+                        // Create a buffer from the file data and pipe it to the stream
+                        const buffer = Buffer.from(file.fileData);
+                        streamifier.createReadStream(buffer).pipe(stream);
+                    });
+
+                    if (!uploadResult || uploadResult.error) {
+                        console.error("File upload failed:", uploadResult.error);
+                        failedUploads++;
+                        continue;
+                    }
+
+                    const fileExtension = file.fileName.split('.').pop() || '';
+                    const fileNameWithoutExtension = file.fileName.split('.').slice(0, -1).join('.') || file.fileName;
+
+                    const fileNew = new File({
+                        filename: fileNameWithoutExtension,
+                        path: uploadResult.secure_url,
+                        size: uploadResult.bytes,
+                        thread: channelId,
+                        extension: fileExtension,
+                    });
+
+                    await fileNew.save();
+                    uploadedFiles.push(fileNew);
+                } catch (error) {
+                    console.error(`Error uploading file ${file.fileName}:`, error);
+                    failedUploads++;
+                }
+            }
+
+            // Check if all uploads failed
+            if (uploadedFiles.length === 0) {
+                this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                    success: false,
+                    message: "All file uploads failed",
+                });
+                return;
+            }
+
+            // Create message with successfully uploaded files
+            const fileIds = uploadedFiles.map(file => file._id);
+            const newMessage = new Message({
+                content: uploadedFiles.length > 1 ? `${uploadedFiles.length} hình ảnh` : "Hình ảnh",
+                senderId: senderId,
+                channelId: channel.id,
+                status: "send",
+                timestamp: new Date(),
+                imagesGroup: fileIds,
+                messageType: "imageGroup",
+            });
+
+            await newMessage.save();
+            await channelRepository.updateLastMessage(channelId, newMessage._id);
+
+            // Prepare response with file information
+            const messageResponse = {
+                id: newMessage._id,
+                content: "Hình ảnh",
+                sender: {
+                    id: sender._id,
+                    name: sender.lastName + " " + sender.firstName,
+                    avatar: sender.avatar,
+                },
+                messageType: newMessage.messageType,
+                imagesGroup: uploadedFiles.map((file) => ({
+                    id: file._id,
+                    filename: file.filename,
+                    size: file.size,
+                    path: file.path,
+                    extension: file.extension,
+                })),
+                members: channel.members,
+                channelId: channel.id,
+                status: "send",
+                timestamp: new Date(),
+                isMe: true,
+            };
+
+            console.log("Files uploaded successfully:", uploadedFiles.length);
+
+            // this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+            //     success: true,
+            //     message: "File uploaded successfully",
+            //     data: {
+            //         message: messageResponse,
+            //     },
+            // });
+
+            // Notify other channel members
+            channel.members.forEach((member) => {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+            });
+
+        } catch (error) {
+            console.error("Error in uploadGroupImages:", error);
+            this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
+                success: false,
+                message: `File upload failed: ${error.message || "Unknown error"}`,
+            });
+        }
     }
 
 }

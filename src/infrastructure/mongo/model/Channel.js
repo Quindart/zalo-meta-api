@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
-import { is } from "useragent";
-
+const ROLE_TYPES = {
+  CAPTAIN: 'captain',
+  MEMBER: 'member',
+  SUB_CAPTAIN: 'sub_captain'
+};
 const ChannelSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -25,6 +28,7 @@ const ChannelSchema = new mongoose.Schema({
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       role: {
         type: mongoose.Schema.Types.String,
+        enum: [ROLE_TYPES.CAPTAIN, ROLE_TYPES.SUB_CAPTAIN, ROLE_TYPES.MEMBER]
       },
     },
   ],

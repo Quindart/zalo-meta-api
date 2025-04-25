@@ -3,6 +3,11 @@ import channelRepository from "../../../domain/repository/Channel.repository.js"
 import messageRepository from "../../../domain/repository/Message.repository.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
 
+const ROLE_TYPES = {
+    CAPTAIN: 'captain',
+    MEMBER: 'member',
+    SUB_CAPTAIN: 'sub_captain'
+};
 class ChannelSocket {
     userRepo
     constructor(io, socket) {
@@ -21,6 +26,9 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.LEAVE_ROOM, this.leaveRoom.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP, this.dissolveGroup.bind(this));
         this.socket.on(SOCKET_EVENTS.CHANNEL.ADD_MEMBER, this.addMember.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER, this.removeMember.bind(this));
+        this.socket.on(SOCKET_EVENTS.CHANNEL.ASSIGN_ROLE, this.assignRole.bind(this));
+
     }
 
     async findOrCreateChat(params) {
@@ -174,6 +182,49 @@ class ChannelSocket {
             });
     }
 
+    removeMember(params) {
+        const { channelId, senderId, userId } = params;
+        // this.io.to(userId).socketsLeave(channelId);
+
+        channelRepository.removeMember(channelId, senderId, userId)
+            .then((result) => {
+                if (!result || !result.data) {
+                    throw new Error("Không nhận được dữ liệu từ removeMember");
+                }
+                const messageResponse = {
+                    content: result.data.content,
+                    sender: result.data.sender,
+                    members: result.data.members,
+                    channelId: result.data.channelId,
+                    status: result.data.status,
+                    timestamp: result.data.timestamp,
+                    isMe: result.data.isMe,
+                    messageType: result.data.messageType,
+                };
+
+                result.data.members.forEach((member) => {
+                    if (member.userId !== userId) {
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER_RESPONSE, {
+                            success: true,
+                            message: "Remove member successfully",
+                            data: result.data.channel,
+                        });
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Error leaving room:", error.message);
+                this.socket.emit(SOCKET_EVENTS.CHANNEL.REMOVE_MEMBER_RESPONSE, {
+                    success: false,
+                    message: "Failed to remove member",
+                    error: error.message,
+                });
+            });
+    }
+
+
+
 
     async dissolveGroup(params) {
         const { channelId, userId } = params;
@@ -191,7 +242,14 @@ class ChannelSocket {
             };
             result.data.members.forEach((member) => {
                 if (member.userId.toString() !== userId) {
-                    this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                    this.io.to(member.userId).emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE_MEMBER, {
+                        success: true,
+                        message: "Group dissolved successfully",
+                        data: {
+                            channelId: channelId,
+                            message: messageResponse,
+                        }
+                    });
                 }
             })
             this.socket.emit(SOCKET_EVENTS.CHANNEL.DISSOLVE_GROUP_RESPONSE, {
@@ -240,7 +298,83 @@ class ChannelSocket {
         }
     }
 
+    async getMembersOfChannel({ channelId }) {
+        try {
+            const channel = await channelRepository.getChannel(channelId);
+            return
 
+        } catch (error) {
+            console.log("💲💲💲 ~ ChannelSocket ~ getMembersOfChannel ~ error:", error)
+        }
+    }
+
+    async assignRole({ channelId, userId, targetUserId, newRole }) {
+        try {
+            const channel = await channelRepository.getChannel(channelId);
+
+            const admin = channel.members.find(m => m.userId.toString() === userId);
+            const target = channel.members.find(m => m.userId.toString() === targetUserId);
+
+            if (!admin || ![ROLE_TYPES.CAPTAIN, ROLE_TYPES.SUB_CAPTAIN].includes(admin.role)) {
+                return this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                    message: "Bạn không có quyền thay đổi vai trò.",
+                });
+            }
+
+            if (!target) {
+                return this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                    message: "Thành viên không tồn tại trong nhóm.",
+                });
+            }
+
+            if (newRole === ROLE_TYPES.CAPTAIN) {
+                const currentCaptain = channel.members.find(
+                    m => m.role === ROLE_TYPES.CAPTAIN && m.userId.toString() !== targetUserId
+                );
+
+                if (currentCaptain) {
+                    if (currentCaptain.userId.toString() !== userId) {
+                        return this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                            message: "Chỉ trưởng nhóm hiện tại mới có quyền chuyển giao.",
+                        });
+                    }
+                    currentCaptain.role = ROLE_TYPES.MEMBER;
+                }
+            }
+
+            if (admin.role === ROLE_TYPES.SUB_CAPTAIN && newRole === ROLE_TYPES.CAPTAIN) {
+                return this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                    message: "Phó nhóm không được gán trưởng nhóm.",
+                });
+            }
+            if (admin.userId.toString() === targetUserId && newRole === ROLE_TYPES.MEMBER) {
+                const subCaptainExists = channel.members.some(m => m.role === ROLE_TYPES.SUB_CAPTAIN);
+                const memberExists = channel.members.some(m => m.role === ROLE_TYPES.MEMBER);
+
+                if (!subCaptainExists && !memberExists) {
+                    return this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                        message: "Không thể rời chức captain vì không có phó nhóm hoặc member để thay thế.",
+                    });
+                }
+            }
+            target.role = newRole;
+            await channelRepository.assignRoleChannelId(channel.id, channel.members);
+
+            channel.members.forEach(member => {
+                this.io.to(member.userId.toString()).emit(SOCKET_EVENTS.CHANNEL.ROLE_UPDATED, {
+                    success: true,
+                    data: channel,
+                    message: "Thay đổi vai trò thành công",
+                });
+            });
+
+        } catch (err) {
+            console.error("Assign role error:", err);
+            this.socket.emit(SOCKET_EVENTS.CHANNEL.ERROR, {
+                message: "Đã có lỗi xảy ra.",
+            });
+        }
+    }
 
 }
 
