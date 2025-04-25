@@ -18,6 +18,7 @@ const SOCKET_EVENTS = Object.freeze({
         RECALL_RESPONSE: "message:recallResponse",
         DELETE: "message:delete",
         DELETE_RESPONSE: "message:deleteResponse",
+        FORWARD: "message:forward",
         DELETE_HISTORY: "message:deleteHistory",
         DELETE_HISTORY_RESPONSE: "message:deleteHistoryResponse",
     },
@@ -42,6 +43,13 @@ const SOCKET_EVENTS = Object.freeze({
         LEAVE_ROOM_RESPONSE: "leaveRoomResponse",
         DISSOLVE_GROUP: "channel:dissolveGroup",
         DISSOLVE_GROUP_RESPONSE: "channel:dissolveGroupResponse",
+        DISSOLVE_GROUP_RESPONSE_MEMBER: "channel:dissolveGroupResponseMember",
+        ADD_MEMBER: "channel:addMember",
+        ADD_MEMBER_RESPONSE: "channel:addMemberResponse",
+        ASSIGN_ROLE: "channel:assignRole",
+        ROLE_UPDATED: "channel:roleUpdated",
+        REMOVE_MEMBER: 'channel:removeMember',
+        REMOVE_MEMBER_RESPONSE: 'channel:removeMemberResponse',
     },
     NOTIFICATION: {
         FRIEND_REQUEST: "notification:friend_request",
@@ -79,7 +87,15 @@ const SOCKET_EVENTS = Object.freeze({
     FILE: {
         UPLOAD: "file:upload",
         UPLOAD_RESPONSE: "file:uploadResponse",
+        UPLOAD_GROUP: "file:uploadGroup",        
+        UPLOAD_GROUP_RESPONSE: "file:uploadGroupResponse"
     },
+    LANGCHAIN: {
+        SEND: 'langchain:sendMessage',
+        RECEIVED: 'langchain:receivedMessage',
+        UPLOAD: "langchain:fileUpload",
+        UPLOAD_RESPONSE: "langchain:fileUploadResponse",
+    }
 });
 
 export default SOCKET_EVENTS;

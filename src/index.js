@@ -8,7 +8,7 @@ import routing from "./application/router/index.js";
 import config from "../config/index.js";
 import socketService from "./infrastructure/socket/connection/ConnectionSocketIO.js";
 import http from "http";
-import redisService from "./infrastructure/redis/RedisService.js";
+// import redisService from "./infrastructure/redis/RedisService.js";
 import mongoService from "./infrastructure/mongo/connection/MongoService.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -47,11 +47,6 @@ function runningService() {
   //TODO: Start
   server.listen(config.port, () => {
     console.log(`✅> Server is running at http://localhost:${config.port}`);
-    console.log(
-      chalk.bgGray(
-        `✅> Swagger is running at http://localhost:${config.port}/api/v1/swagger`
-      )
-    );
   });
 
   //TODO: socket
@@ -60,7 +55,7 @@ function runningService() {
   appSocket.start()
 
   //TODO: Redis
-  redisService.connect();
+  // redisService.connect();
 
   //TODO: MongoDB
   mongoService.connect();

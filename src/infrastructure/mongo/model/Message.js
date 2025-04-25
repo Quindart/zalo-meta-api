@@ -6,7 +6,7 @@ const MessageSchema = new mongoose.Schema({
   status: String,
   messageType: {
     type: String,
-    enum: ['text', 'image', 'video', 'file', 'audio', 'emoji', 'system', 'other'],
+    enum: ['text', 'image', 'imageGroup','video', 'file', 'audio', 'emoji', 'system', 'other'],
     default: 'text'
   },
   channelId: {
@@ -17,6 +17,12 @@ const MessageSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Emoji",
+    }
+  ],
+  imagesGroup: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "File",
     }
   ],
   fileId: {

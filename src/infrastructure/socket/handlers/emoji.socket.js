@@ -15,13 +15,12 @@ class EmojiSocket {
 
     async interactEmoji(params) {
         const { messageId, emoji, userId, channelId } = params;
+        console.log("params", params);
         const result = await emojiRepository.addEmoji(messageId, emoji, userId);
         const channel = await channelRepository.getChannel(channelId);
         this.socket.emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
         channel.members.forEach((member) => {
-            if (member.userId.toString() !== userId) {
-                this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
-            }
+            this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
         });
     }
     async removeMyEmoji(params) {

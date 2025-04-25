@@ -19,6 +19,7 @@ class MessageRepository {
         if (this._checkIsNotYourMessage(senderId, mess.senderId)) {
             return
         }
+        mess.isDeletedById = mess.isDeletedById || [];
         mess.isDeletedById.push(senderId);
         await mess.save();
     }
@@ -38,6 +39,7 @@ class MessageRepository {
             .populate('senderId', 'firstName lastName avatar')
             .populate('emojis')
             .populate('fileId', 'filename path size extension')
+            .populate('imagesGroup', 'filename path size extension')
             .sort({ createdAt: -1 }) // Sắp xếp giảm dần theo createdAt (mới nhất trước)
             .skip(offset)
             .limit(10) // Giới hạn 10 tin nhắn
@@ -74,6 +76,7 @@ class MessageRepository {
                 },
                 emojis: message.emojis ? message.emojis : [],
                 file: file,
+                imagesGroup: message.imagesGroup ? message.imagesGroup : [],
                 channelId: message.channelId,
                 status: "send",
                 timestamp: message.createdAt,
@@ -88,12 +91,65 @@ class MessageRepository {
 
         return messagesFormat;
     }
+    async getMessagesByMessageId(messageId) {
+        try {
+            // Convert string to ObjectId
+            messageId = new mongoose.Types.ObjectId(messageId);
+
+            // Find message by ID and populate necessary fields (if needed)
+            const message = await Message.findById(messageId)
+                .populate('senderId') // assuming senderId is a ref
+                .populate('fileId');  // assuming fileId is a ref
+
+            if (!message) {
+                return null;
+            }
+
+            let file = null;
+            if (message.messageType === "file" && message.fileId) {
+                file = {
+                    id: message.fileId._id,
+                    filename: message.fileId.filename,
+                    path: message.fileId.path,
+                    size: message.fileId.size,
+                    extension: message.fileId.extension,
+                };
+            }
+
+            const formattedMessage = {
+                id: message._id,
+                sender: {
+                    id: message.senderId._id,
+                    name: `${message.senderId.lastName} ${message.senderId.firstName}`,
+                    avatar: message.senderId.avatar,
+                },
+                file: file,
+                channelId: message.channelId,
+                status: "send",
+                timestamp: message.createdAt,
+                isMe: true,
+                messageType: message.messageType,
+                content: message.content,
+                isDeletedById: message.isDeletedById,
+            };
+
+            console.log("check message from repo: ", formattedMessage);
+
+            return formattedMessage;
+        } catch (err) {
+            console.error("Error in getMessagesByMessageId:", err);
+            throw err;
+        }
+    }
+
+
 
     //TODO: xoa lich su trò chuyện
     async deleteHistoryMessage(senderId, channelId) {
         console.log("check delete history message: ", channelId, senderId);
         const mess = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) });
         mess.forEach((message) => {
+            message.isDeletedById = message.isDeletedById || [];
             message.isDeletedById.push(senderId);
             message.save();
         });
