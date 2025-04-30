@@ -1,17 +1,12 @@
 {
   "name": "zalo-meta-api",
   "version": "1.0.0",
-  "description": "zalo meta web clone the zalo web",
-  "main": "/src/index.js",
+  "description": "zalo meta web clone",
   "type": "module",
   "scripts": {
-    "view-chat": "",
-    "start": "nodemon server.js",
-    "start-https": "set HTTPS=true&&nodemon server.js",
-    "gen-swagger": "node scripts/generate-swagger.js",
-    "docker-zalo": "node tools/start_docker.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "c-key": "node tools/generate_secret_key.js"
+    "build": "tsc",
+    "start": "node ./dist/server.js",
+    "dev": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only src/server.ts"
   },
   "keywords": [
     "zalo-meta"
@@ -36,6 +31,7 @@
     "expo-server-sdk": "^3.14.0",
     "express": "^4.21.2",
     "faiss": "^1.0.0",
+    "firebase-admin": "^12.7.0",
     "fs": "^0.0.1-security",
     "googleapis": "^146.0.0",
     "helmet": "^8.0.0",
@@ -47,8 +43,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "nodemailer": "^6.10.0",
-    "nodemon": "^3.1.9",
+    "nodemailer": "^6.10.1",
     "pdf-parse": "^1.1.1",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.1",
@@ -58,5 +53,20 @@
     "useragent": "^2.3.0",
     "yaml": "^2.7.0",
     "zalo-meta-api": "file:"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/mongoose": "^5.11.96",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.15.3",
+    "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
+    "@types/streamifier": "^0.1.2",
+    "@types/useragent": "^2.3.4",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
