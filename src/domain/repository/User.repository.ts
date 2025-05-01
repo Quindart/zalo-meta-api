@@ -11,7 +11,7 @@ export class UserRepository {
     async findOne(userId) {
         return await User.findById(new mongoose.Types.ObjectId(userId))
     }
-    async findUserSelect(userId, select) {
+    async findUserSelect(userId: string, select: string[]): Promise<any> {
         return await User.findById(userId).select(select.join(' ')).lean()
     }
     // async searchUser(type, keywords) {

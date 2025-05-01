@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/server.js",
-    "dev": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only src/server.ts"
+    "dev": "tsc --noEmit && nodemon --watch src --exec \"node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only\" src/server.ts"
   },
   "keywords": [
     "zalo-meta"
@@ -23,6 +23,7 @@
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",
+    "class-transformer": "^0.5.1",
     "cloudinary": "^1.30.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -35,6 +36,7 @@
     "fs": "^0.0.1-security",
     "googleapis": "^146.0.0",
     "helmet": "^8.0.0",
+    "inversify": "^7.5.1",
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^0.3.2",
@@ -46,6 +48,7 @@
     "nodemailer": "^6.10.1",
     "pdf-parse": "^1.1.1",
     "qrcode": "^1.5.4",
+    "reflect-metadata": "^0.2.2",
     "sharp": "^0.34.1",
     "socket.io": "^4.8.1",
     "streamifier": "^0.1.1",

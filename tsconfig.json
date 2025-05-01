@@ -13,7 +13,9 @@
     "allowImportingTsExtensions": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "main.ts", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", "dist", "test", "tools"]

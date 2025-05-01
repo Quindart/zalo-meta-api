@@ -1,11 +1,15 @@
-import mongoose from "mongoose";
+import { model, Schema, Types } from "mongoose";
+import { IUserType } from "../../../domain/entities/user/User.type";
 
 const USER_STATUS = {
   ACTIVE: "ACTIVE",
   UNACTIVE: "UNACTIVE",
 };
-
-const UserSchema = new mongoose.Schema({
+export interface UserDocument extends Omit<IUserType, '_id'>, Document {
+  toObject(): unknown;
+  _id: Types.ObjectId;
+}
+const UserSchema: Schema<UserDocument> = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   avatar: { type: String },
@@ -25,9 +29,9 @@ const UserSchema = new mongoose.Schema({
   },
   isEmailNotificationEnabled: { type: Boolean, default: true },
   emailSentAt: { type: Date },
-  channels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Channel" }]
+  channels: [{ type: Schema.Types.ObjectId, ref: "Channel" }]
 },
   { timestamps: true }
 );
 
-export default mongoose.model("User", UserSchema);
+export default model<UserDocument>("User", UserSchema);;
