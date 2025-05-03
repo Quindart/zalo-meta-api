@@ -10,12 +10,12 @@ Built with **MUI** and **React/Typescript**, featuring responsive design and ifr
   - Pass: 1245678
 
 ## Backend
-Handles API integration, data processing, and server-side logic for seamless functionality.  
+Built with  **ExpressJs** and **Socket.io**. Handles API integration, data processing, and server-side logic for seamless functionality.  
 [Backend Repository](https://github.com/Quindart/zalo-meta-api)
 
 ## Zalo Mobile App
-A Zalo-inspired messaging feature within the dashboard, powered by the Real-time Messaging API.  
-[Zalo Clone Repository](https://github.com/Quindart/zalo-meta-mobile)
+Built with  **ReactNative** and **ReactNative Paper**. A Zalo-inspired messaging feature within the dashboard, powered by the Real-time Messaging API.  
+[Zalo Mobile Repository](https://github.com/Quindart/zalo-meta-mobile)
 
 To download app, you scan QR bellow
 
@@ -23,4 +23,4 @@ To download app, you scan QR bellow
 
 ## Resources
 
-- ![image](https://github.com/user-attachments/assets/f158b16b-2e94-411c-a0ea-f42572d3a5e8)
+ ![image](https://github.com/user-attachments/assets/f158b16b-2e94-411c-a0ea-f42572d3a5e8)
