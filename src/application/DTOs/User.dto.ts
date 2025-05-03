@@ -1,5 +1,4 @@
-import { Expose, Type } from "class-transformer";
-import { ChannelDTO } from "./Channel.dto.ts";
+import { Expose } from "class-transformer";
 
 export class UserDTO {
     @Expose() email: string;

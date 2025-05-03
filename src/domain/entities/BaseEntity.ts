@@ -7,7 +7,6 @@ export interface IBaseEntityType {
 export abstract class BaseEntity<T extends IBaseEntityType> {
     @Expose()
     _id?: string;
-
     constructor(data: Partial<T> = {}) {
         this._id = data.id || '';
     }

@@ -19,7 +19,7 @@ import { FindUserByEmail } from "./application/usecases/FindUserByEmail.ts";
 import { UserMapper } from "./infrastructure/mongo/mappers/UserMapper.ts";
 import User from "./infrastructure/mongo/model/User.ts";
 import { plainToInstance } from "class-transformer";
-import { UserDTO } from "./application/DTOs/User.dto.ts";
+import { UserDTO } from "./application/dtos/User.dto.ts";
 
 
 const __filename = fileURLToPath(import.meta.url);

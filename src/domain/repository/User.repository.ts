@@ -14,9 +14,4 @@ export class UserRepository {
     async findUserSelect(userId: string, select: string[]): Promise<any> {
         return await User.findById(userId).select(select.join(' ')).lean()
     }
-    // async searchUser(type, keywords) {
-    //     const regex = {}
-    //     regex[`${type}`] = keywords
-    //     return await User.find(regex).select(selectedFields.join(' ')).lean()
-    // }
 }

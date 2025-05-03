@@ -1,7 +1,7 @@
 import { IBaseEntityType } from '../../domain/entities/BaseEntity.ts';
 import { UserEntity } from '../../domain/entities/user/User.entity.ts';
 import { IUserType } from '../../domain/entities/user/User.type.ts';
-import { IUserRepository } from '../../domain/repositories/IUserRepository.ts';
+import { IUserRepository } from '../../domain/repositories/IUser.repository.ts';
 
 export class RegisterUser {
     constructor(private readonly userRepository: IUserRepository) { }

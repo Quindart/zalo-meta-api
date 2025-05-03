@@ -4,6 +4,7 @@
     MEMBER: 'member',
     SUB_CAPTAIN: 'sub_captain'
   };
+
   const ChannelSchema = new mongoose.Schema({
     type: {
       type: String,
