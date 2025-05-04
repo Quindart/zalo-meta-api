@@ -1,8 +1,8 @@
 import { Expose } from "class-transformer";
-import { BaseEntity } from "../BaseEntity.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
 import { IFCMType } from "./FCM.type.ts";
 
-export class FCMEntity extends BaseEntity<IFCMType> {
+export class FCMEntity extends BaseEntity<IFCMType & IBaseEntityType> {
     @Expose() deleteAt?: Date | string;
     @Expose() fcmToken: string;
     @Expose() user: string[];

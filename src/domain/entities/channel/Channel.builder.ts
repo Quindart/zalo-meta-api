@@ -67,7 +67,7 @@ export class ChannelBuilder {
     }
 
     withId(id: string): ChannelBuilder {
-        this.channelData.id = id;
+        this.channelData._id = id;
         return this;
     }
 

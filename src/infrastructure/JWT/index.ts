@@ -1,6 +1,7 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import dotenv from "dotenv";
 import crypto from "crypto";
+
 dotenv.config();
 
 type TokenPayload = Record<string, any>;
@@ -88,21 +89,15 @@ export function randomTokenString(): string {
   return crypto.randomBytes(40).toString("hex");
 }
 
-export const generateAccessToken = (user: UserWithExpiry): string => {
-  return jwt.sign(user, process.env.TOKEN_SECRET_KEY!, {
-    expiresIn: typeof user.expiry_accesstoken === "string"
-      ? parseInt(user.expiry_accesstoken, 10)
-      : user.expiry_accesstoken
-  });
+export const generateAccessToken = (user: any) => {
+  return jwt.sign(user, process.env.TOKEN_SECRET_KEY, { expiresIn: user.expiry_accesstoken });
 };
 
-export const generateRefreshToken = (user: UserWithExpiry): string => {
-  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY!, {
-    expiresIn: typeof user.expiry_refreshtoken === "string"
-      ? parseInt(user.expiry_refreshtoken, 10)
-      : user.expiry_refreshtoken
-  });
+export const generateRefreshToken = (user: any) => {
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: user.expiry_refreshtoken });
 };
+
+
 
 export const generateQRToken = (desktopInfo: DesktopInfoWithExpiry): string => {
   return jwt.sign(desktopInfo, process.env.TOKEN_SECRET_KEY!, {

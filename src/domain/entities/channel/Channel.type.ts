@@ -7,7 +7,7 @@ export interface IDeletedForUser {
     user: string;
 }
 export interface IChannelType {
-    id: string,
+    _id: string,
     type: 'personal' | 'group';
     createdAt: Date;
     deletedAt?: Date;

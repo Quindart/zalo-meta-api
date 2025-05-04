@@ -15,11 +15,12 @@ import { blacklistMiddleware } from "./config/access-list.ts";
 import SocketService from "./infrastructure/socket/connection/ConnectionSocketIO.ts";
 import mongoService from "./infrastructure/mongo/connection/MongoService.ts";
 import { MongooseUserRepository } from "./infrastructure/mongo/repositories/MongooseUserRepository.ts";
-import { FindUserByEmail } from "./application/usecases/FindUserByEmail.ts";
+import { FindUserByEmail } from "./application/usecases/user/FindUserByEmail.ts";
 import { UserMapper } from "./infrastructure/mongo/mappers/UserMapper.ts";
 import User from "./infrastructure/mongo/model/User.ts";
 import { plainToInstance } from "class-transformer";
 import { UserDTO } from "./application/dtos/User.dto.ts";
+import UserService from "./application/services/user/User.service.ts";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -63,24 +64,15 @@ async function runningService() {
   //TODO: MongoDB
   mongoService.connect();
 
-  const userRepository = new MongooseUserRepository();
-  const findEmailUseCase = new FindUserByEmail(userRepository);
+  const userMongoRepository = new MongooseUserRepository()
 
-  const a = await findEmailUseCase.execute("quang82thcspb@gmail.com");
-  console.log("💲💲💲 ~ runningService ~ a:", a._id)
+  const userService = new UserService(userMongoRepository);
 
+  (async () => {
+    const data = await userService.findByPhone("0364835692", "email,phone,firstName,lastName")
+    console.log("💲💲💲 ~ data:", data)
+  })();
 
-  const populatedUser = await User.findById({ _id: a._id }).populate('channels');
-  console.log("💲💲💲 ~ runningService ~ populatedUser:", populatedUser)
-
-
-  if (a) {
-    const b = UserMapper.toPersistence(a);
-    console.log("💲💲💲 ~ toPersistence ~ b:", b);
-    console.log("💲💲💲 ~ toDomain ~ a:", a);
-  } else {
-    console.log("❌ Không tìm thấy user.");
-  }
 
   //TODO: LOG
   console.log(chalk.grey("🚀 Service Info"));

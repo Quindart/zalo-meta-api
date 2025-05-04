@@ -1,14 +1,14 @@
 import { Exclude, Expose, instanceToPlain } from 'class-transformer';
 
 export interface IBaseEntityType {
-    id: string;
+    _id: string;
 }
 @Exclude()
 export abstract class BaseEntity<T extends IBaseEntityType> {
     @Expose()
     _id?: string;
     constructor(data: Partial<T> = {}) {
-        this._id = data.id || '';
+        this._id = data._id || '';
     }
     toData(): T {
         return instanceToPlain(this) as T;

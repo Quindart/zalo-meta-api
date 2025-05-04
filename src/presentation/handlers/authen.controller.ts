@@ -16,18 +16,14 @@ import FCM from '../../infrastructure/mongo/model/FCM.ts';
 
 class AuthenController {
 
-    protected ACCESS_TOKEN_SECRET: string;
-    protected REFRESH_TOKEN_SECRET: string;
-    protected ACCESS_TOKEN_EXPIRY: string;
-    protected REFRESH_TOKEN_EXPIRY: string;
+    protected ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
+    protected REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY;
+    protected ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
+    protected REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 
     constructor() {
-        this.ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
-        this.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY;
-        this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
-        this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
-    
+
     async registerFcmToken(req: Request, res: Response) {
         try {
             const { fcmToken, userId } = req.body;
@@ -191,6 +187,7 @@ class AuthenController {
     async refreshToken(req: Request, res: Response) {
         try {
             const { refreshToken } = req.body;
+            console.log("💲💲💲 ~ AuthenController ~ refreshToken ~ refreshToken:", refreshToken)
 
             if (!refreshToken) {
                 return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -202,14 +199,16 @@ class AuthenController {
             const existingToken = await RefreshToken.findOne({
                 token: refreshToken
             });
+            console.log("💲💲💲 ~ AuthenController ~ refreshToken ~ existingToken:", existingToken)
 
-            if (!existingToken) {
-                return res.status(HTTP_STATUS.FORBIDDEN).json({
-                    success: false,
-                    refreshToken: existingToken,
-                    message: 'Refresh token không hợp lệ hoặc đã hết hạn'
-                });
-            }
+            // if (!existingToken) {
+            //     return res.status(HTTP_STATUS.FORBIDDEN).json({
+            //         success: false,
+            //         refreshToken: existingToken,
+            //         message: 'Refresh token không hợp lệ hoặc đã hết hạn'
+            //     });
+            // }
+            console.log("💲💲💲 ~ AuthenController ~ refreshToken ~ existingToken.expiresAt < new Date():", existingToken.expiresAt < new Date())
 
             // Kiểm tra xem token đã hết hạn chưa
             if (existingToken.expiresAt < new Date()) {
@@ -253,6 +252,7 @@ class AuthenController {
                     }
                 });
             } catch (error) {
+                console.log("💲💲💲 ~ AuthenController ~ refreshToken ~ error:", error)
                 return res.status(HTTP_STATUS.FORBIDDEN).json({
                     success: false,
                     message: 'Refresh token không hợp lệ'

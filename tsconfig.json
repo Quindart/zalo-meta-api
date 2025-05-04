@@ -7,7 +7,7 @@
     "moduleDetection": "force",
     "allowJs": false,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "rootDir": "src",
     "outDir": "dist",
     "allowImportingTsExtensions": true,
@@ -15,8 +15,15 @@
     "emitDeclarationOnly": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    // "baseUrl": ".",
+    "paths": {
+      // "@/*": ["src/*"],
+      // "@utils/*": ["src/utils/*"],
+      // "@types/*": ["src/types/*"],
+      // "@tests/*": ["src/test/*"]
+    }
   },
   "include": ["src", "main.ts", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "test", "tools"]
+  "exclude": ["node_modules", "dist", "src/test", "tools"]
 }
