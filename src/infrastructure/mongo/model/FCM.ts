@@ -1,6 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
+import { IFCMType } from "../../../domain/entities/fcm/FCM.type";
 
-const FCMSchema = new mongoose.Schema({
+export interface FCMDocument extends Omit<IFCMType, '_id' | 'user'>, Document {
+    toObject(): unknown;
+    _id: Types.ObjectId;
+    user: Types.ObjectId[];
+}
+
+const FCMSchema: Schema<FCMDocument> = new Schema({
     createAt: { type: Date, default: Date.now },
     deleteAt: { type: Date },
     updateAt: { type: Date, default: Date.now },

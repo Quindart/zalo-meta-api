@@ -1,5 +1,9 @@
-import mongoose from "mongoose";
-
+import mongoose, { Types } from "mongoose";
+import { IOTPType } from "../../../domain/entities/otp/OTP.type";
+export interface OTPDocument extends Omit<IOTPType, '_id'>, Document {
+    toObject(): unknown;
+    _id: Types.ObjectId;
+}
 const otpSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -13,7 +17,7 @@ const otpSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 300 
+        expires: 300
     },
     isVerified: {
         type: Boolean,
@@ -27,8 +31,6 @@ const otpSchema = new mongoose.Schema({
         type: Date
     }
 });
-
-// Tạo index để tìm kiếm nhanh
 otpSchema.index({ email: 1, createdAt: -1 });
 
 export default mongoose.model("OTP", otpSchema);

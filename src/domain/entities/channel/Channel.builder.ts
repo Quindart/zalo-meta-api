@@ -1,6 +1,6 @@
-import { ROLE_TYPES } from "../../../types/enum/channel.enum";
-import { ChannelEntity } from "./Channel.entity";
-import { IChannelType, IDeletedForUser, IMember } from "./Channel.type";
+import { ROLE_TYPES } from "../../../types/enum/channel.enum.ts";
+import { ChannelEntity } from "./Channel.entity.ts";
+import { IChannelType, IDeletedForUser, IMember } from "./Channel.type.ts";
 
 export class ChannelBuilder {
     private channelData: Partial<IChannelType> = {};

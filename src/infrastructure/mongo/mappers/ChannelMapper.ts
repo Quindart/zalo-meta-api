@@ -3,18 +3,16 @@ import { ChannelEntity } from "../../../domain/entities/channel/Channel.entity.t
 import { IChannelType } from "../../../domain/entities/channel/Channel.type.ts";
 import { ChannelDocument } from "../model/Channel.ts";
 import { Types } from "mongoose";
+import { injectable } from "inversify";
 
+@injectable()
 export class ChannelMapper {
-    static ChannelMapper(doc: ChannelDocument): ChannelDocument | PromiseLike<ChannelDocument> {
-        throw new Error('Method not implemented.');
-    }
     toDomain(doc: ChannelDocument): ChannelEntity {
         if (!doc) return null;
-
         const docConvert: Partial<IChannelType> = {
-            _id: doc._id.toString(),
-            members: doc.members.map((mem: any) => ({ user: mem.user.toString(), role: mem.role })),
-            lastMessage: doc.lastMessage._id.toString()
+            _id: doc._id ? doc._id.toString() : undefined,
+            members: doc.members ? doc.members.map((mem: any) => ({ user: mem.user.toString(), role: mem.role })) : undefined,
+            lastMessage: doc.lastMessage ? doc.lastMessage._id.toString() : undefined
         }
         const channel = { ...doc.toObject() as Record<string, any>, ...docConvert };
         return plainToInstance(ChannelEntity, channel, { excludeExtraneousValues: true })

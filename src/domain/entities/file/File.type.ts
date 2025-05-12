@@ -1,4 +1,4 @@
-export interface IFileEntity {
+export interface IFileType {
     deleteAt?: Date;
     filename: string;
     path: string;

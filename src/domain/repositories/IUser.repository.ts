@@ -1,13 +1,17 @@
-import { UserEntity } from './../entities/user/User.entity';
-import { IUserType } from "../entities/user/User.type";
-import { IBaseRepository } from "./IBase.repository";
+import { UserEntity } from './../entities/user/User.entity.ts';
+import { IUserType } from "../entities/user/User.type.ts";
+import { IBaseRepository } from "./IBase.repository.ts";
+import { UserDocument } from '../../infrastructure/mongo/model/User.ts';
 
-export interface IUserRepository extends IBaseRepository<IUserType, UserEntity> {
-    findByEmail(email: string): Promise<UserEntity>;
-    findByPhone(phone: string, queries: string): Promise<UserEntity>;
-    findUserSelect(userId: string, queries: string): Promise<UserEntity>;
+export interface IUserRepository extends IBaseRepository<IUserType, UserDocument> {
+
+    findByIdAndUpdateChannel(userId: string, channelId: string): Promise<UserDocument>
+
+    findByEmail(email: string): Promise<UserDocument>;
+    findByPhone(phone: string, queries: string): Promise<UserDocument>;
+    findUserSelect(userId: string, queries: string): Promise<UserDocument>;
     changePassword(userId: string, password: string, newPassword: string): Promise<boolean>;
-    searchUserWithFriends(userId: string, type: string, keywords: string): Promise<UserEntity[]>;
+    searchUserWithFriends(userId: string, type: string, keywords: string): Promise<UserDocument[]>;
     searchUsers(type: string, keywords: string): Promise<any>;
 
 

@@ -1,6 +1,15 @@
+import { MessageDocument } from "../../infrastructure/mongo/model/Message";
+import { SystemMessageDocument } from "../../infrastructure/mongo/model/SystemMessage";
+import { IMessageType } from "../entities/message/Message.type";
 
 export interface IMessageRepository {
-    createMessage(params: { channelId: string; userId: string; content: string }): Promise<any>;
+
+    toSave(document: MessageDocument | SystemMessageDocument): Promise<MessageDocument | SystemMessageDocument>
+    createMessage(params: Partial<IMessageType>): Promise<any>;
+
+    //TODO: new code
+    createSystemMessage(actionType: string): Promise<any>;
+
 
     recallMessage(senderId: string, messageId: string): Promise<void>;
 

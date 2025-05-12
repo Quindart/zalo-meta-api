@@ -4,13 +4,13 @@ import Channel from '../../infrastructure/mongo/model/Channel.ts';
 
 
 class MessageRepository {
+    
     async createMessage({ channelId, userId, content }) {
         const message = await Message.create({
             channel: channelId,
             user: userId,
             content,
         });
-
         return message;
     }
     //TODO: xoa tin nhan

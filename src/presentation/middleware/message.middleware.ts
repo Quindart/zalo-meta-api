@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 
-import { HTTP_STATUS } from "../../constants/index";
+import { HTTP_STATUS } from "../../constants/index.ts";
 
 export const verifyMessage = (req: Request, res: Response, next: NextFunction) => {
     try {

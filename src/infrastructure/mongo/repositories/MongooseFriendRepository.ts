@@ -1,5 +1,5 @@
-import { IFriendRepository } from "../../../domain/repositories/IFriend.repository";
-import Friend from "../model/Friend";
+import { IFriendRepository } from "../../../domain/repositories/IFriend.repository.ts";
+import Friend from "../model/Friend.ts";
 
 
 export class MongooseFriendRepository implements IFriendRepository {

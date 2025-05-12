@@ -1,5 +1,12 @@
-import mongoose from "mongoose";
-const EmojiSchema = new mongoose.Schema({
+import mongoose, { Schema, Types } from "mongoose";
+import { IEmojiType } from "../../../domain/entities/emoji/Emoji.entity.ts";
+export interface EmojiDocument extends Omit<IEmojiType, 'messageId' | 'userId'>, Document {
+  toObject(): unknown;
+  messageId: Types.ObjectId;
+  userId: Types.ObjectId
+}
+
+const EmojiSchema: Schema<EmojiDocument> = new Schema({
   createAt: { type: Date, default: Date.now },
   deleteAt: { type: Date },
   emoji: { type: String, required: true },

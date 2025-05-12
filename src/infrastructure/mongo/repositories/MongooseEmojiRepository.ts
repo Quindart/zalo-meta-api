@@ -74,7 +74,7 @@ export class MongooseEmojiRepository implements IEmojiRepository {
                 };
             }
             const emojiDocs = await Emoji.find({ _id: { $in: message.emojis }, userId, deleteAt: { $exists: false } });
-            message.emojis = message.emojis.filter((emojiId: any) => !emojiDocs.some(e => e._id.equals(emojiId)));
+            message.emojis = message.emojis.filter((emojiId: any) => !emojiDocs.some(e => e._id.toString() === emojiId));
             await message.save();
             const result = await Emoji.updateMany(
                 { messageId, userId, deleteAt: { $exists: false } },

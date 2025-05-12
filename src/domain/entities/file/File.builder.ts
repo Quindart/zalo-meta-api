@@ -1,8 +1,8 @@
 import { FileEntity } from "./File.entity.ts";
-import { IFileEntity } from "./File.type.ts";
+import { IFileType } from "./File.type.ts";
 
 export class FileBuilder {
-    private fileData: Partial<IFileEntity> = {};
+    private fileData: Partial<IFileType> = {};
 
     public withFilename(filename: string): FileBuilder {
         this.fileData.filename = filename;

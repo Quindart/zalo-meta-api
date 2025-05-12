@@ -1,5 +1,5 @@
 import { Expose } from "class-transformer";
-import { IDeletedForUser, IMember } from "../../domain/entities/channel/Channel.type";
+import { IDeletedForUser, IMember } from "../../domain/entities/channel/Channel.type.ts";
 
 export class ChannelDTO {
     @Expose() _id: string;

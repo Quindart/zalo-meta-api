@@ -1,15 +1,116 @@
 import { Types } from "mongoose";
 import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type.ts";
-import { IChannelRepository } from "../../../domain/repositories/IChannel.repository.ts";
 import { ROLE_TYPES, MESSAGE_TYPES } from "../../../types/enum/channel.enum.ts";
 import { ChannelMapper } from "../mappers/ChannelMapper.ts";
-import Channel from "../model/Channel.ts";
+import Channel, { ChannelDocument } from "../model/Channel.ts";
 import User from "../model/User.ts";
 import Message from "../model/Message.ts";
 import SystemMessage from "../model/SystemMessage.ts";
+import { responseEntity } from "../../../utils/query.ts";
+import { inject, injectable } from "inversify";
+import TYPES from "../../inversify/type.ts";
+import { IChannelRepository } from "../../../domain/repositories/IChannel.repository.ts";
+import { ILogger } from "../../logger/WinstonLogger.ts";
+import { MongooseBaseRepository } from "./MongooseBaseEntity.ts";
+type LoggerType = ILogger
 
+export interface IChannelCreateData extends Partial<IChannelType> {
+    memberRequestId: string;
+    userCreateId: string;
+    nameChannel: string;
+    typeChannel: string;
+    avatarChannel: string;
+}
+@injectable()
 export class MongooseChannelRepository implements IChannelRepository {
-    async findOrCreateChannelSocket(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string): Promise<any> {
+
+    private _baseRepository: any;
+    constructor(@inject(TYPES.Logger) private readonly logger: LoggerType) {
+        this._baseRepository = new MongooseBaseRepository<ChannelDocument>()
+    }
+    //TODO: DONE
+    async toSave(document: ChannelDocument) {
+        return this._baseRepository.toSave(document)
+    }
+    async create(data: IChannelCreateData): Promise<ChannelDocument> {
+        try {
+            const { memberRequestId, userCreateId, nameChannel, typeChannel, avatarChannel } = data;
+            const createMembers = [
+                { user: memberRequestId, role: ROLE_TYPES.MEMBER },
+                { user: userCreateId, role: ROLE_TYPES.MEMBER }
+            ];
+            const channel = await Channel.create({
+                type: typeChannel,
+                members: createMembers,
+                name: nameChannel,
+                avatar: avatarChannel,
+                lastMessage: null,
+            });
+            return channel;
+        } catch (error) {
+            this.logger.error(error);
+        }
+
+        throw new Error("Method not implemented.");
+    }
+    async createChannelGroup(name: string, membersList: IMember[]): Promise<ChannelDocument> {
+        const channel = new Channel({
+            name,
+            type: 'group',
+            members: membersList,
+            lastMessage: "",
+            avatar: "https://i.pinimg.com/474x/c5/e7/30/c5e7305c0259beb7fc3d2f7ef3df6bb1.jpg",
+        });
+        await channel.save();
+        return channel;
+
+    }
+    //TODO: FIND
+    async findOne(id: string, queries?: string): Promise<ChannelDocument> {
+        try {
+            const idObj = new Types.ObjectId(id)
+            const channel = await Channel.findById(idObj).select(responseEntity(queries));
+
+            this.logger.info(`${JSON.stringify(channel)}`)
+            return channel
+        } catch (error) {
+
+            this.logger.error(error)
+        }
+
+    }
+
+    async findChannelByTypeAndByMemberIds(type: 'personal' | 'group', memberId: string, creatorChannelId: string): Promise<ChannelDocument> {
+        try {
+            const memberIds = [
+                new Types.ObjectId(memberId),
+                new Types.ObjectId(creatorChannelId)
+            ];
+            let channel = await Channel.findOne({
+                type: type,
+                members: {
+                    $all: memberIds.map(id => ({ $elemMatch: { user: id } })),
+                    $size: 2
+                }
+            });
+            return channel
+        } catch (error) {
+            console.log("💲💲💲 ~ MongooseChannelRepository ~ findChannelByTypeAndByMemberIds ~ error:", error)
+        }
+
+    }
+
+    findAll(queries?: string): Promise<ChannelDocument[]> {
+        throw new Error("Method not implemented.");
+    }
+    update(id: string, data: IChannelType): Promise<ChannelDocument> {
+        throw new Error("Method not implemented.");
+    }
+    delete(id: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    // TODO DONE
+    async findOrCreateChannelPersonal(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string): Promise<ChannelDocument> {
         const memberIds = [
             new Types.ObjectId(memberRequestId),
             new Types.ObjectId(userCreateId)
@@ -36,9 +137,10 @@ export class MongooseChannelRepository implements IChannelRepository {
                 lastMessage: null,
             });
         }
-        return this._formatChannelResponse(channel);
+        return channel;
 
     };
+    //TODO: DONE
     async findChannelByIdAndByUserId(channelId: string, currentUserId?: string): Promise<any> {
         try {
             const channel = await Channel.findById(channelId)
@@ -46,16 +148,18 @@ export class MongooseChannelRepository implements IChannelRepository {
                     path: "members.user",
                     select: "firstName lastName avatar email"
                 })
-                .lean();
+
             if (!channel) {
                 throw new Error("Channel not found");
             }
-            return this._formatChannelResponse(channel, currentUserId);
+            return channel
         } catch (error) {
             console.error("Error in getChannel:", error);
             throw error;
         }
     };
+
+    //! Done => remove
     async createChannelSocket(name: string, userId: string, memberIds: string[]): Promise<any> {
 
         const creatorId = userId;
@@ -101,6 +205,7 @@ export class MongooseChannelRepository implements IChannelRepository {
         };
     };
 
+    //? Nằm ở userService
     async updateUserChannelSocket(channel: any): Promise<void> {
         if (!channel) return;
         const memberIds = channel.members.map((member: IMember) => member.user);

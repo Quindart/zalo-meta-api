@@ -58,6 +58,7 @@
     "streamifier": "^0.1.1",
     "twilio": "^5.4.5",
     "useragent": "^2.3.0",
+    "winston": "^3.17.0",
     "yaml": "^2.7.0",
     "zalo-meta-api": "file:"
   },

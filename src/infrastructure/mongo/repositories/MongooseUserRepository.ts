@@ -1,56 +1,114 @@
 import { UserEntity } from '../../../domain/entities/user/User.entity.ts';
+import { IUserType } from '../../../domain/entities/user/User.type.ts';
 import { IUserRepository } from '../../../domain/repositories/IUser.repository.ts';
 import { responseEntity } from '../../../utils/query.ts';
 import { UserMapper } from '../mappers/UserMapper.ts';
 import User, { UserDocument } from '../model/User.ts';
+import bcrypt from 'bcrypt';
+
 
 export class MongooseUserRepository implements IUserRepository {
-    async findUserSelect(userId: string, queries: string): Promise<UserEntity> {
-        const user = await User.findById(userId).select(responseEntity(queries));
-        return user ? UserMapper.toDomain(user) : null;
+   
+    async findByIdAndUpdateChannel(userId: string, channelId: string): Promise<UserDocument> {
+        return await User.findByIdAndUpdate(
+            userId,
+            {
+                $addToSet: { channels: channelId },
+                updatedAt: Date.now()
+            },
+            { new: true }
+        )
+    }
+    searchUserWithFriends(userId: string, type: string, keywords: string): Promise<UserDocument[]> {
+        throw new Error('Method not implemented.');
+    }
+    searchUsers(type: string, keywords: string): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    getMe(userRequest: string, queries: string[]): PromiseLike<any> {
+        throw new Error('Method not implemented.');
+    }
+    updateMe(userId: string, firstName: string, lastName: string, dateOfBirth: string, file?: any): PromiseLike<any> {
+        throw new Error('Method not implemented.');
+    }
+    registerFcmToken(fcmToken: string, userId: string): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+    login(phone: string, password: string): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    register(email: string, password: string, phone: string, firstName: string, lastName: string, dateOfBirth: string | Date): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    refreshToken(refreshToken: string): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    logout(refreshToken: string): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    forgotPassword(email: string): Promise<any> {
+        throw new Error('Method not implemented.');
+    }
+    verifyForgotPassword(email: string, otp: string | number): PromiseLike<any> {
+        throw new Error('Method not implemented.');
+    }
+    resetPassword(email: string, password: string, resetToken: string): Promise<void> {
+        throw new Error('Method not implemented.');
     }
 
+
+    async findUserSelect(userId: string, queries: string): Promise<UserDocument> {
+        const user = await User.findById(userId).select(responseEntity(queries));
+        return user
+    }
+
+
     async changePassword(userId: string, password: string, newPassword: string): Promise<boolean> {
+
         const user = await User.findById(userId);
         if (!user) return false;
 
-        const isMatch = true
-        // const isMatch = await user.comparePassword(password); 
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return false;
 
-        user.password = newPassword;
-        await user.save();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await User.findByIdAndUpdate(userId, {
+            password: hashedPassword
+        },
+            {
+                new: true,
+            }).select(userId).lean()
         return true;
     }
 
-    async searchUserWithFriends(userId: string, type: string, keywords: string): Promise<UserEntity[]> {
-        const regex = new RegExp(keywords, 'i');
+
+    async searchByField(field: string, keyword: string, excludeId: string): Promise<any[]> {
+        const regex = new RegExp(keyword, 'i');
         const users = await User.find({
-            _id: { $ne: userId },
-            [type]: regex,
+            _id: { $ne: excludeId },
+            [field]: regex,
         });
-        return users.map(user => UserMapper.toDomain(user));
+        return users;
     }
 
-    async findOne(id: string): Promise<UserEntity> {
+    async findOne(id: string): Promise<UserDocument> {
         const user = await User.findById(id);
-        return user ? UserMapper.toDomain(user) : null;
+        return user
     }
 
-    async findAll(queries: string): Promise<UserEntity[]> {
-        const users = await User.find().select(responseEntity(queries));
-        return users.map(user => UserMapper.toDomain(user));
+    async findAll(queries: string): Promise<UserDocument[]> {
+        return await User.find().select(responseEntity(queries));
     }
 
-    async update(id: string, data: UserEntity): Promise<UserEntity> {
+    async update(id: string, data: UserEntity): Promise<UserDocument> {
         const updatedDoc = await User.findByIdAndUpdate(id, UserMapper.toPersistence(data), { new: true });
-        return updatedDoc ? UserMapper.toDomain(updatedDoc) : null;
+        return updatedDoc
     }
 
-    async create(user: UserEntity): Promise<UserEntity> {
+    async create(user: UserEntity): Promise<UserDocument> {
         const created = new User(UserMapper.toPersistence(user));
-        const saved = await created.save();
-        return UserMapper.toDomain(saved);
+        return await created.save();
     }
 
     async delete(id: string): Promise<boolean> {
@@ -58,13 +116,13 @@ export class MongooseUserRepository implements IUserRepository {
         return !!deleted;
     }
 
-    async findByPhone(phone: string, queries: string): Promise<UserEntity> {
+    async findByPhone(phone: string, queries: string): Promise<UserDocument> {
         const doc: UserDocument = await User.findOne({ phone }).select(responseEntity(queries));
-        return doc ? UserMapper.toDomain(doc) : null;
+        return doc
     }
 
-    async findByEmail(email: string): Promise<UserEntity | null> {
+    async findByEmail(email: string): Promise<UserDocument | null> {
         const doc: UserDocument = await User.findOne({ email });
-        return doc ? UserMapper.toDomain(doc) : null;
+        return doc
     }
 }

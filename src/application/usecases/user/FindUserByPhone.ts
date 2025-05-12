@@ -1,5 +1,5 @@
-import { UserEntity } from '../../../domain/entities/user/User.entity';
-import { IUserRepository } from '../../../domain/repositories/IUser.repository';
+import { UserEntity } from '../../../domain/entities/user/User.entity.ts';
+import { IUserRepository } from '../../../domain/repositories/IUser.repository.ts';
 
 export class FindUserByPhone {
     constructor(private readonly userService: IUserRepository) { }

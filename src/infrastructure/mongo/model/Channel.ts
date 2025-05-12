@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import { IChannelType } from "../../../domain/entities/channel/Channel.type.ts";
 import { ROLE_TYPES } from "../../../types/enum/channel.enum.ts";
 

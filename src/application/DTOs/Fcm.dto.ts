@@ -1,5 +1,5 @@
 import { Expose, Type } from "class-transformer";
-import { UserDTO } from "./User.dto";
+import { UserDTO } from "./User.dto.ts";
 
 export class FcmDTO {
     @Expose() deleteAt?: Date | string;

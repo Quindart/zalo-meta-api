@@ -1,6 +1,13 @@
-import mongoose from "mongoose";
+import { ISystemMessageType } from './../../../domain/entities/systemMessage/SystemMessage.type';
+import mongoose, { Document, Schema, Types } from "mongoose";
+export interface SystemMessageDocument extends Omit<ISystemMessageType, 'messageId' | '_id'>, Document {
 
-const SystemMessageSchema = new mongoose.Schema({
+  toObject(): unknown;
+  _id: Types.ObjectId;
+  messageId: Types.ObjectId;
+
+}
+const SystemMessageSchema: Schema<SystemMessageDocument> = new Schema({
   actionType: {
     type: String,
     enum: [

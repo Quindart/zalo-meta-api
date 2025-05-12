@@ -1,5 +1,5 @@
-import { MongooseUserRepository } from "../../../../infrastructure/mongo/repositories/MongooseUserRepository";
-import UserService from "../User.service";
+import { MongooseUserRepository } from "../../../../infrastructure/mongo/repositories/MongooseUserRepository.ts";
+import UserService from "../User.service.ts";
 
 describe('Test_UserService', () => {
     let mongoDbRepo: MongooseUserRepository

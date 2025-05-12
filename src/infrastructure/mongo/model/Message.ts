@@ -1,12 +1,25 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
+import { IMessageType } from "../../../domain/entities/message/Message.type";
 
-const MessageSchema = new mongoose.Schema({
+export interface MessageDocument extends Omit<IMessageType, '_id' | 'senderId' | 'channelId' | 'fileId' | 'systemMessageId' | 'isDeletedById' | 'imagesGroup' | 'emojis'>, Document {
+  toObject(): unknown;
+  _id: Types.ObjectId;
+  senderId: Types.ObjectId;
+  channelId: Types.ObjectId;
+  fileId: Types.ObjectId;
+  systemMessageId: Types.ObjectId;
+  isDeletedById: Types.ObjectId[];
+  emojis: Types.ObjectId[]
+  imagesGroup: Types.ObjectId[]
+}
+
+const MessageSchema: Schema<MessageDocument> = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   content: String,
   status: String,
   messageType: {
     type: String,
-    enum: ['text', 'image', 'imageGroup','video', 'file', 'audio', 'emoji', 'system', 'other'],
+    enum: ['text', 'image', 'imageGroup', 'video', 'file', 'audio', 'emoji', 'system', 'other'],
     default: 'text'
   },
   channelId: {

@@ -1,20 +1,26 @@
-import { IMember } from "../entities/channel/Channel.type.ts";
+import { IBaseRepository } from './IBase.repository.ts';
+import { IChannelType, IMember } from "../entities/channel/Channel.type.ts";
+import { ChannelDocument } from '../../infrastructure/mongo/model/Channel.ts';
 
-export class IChannelRepository {
-    findChannelsByUserId: (userId: string) => Promise<any[]>;
+export interface IChannelRepository extends IBaseRepository<IChannelType, ChannelDocument> {
 
-    findOrCreateChannelSocket: (memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string) => Promise<any>;
-    findChannelByIdAndByUserId: (channelId: string, currentUserId?: string) => Promise<any>;
-
-
-    createChannelSocket: (name: string, userId: string, memberIds: string[]) => Promise<any>;
+    //TODO: new code
+    toSave(document: ChannelDocument): Promise<ChannelDocument>
+    findChannelByTypeAndByMemberIds(type: 'personal' | 'group', memberId: string, creatorChannelId: string): Promise<ChannelDocument>
+    findChannelsByUserId: (userId: string) => Promise<ChannelDocument[]>;
+    findOrCreateChannelPersonal: (memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string) => Promise<ChannelDocument>;
+    findChannelByIdAndByUserId: (channelId: string, currentUserId?: string) => Promise<ChannelDocument>;
+    createChannelGroup(name: string, membersList: IMember[]): Promise<ChannelDocument>;
 
     updateUserChannelSocket: (channel: any) => Promise<void>;
-    updateLastMessageSocket: (channelId: string, lastMessageId: string) => Promise<any>;
-    assignRoleChannelIdSocket: (channelId: string, members: IMember[]) => Promise<any>;
+    updateLastMessageSocket: (channelId: string, lastMessageId: string) => Promise<ChannelDocument>;
+    assignRoleChannelIdSocket: (channelId: string, members: IMember[]) => Promise<ChannelDocument>;
     //TODO: member
-    removeMemberSocket: (channelId: string, senderId: string, userId: string) => Promise<any>;
-    addMemberToChannelSocket: (channelId: string, userId: string) => Promise<any>;
-    leaveChannelSocket: (channelId: string, userId: string) => Promise<any>;
-    dissolveGroupSocket: (channelId: string, userId: string) => Promise<any>;
+    removeMemberSocket: (channelId: string, senderId: string, userId: string) => Promise<ChannelDocument>;
+    addMemberToChannelSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
+    leaveChannelSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
+    dissolveGroupSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
 }
+
+
+// export const __esModule = true;

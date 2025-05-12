@@ -8,3 +8,10 @@ export const responseEntity = (queryField: any) => {
   });
   return obj;
 };
+
+
+export const removeUndefined = (obj: Record<string, any>): Record<string, any> => {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value !== undefined)
+  );
+};

@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-
 import User from '../../infrastructure/mongo/model/User.ts';
 import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.ts';
 import { HTTP_STATUS } from '../../constants/index.ts';
@@ -13,7 +12,6 @@ import OTP from '../../infrastructure/mongo/model/OTP.ts';
 import Error from '../../utils/errors.ts'
 import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index.ts';
 import FCM from '../../infrastructure/mongo/model/FCM.ts';
-
 class AuthenController {
 
     protected ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
@@ -34,7 +32,7 @@ class AuthenController {
                     message: 'FCM token là bắt buộc'
                 });
             }
-            const existingFcm = await FCM.findOne({ fcmToken: fcmToken }).select({ _id: 1, user: 1 });
+            const existingFcm = await FCM.findOne({ fcmToken: fcmToken }).select({ _id: 1, user: 1 }).populate('user');
             console.log("check existingFcm: ", existingFcm);
             if (!existingFcm) {
                 const fcm = await FCM.create({
@@ -48,7 +46,7 @@ class AuthenController {
                 });
             }
             else {
-                const existUser = existingFcm.user.find((user) => user.toString() === userId);
+                const existUser = Array.isArray(existingFcm.user) && existingFcm.user.find((user) => user.toString() === userId);
                 if (!existUser) {
                     existingFcm.user.push(userId);
                     await existingFcm.save();

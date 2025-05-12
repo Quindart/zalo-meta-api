@@ -1,4 +1,4 @@
-import { ROLE_TYPES } from '../../../types/enum/channel.enum';
+import { ROLE_TYPES } from '../../../types/enum/channel.enum.ts';
 export interface IMember {
     user: string;
     role: ROLE_TYPES;

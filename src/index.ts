@@ -14,13 +14,13 @@ import config from "./config/index.ts";
 import { blacklistMiddleware } from "./config/access-list.ts";
 import SocketService from "./infrastructure/socket/connection/ConnectionSocketIO.ts";
 import mongoService from "./infrastructure/mongo/connection/MongoService.ts";
-import { MongooseUserRepository } from "./infrastructure/mongo/repositories/MongooseUserRepository.ts";
-import { FindUserByEmail } from "./application/usecases/user/FindUserByEmail.ts";
-import { UserMapper } from "./infrastructure/mongo/mappers/UserMapper.ts";
-import User from "./infrastructure/mongo/model/User.ts";
-import { plainToInstance } from "class-transformer";
-import { UserDTO } from "./application/dtos/User.dto.ts";
-import UserService from "./application/services/user/User.service.ts";
+
+import { ChannelService } from "./application/services/channel/Channel.service.ts";
+import { MongooseChannelRepository } from "./infrastructure/mongo/repositories/MongooseChannelRepository.ts";
+import { ChannelMapper } from "./infrastructure/mongo/mappers/ChannelMapper.ts";
+import { removeUndefined } from "./utils/query.ts";
+import { container } from "./infrastructure/inversify/container.ts";
+import TYPES from "./infrastructure/inversify/type.ts";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,15 +64,13 @@ async function runningService() {
   //TODO: MongoDB
   mongoService.connect();
 
-  const userMongoRepository = new MongooseUserRepository()
 
-  const userService = new UserService(userMongoRepository);
+  const channelService = container.get<ChannelService>(TYPES.ChannelService);
 
   (async () => {
-    const data = await userService.findByPhone("0364835692", "email,phone,firstName,lastName")
-    console.log("💲💲💲 ~ data:", data)
+    const channel = await channelService.findOne("680fa42fe0082d9684f2a350", "name");
+    console.log("💲💲💲 ~ channel:", removeUndefined(channel))
   })();
-
 
   //TODO: LOG
   console.log(chalk.grey("🚀 Service Info"));

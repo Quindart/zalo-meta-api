@@ -1,5 +1,6 @@
 
 export interface IMessageType {
+    _id: string,
     senderId: string;
     content: string;
     status: string;
@@ -13,3 +14,4 @@ export interface IMessageType {
     timestamp?: Date;
     isDeletedById?: string[];
 }
+

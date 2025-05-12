@@ -1,22 +1,41 @@
 import mongoose, { Types } from 'mongoose';
-import { IMessageRepository } from '../../../domain/repositories/IMessage.repository';
-import Message from '../model/Message';
-import Channel from '../model/Channel';
+import { IMessageRepository } from '../../../domain/repositories/IMessage.repository.ts';
+import Message, { MessageDocument } from '../model/Message.ts';
+import Channel from '../model/Channel.ts';
+import SystemMessage, { SystemMessageDocument } from '../model/SystemMessage.ts';
+import { GROUP_EVENT_TYPE } from '../../../types/enum/systemMessage.enum.ts';
+import { IMessageType } from '../../../domain/entities/message/Message.type.ts';
+import { MongooseBaseRepository } from './MongooseBaseEntity.ts';
 
 export class MongooseMessageRepository implements IMessageRepository {
-    async createMessage({ channelId, userId, content }) {
+    private _baseRepository: any;
+    constructor() {
+        this._baseRepository = new MongooseBaseRepository<any>()
+    }
+    //TODO: DONE
+    async toSave(document: MessageDocument | SystemMessageDocument) {
+        return this._baseRepository.toSave(document)
+    }
+    //TODO: DONE
+    async createSystemMessage(actionType: GROUP_EVENT_TYPE) {
+        const systemMessage = new SystemMessage({
+            actionType: actionType,
+        })
+        await systemMessage.save();
+        return systemMessage;
+    }
+    //TODO: DONE
+    async createMessage(params: Partial<IMessageType>) {
         try {
-            const message = await Message.create({
-                channel: channelId,
-                user: userId,
-                content,
-            });
+            const message = await Message.create(params);
             return message;
         } catch (error) {
             console.error("Error in createMessage:", error);
             throw new Error(error.message || "Failed to create message.");
         }
     }
+
+
 
     async recallMessage(senderId: string, messageId: string) {
         try {
@@ -42,7 +61,7 @@ export class MongooseMessageRepository implements IMessageRepository {
 
     async deleteMessage(senderId: string, messageId: string) {
         try {
-            
+
             const message = await Message.findById(messageId);
             if (!message) {
                 throw new Error("Message not found.");

@@ -7,6 +7,8 @@ export interface IEmojiType extends IBaseEntityType {
     messageId: string;
     userId: string;
     deleteAt?: Date | string;
+    createAt?: Date | string;
+    updateAt?: Date | string;
 }
 
 export class EmojiEntity extends BaseEntity<IEmojiType & IBaseEntityType> {
@@ -15,6 +17,9 @@ export class EmojiEntity extends BaseEntity<IEmojiType & IBaseEntityType> {
     @Expose() messageId: string;
     @Expose() userId: string;
     @Expose() deleteAt?: Date | string;
+    @Expose() createAt?: Date | string;
+    @Expose() updateAt?: Date | string;
+
 
     constructor(data: Partial<IEmojiType> = {}) {
         super(data);
@@ -23,5 +28,7 @@ export class EmojiEntity extends BaseEntity<IEmojiType & IBaseEntityType> {
         this.messageId = data.messageId || '';
         this.userId = data.userId || '';
         this.deleteAt = data.deleteAt;
+        this.createAt = data.createAt
+        this.updateAt = data.updateAt
     }
 }

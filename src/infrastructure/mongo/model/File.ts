@@ -1,5 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { IFileType } from "../../../domain/entities/file/File.type.ts";
 
+export interface FileDocument extends Omit<IFileType,'_id'>, Document { 
+  toObject(): unknown;
+  _id: Types.ObjectId
+}
 const FileSchema = new mongoose.Schema({
   createAt: { type: Date, default: Date.now },
   deleteAt: { type: Date },
@@ -7,7 +12,6 @@ const FileSchema = new mongoose.Schema({
   path: { type: String, required: true },
   size: { type: String },
   updateAt: { type: Date, default: Date.now },
-  thread: { type: mongoose.Schema.Types.ObjectId, ref: "Thread" },
   extension: { type: String },
 });
 

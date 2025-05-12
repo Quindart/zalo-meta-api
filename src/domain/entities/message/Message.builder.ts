@@ -1,7 +1,7 @@
 // src/builders/Message.builder.ts
 
 import { MessageEntity } from "./Message.entity.ts";
-import { IMessageType } from "./Message.type";
+import { IMessageType } from "./Message.type.ts";
 
 
 export class MessageBuilder {
