@@ -42,7 +42,7 @@ container.bind<IMessageRepository>(TYPES.MessageRepository).to(MongooseMessageRe
 container.bind<IChannelRepository>(TYPES.ChannelRepository).to(MongooseChannelRepository)
 container.bind<IUserRepository>(TYPES.UserRepository).to(MongooseUserRepository)
 container.bind<IEmojiRepository>(TYPES.EmojiRepository).to(MongooseEmojiRepository);
-container.bind<IFriendRepository>(TYPES.EmojiRepository).to(MongooseFriendRepository);
+container.bind<IFriendRepository>(TYPES.FriendRepository).to(MongooseFriendRepository);
 
 //TODO: Mapper
 

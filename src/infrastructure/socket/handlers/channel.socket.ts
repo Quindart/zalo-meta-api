@@ -1,8 +1,10 @@
 import { Server, Socket } from "socket.io";
 import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import channelRepository from "../../../domain/repository/Channel.repository.ts";
 import messageRepository from "../../../domain/repository/Message.repository.ts";
 import { UserRepository } from "../../../domain/repository/User.repository.ts";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
+import { container } from "../../inversify/container.ts";
+import TYPES from "../../inversify/type.ts";
 
 const ROLE_TYPES = {
     CAPTAIN: 'captain',
@@ -13,11 +15,13 @@ class ChannelSocket {
     public io: Server;
     public socket: Socket;
     public userRepo: any;
+    public channelService: IChannelService
     constructor(io: Server, socket: Socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
         this.userRepo = new UserRepository()
+        this.channelService = container.get<IChannelService>(TYPES.ChannelService)
     }
 
     registerEvents() {
@@ -33,11 +37,8 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.ASSIGN_ROLE, this.assignRole.bind(this));
 
     }
-    
-
-    async findOrCreateChat(params) {
+    async findOrCreateChat(params: { senderId: string, receiverId: string }) {
         const { senderId, receiverId } = params;
-
         const receiver = await this.userRepo.findOne(receiverId);
         if (!receiver) {
             console.error("Receiver not found:", receiverId);
@@ -47,8 +48,7 @@ class ChannelSocket {
         const typeChannel = "personal";
         const avatarChannel = receiver.avatar || null;
 
-
-        channelRepository.findOrCreateChannel(receiverId, senderId, nameChannel, typeChannel, avatarChannel)
+        this.channelService.findOrCreateChannelPersonal(receiverId, senderId, nameChannel, typeChannel, avatarChannel)
             .then((channel) => {
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.FIND_ORCREATE_RESPONSE, {
                     success: true,
@@ -60,10 +60,9 @@ class ChannelSocket {
                 console.error("Error finding or creating channel:", error);
             });
     }
-
-    findByIdChannel(params) {
+    findByIdChannel(params: { channelId: string, currentUserId: string }) {
         const { channelId, currentUserId } = params;
-        channelRepository.getChannel(channelId, currentUserId)
+        this.channelService.getChannel(channelId, currentUserId)
             .then((channel) => {
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.FIND_BY_ID_RESPONSE, {
                     success: true,
@@ -75,12 +74,11 @@ class ChannelSocket {
                 console.error("Error finding channel:", error);
             });
     }
-
-    async loadChannel(params) {
+    async loadChannel(params: { currentUserId: string }) {
         const { currentUserId } = params;
         try {
             console.log("Loading channels for user:", currentUserId);
-            channelRepository.getChannels(currentUserId)
+            this.channelService.getChannels(currentUserId)
                 .then((channels) => {
                     this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
                         success: true,
@@ -100,10 +98,9 @@ class ChannelSocket {
             });
         }
     }
-
-    createChannel(params) {
+    createChannel(params: { name: string, currentUserId: string, members: any[] }) {
         const { name, currentUserId, members } = params;
-        channelRepository.createChannel(name, currentUserId, members)
+        this.channelService.createChannelSocket(name, currentUserId, members)
             .then((channel) => {
                 const allMembers = [...members, currentUserId];
                 allMembers.forEach((memberId) => {
@@ -119,12 +116,12 @@ class ChannelSocket {
                 console.error("Error creating channel:", error);
             });
     }
-
-    joinRoom(params) {
+    joinRoom(params: { channelId: string, currentUserId: string }) {
         const { channelId, currentUserId } = params;
+
         Promise.all([
             messageRepository.getMessages(channelId, currentUserId),
-            channelRepository.getChannel(channelId, currentUserId)
+            this.channelService.getChannel(channelId, currentUserId)
         ])
             .then(([messages, channel]) => {
                 this.socket.emit(SOCKET_EVENTS.CHANNEL.JOIN_ROOM_RESPONSE, {
@@ -146,11 +143,10 @@ class ChannelSocket {
                 });
             });
     }
-
-    leaveRoom(params) {
+    leaveRoom(params: { channelId: string, userId: string }) {
         const { channelId, userId } = params;
         this.socket.leave(channelId);
-        channelRepository.leaveChannel(channelId, userId)
+        this.channelService.leaveChannel(channelId, userId)
             .then((result) => {
                 const messageResponse = {
                     content: result.data.content,
@@ -185,12 +181,10 @@ class ChannelSocket {
                 });
             });
     }
-
-    removeMember(params) {
+    removeMember(params: { channelId: string, senderId: string, userId: string }) {
         const { channelId, senderId, userId } = params;
-        // this.io.to(userId).socketsLeave(channelId);
 
-        channelRepository.removeMember(channelId, senderId, userId)
+        this.channelService.removeMember(channelId, senderId, userId)
             .then((result) => {
                 if (!result || !result.data) {
                     throw new Error("Không nhận được dữ liệu từ removeMember");
@@ -226,14 +220,10 @@ class ChannelSocket {
                 });
             });
     }
-
-
-
-
-    async dissolveGroup(params) {
+    async dissolveGroup(params: { channelId: string, userId: string }) {
         const { channelId, userId } = params;
         try {
-            const result = await channelRepository.dissolveGroup(channelId, userId);
+            const result = await this.channelService.dissolveGroup(channelId, userId);
             const messageResponse = {
                 content: result.data.content,
                 sender: result.data.sender,
@@ -272,18 +262,14 @@ class ChannelSocket {
             });
         }
     }
-
-
-    async addMember(params) {
+    async addMember(params: { channelId: string, userId: string }) {
         const { channelId, userId } = params;
         try {
-            // Gọi repository mới thêm
-            const channel = await channelRepository.addMemberToChannel(
+            const channel = await this.channelService.addMemberToChannel(
                 channelId,
                 userId
             );
 
-            // 4. Emit cho tất cả thành viên nhóm
             channel.members.forEach((member) => {
                 this.io
                     .to(member.userId) // assume room by userId
@@ -301,10 +287,9 @@ class ChannelSocket {
             });
         }
     }
-
-    async assignRole({ channelId, userId, targetUserId, newRole }) {
+    async assignRole({ channelId, userId, targetUserId, newRole }: any) {
         try {
-            const channel = await channelRepository.getChannel(channelId, userId);
+            const channel = await this.channelService.getChannel(channelId, userId);
 
             const admin = channel.members.find((m: any) => m.userId.toString() === userId);
             const target = channel.members.find((m: any) => m.userId.toString() === targetUserId);
@@ -352,10 +337,10 @@ class ChannelSocket {
                 }
             }
             target.role = newRole;
-            await channelRepository.assignRoleChannelId(channel.id, channel.members);
+            await this.channelService.assignRoleChannelId(channel.id, channel.members);
 
             channel.members.forEach((member: any) => {
-                this.io.to(member.userId.toString()).emit(SOCKET_EVENTS.CHANNEL.ROLE_UPDATED, {
+                this.io.to(member.userId).emit(SOCKET_EVENTS.CHANNEL.ROLE_UPDATED, {
                     success: true,
                     data: channel,
                     message: "Thay đổi vai trò thành công",
@@ -368,7 +353,6 @@ class ChannelSocket {
             });
         }
     }
-
 }
 
 export default ChannelSocket;

@@ -170,8 +170,9 @@ class ChannelRepository {
   }
 
   async getChannel(channelId: string, currentUserId?: string) {
+    const id = new  mongoose.Types.ObjectId(channelId)
     try {
-      const channel = await Channel.findById(channelId)
+      const channel = await Channel.findById(id)
         .populate({
           path: "members.user",
           select: "firstName lastName avatar email"
@@ -182,7 +183,7 @@ class ChannelRepository {
         throw new Error("Channel not found");
       }
 
-      return this._formatChannelResponse(channel, currentUserId);
+      return await this._formatChannelResponse(channel, currentUserId);
     } catch (error) {
       console.error("Error in getChannel:", error);
       throw error;

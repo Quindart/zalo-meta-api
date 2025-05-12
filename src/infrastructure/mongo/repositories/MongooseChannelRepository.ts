@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type.ts";
 import { ROLE_TYPES, MESSAGE_TYPES } from "../../../types/enum/channel.enum.ts";
 import { ChannelMapper } from "../mappers/ChannelMapper.ts";
@@ -53,6 +53,7 @@ export class MongooseChannelRepository implements IChannelRepository {
 
         throw new Error("Method not implemented.");
     }
+
     async createChannelGroup(name: string, membersList: IMember[]): Promise<ChannelDocument> {
         const channel = new Channel({
             name,
@@ -67,8 +68,9 @@ export class MongooseChannelRepository implements IChannelRepository {
     }
     //TODO: get channel 
     async getChannel(channelId: string, currentUserId?: string) {
+        const id = new mongoose.Types.ObjectId(channelId)
         try {
-            const channel = await Channel.findById(channelId)
+            const channel = await Channel.findById(id)
                 .populate({
                     path: "members.user",
                     select: "firstName lastName avatar email"
@@ -79,12 +81,11 @@ export class MongooseChannelRepository implements IChannelRepository {
                 throw new Error("Channel not found");
             }
 
-            return this._formatChannelResponse(channel, currentUserId);
+            return await this._formatChannelResponse(channel, currentUserId);
         } catch (error) {
             console.error("Error in getChannel:", error);
             throw error;
         }
-
     }
     //TODO: get channes
     async getChannels(currentUserId: string) {
@@ -222,11 +223,12 @@ export class MongooseChannelRepository implements IChannelRepository {
         throw new Error("Method not implemented.");
     }
     // TODO DONE
-    async findOrCreateChannelPersonal(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string): Promise<ChannelDocument> {
+    async findOrCreateChannelPersonal(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string) {
         const memberIds = [
             new Types.ObjectId(memberRequestId),
             new Types.ObjectId(userCreateId)
         ];
+
         let channel = await Channel.findOne({
             type: typeChannel,
             members: {
@@ -249,9 +251,8 @@ export class MongooseChannelRepository implements IChannelRepository {
                 lastMessage: null,
             });
         }
-        return channel;
-
-    };
+        return this._formatChannelResponse(channel);
+    }
     //TODO: DONE
     async findChannelByIdAndByUserId(channelId: string, currentUserId?: string): Promise<any> {
         try {
@@ -271,11 +272,9 @@ export class MongooseChannelRepository implements IChannelRepository {
         }
     };
 
-    //! Done => remove
-    async createChannelSocket(name: string, userId: string, memberIds: string[]): Promise<any> {
-
-        const creatorId = userId;
-        const membersList = this._createMembersOfChannel(creatorId, memberIds);
+    async createChannelSocket(name: string, currentUserId: string, members: string[]) {
+        const creatorId = currentUserId;
+        const membersList = this._createMembersOfChannel(creatorId, members);
 
         const channel = new Channel({
             name,
@@ -315,7 +314,7 @@ export class MongooseChannelRepository implements IChannelRepository {
             time: lastMessage.createdAt,
             message: lastMessage.content,
         };
-    };
+    }
 
     //? Nằm ở userService
     async updateUserChannelSocket(channel: any): Promise<void> {
@@ -335,11 +334,13 @@ export class MongooseChannelRepository implements IChannelRepository {
     };
 
     //TODO: DONE
-    async assignRoleChannelIdSocket(channelId: string, members: IMember[]): Promise<any> {
-        if (!channelId || !Array.isArray(members)) {
+    async assignRoleChannelIdSocket(channelId: string, updatedMembers: any) {
+        if (!channelId || !Array.isArray(updatedMembers)) {
             return;
         }
-        const formattedMembers = await this._formatChannelMembersRequest(members);
+
+        const formattedMembers = await this._formatChannelMembersRequest(updatedMembers);
+
         await Channel.findByIdAndUpdate(
             channelId,
             {
@@ -350,7 +351,8 @@ export class MongooseChannelRepository implements IChannelRepository {
             },
             { new: true }
         );
-    };
+    }
+
 
     //TODO: DONE -> to remove
     async updateLastMessageSocket(channelId: string, lastMessageId: string): Promise<any> {
@@ -686,7 +688,7 @@ export class MongooseChannelRepository implements IChannelRepository {
     }
 
     //TODO: Private function
-    private async _createMembersOfChannel(creatorId: string, members: string[]) {
+    private _createMembersOfChannel(creatorId: string, members: string[]) {
         if (members.length >= 2) {
             return [
                 { user: creatorId, role: ROLE_TYPES.CAPTAIN },
@@ -751,12 +753,13 @@ export class MongooseChannelRepository implements IChannelRepository {
         }
     }
 
-    private async _formatChannelMembersRequest(members: IMember[]) {
+    _formatChannelMembersRequest = async (members) => {
         return members.map(mem => ({
-            user: new Types.ObjectId(mem.user),
+            user: new mongoose.Types.ObjectId(mem.userId),
             role: mem.role,
         }));
     };
+
 
     private async _formatChannelResponse(channel: any, currentUserId?: string) {
         let name = channel.name;
@@ -770,7 +773,7 @@ export class MongooseChannelRepository implements IChannelRepository {
                 avatar = otherMember.avatar;
             }
         } else {
-            avatarGroup = (await this._generateGroupAvatar(channel.members))[0];
+            avatarGroup = await this._generateGroupAvatar(channel.members);
         }
         return {
             id: channel._id.toString(),
@@ -778,8 +781,8 @@ export class MongooseChannelRepository implements IChannelRepository {
             avatar: avatar,
             avatarGroup: avatarGroup,
             type: channel.type,
-            members: channel.members.map((member: IMember) => ({
-                userId: member.user,
+            members: channel.members.map(member => ({
+                userId: member.user._id.toString() || member.user,
                 role: member.role
             })),
             time: channel.lastMessage ? channel.lastMessage.createdAt : null,

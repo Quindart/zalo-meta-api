@@ -39,14 +39,12 @@ export class ChannelService implements IChannelService {
         const channelDocument = await this.repository.create({ memberRequestId, userCreateId, nameChannel, typeChannel, avatarChannel })
         return this.mapper.toDomain(channelDocument)
     }
+    async createChannelSocket(name: string, userId: string, members: any[]) {
+        return await this.repository.createChannelSocket(name, userId, members)
+    }
 
     async findOrCreateChannelPersonal(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: 'personal' | 'group', avatarChannel: string) {
-        let channel = await this.repository.findChannelByTypeAndByMemberIds(typeChannel, memberRequestId, userCreateId)
-        if (!channel) {
-            const data: IChannelCreateData = { memberRequestId, userCreateId, nameChannel, typeChannel, avatarChannel }
-            channel = await this.repository.create(data)
-        }
-        return channel
+        return await this.repository.findOrCreateChannelPersonal(memberRequestId, userCreateId, nameChannel, typeChannel, avatarChannel)
     }
     async findChannelByIdAndByUserId(channelId: string, currentUserId?: string) {
         return await this.repository.findChannelByIdAndByUserId(channelId, currentUserId)
@@ -84,7 +82,7 @@ export class ChannelService implements IChannelService {
         await Promise.all(updatePromises);
     }
 
-    async assignRoleChannelId(channelId: string, members: IMember[]): Promise<any> {
+    async assignRoleChannelId(channelId: string, members: any[]): Promise<any> {
         return await this.repository.assignRoleChannelIdSocket(channelId, members)
     }
 

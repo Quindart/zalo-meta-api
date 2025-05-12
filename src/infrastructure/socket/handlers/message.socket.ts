@@ -11,16 +11,30 @@ import { expo } from "../../../config/expo-notify.ts"
 import { Expo } from "expo-server-sdk";
 import mongoose, { Mongoose } from 'mongoose';
 import { Server, Socket } from "socket.io";
+import { IUserService } from "../../../application/interfaces/services/IUserService.ts";
+import { IMessageService } from "../../../application/interfaces/services/IMessageService.ts";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
+import { container } from "../../inversify/container.ts";
+import TYPES from "../../inversify/type.ts";
 
 class MessageSocket {
     public userRepo: any;
     public io: Server;
     public socket: Socket;
+
+    public userService: IUserService;
+    public messageService: IMessageService;
+    public channelService: IChannelService;
+
+
     constructor(io: Server, socket: Socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
         this.userRepo = new UserRepository()
+        this.userService = container.get<IUserService>(TYPES.UserService)
+        this.channelService = container.get<IChannelService>(TYPES.ChannelService)
+        this.messageService = container.get<IMessageService>(TYPES.MessageRepository)
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
@@ -37,8 +51,8 @@ class MessageSocket {
     }
 
     async sendMessage(data) {
-        const channel = await channelRepository.getChannel(data.channelId);
-        const sender = await this.userRepo.findOne(data.senderId);
+        const channel = await this.channelService.getChannel(data.channelId);
+        const sender = await this.userService.findOne(data.senderId);
         const message = {
             content: data.content,
             senderId: data.senderId,
@@ -73,7 +87,7 @@ class MessageSocket {
             if (member.userId.toString() !== data.senderId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
                 const fcm = await FCM.findOne({ user: member.userId });
-                console.log("check fcm: ", fcm);
+                // console.log("check fcm: ", fcm);
 
                 if (fcm && fcm.fcmToken) {
                     if (Expo.isExpoPushToken(fcm.fcmToken)) {

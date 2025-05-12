@@ -6,6 +6,7 @@ import { responseEntity } from '../../../utils/query.ts';
 import { UserMapper } from '../mappers/UserMapper.ts';
 import User, { UserDocument } from '../model/User.ts';
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 
 @injectable()
 export class MongooseUserRepository implements IUserRepository {
@@ -94,7 +95,7 @@ export class MongooseUserRepository implements IUserRepository {
     }
 
     async findOne(id: string): Promise<UserDocument> {
-        const user = await User.findById(id);
+        const user = await User.findById(new mongoose.Types.ObjectId(id));
         return user
     }
 

@@ -5,22 +5,26 @@ import { ChannelDocument } from '../../infrastructure/mongo/model/Channel.ts';
 export interface IChannelRepository extends IBaseRepository<IChannelType, ChannelDocument> {
 
     //TODO: new code
-    toSave(document: ChannelDocument): Promise<ChannelDocument>
-    findChannelByTypeAndByMemberIds(type: 'personal' | 'group', memberId: string, creatorChannelId: string): Promise<ChannelDocument>
-    findChannelsByUserId: (userId: string) => Promise<ChannelDocument[]>;
-    findOrCreateChannelPersonal: (memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string) => Promise<ChannelDocument>;
-    findChannelByIdAndByUserId: (channelId: string, currentUserId?: string) => Promise<ChannelDocument>;
-    createChannelGroup(name: string, membersList: IMember[]): Promise<ChannelDocument>;
+    toSave(document: ChannelDocument): Promise<any>
+    findChannelByTypeAndByMemberIds(type: 'personal' | 'group', memberId: string, creatorChannelId: string): Promise<any>
+    findChannelsByUserId: (userId: string) => Promise<any[]>;
+    findOrCreateChannelPersonal: (memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: string, avatarChannel: string) => Promise<any>;
+    findChannelByIdAndByUserId: (channelId: string, currentUserId?: string) => Promise<any>;
+
+    createChannelGroup(name: string, membersList: IMember[]): Promise<any>;
+    createChannelSocket(name: string, userId: string, memberIds: string[]): Promise<any>
 
     getChannel(channelId: string, currentUserId?: string): Promise<any>;
     getChannels(currentUserId: string): Promise<any>;
+
     updateUserChannelSocket: (channel: any) => Promise<void>;
-    updateLastMessageSocket: (channelId: string, lastMessageId: string) => Promise<ChannelDocument>;
-    assignRoleChannelIdSocket: (channelId: string, members: IMember[]) => Promise<ChannelDocument>;
+    updateLastMessageSocket: (channelId: string, lastMessageId: string) => Promise<any>;
+
+    assignRoleChannelIdSocket: (channelId: string, members: IMember[]) => Promise<any>;
     //TODO: member
-    removeMemberSocket: (channelId: string, senderId: string, userId: string) => Promise<ChannelDocument>;
-    addMemberToChannelSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
-    leaveChannelSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
-    dissolveGroupSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
+    removeMemberSocket: (channelId: string, senderId: string, userId: string) => Promise<any>;
+    addMemberToChannelSocket: (channelId: string, userId: string) => Promise<any>;
+    leaveChannelSocket: (channelId: string, userId: string) => Promise<any>;
+    dissolveGroupSocket: (channelId: string, userId: string) => Promise<any>;
 }
 

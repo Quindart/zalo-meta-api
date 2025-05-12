@@ -87,7 +87,7 @@ class MessageRepository {
         });
 
         messagesFormat.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-        console.log("check message from repo: ", messagesFormat);
+        // console.log("check message from repo: ", messagesFormat);
 
         return messagesFormat;
     }
