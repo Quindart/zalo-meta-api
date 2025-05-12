@@ -28,4 +28,20 @@ export class MessageService implements IMessageService {
         const message = await this.repository.createSystemMessage(actionType)
         return message
     }
+    //TODO: tach service
+    async recallMessage(senderId: string, messageId: string) {
+        await this.repository.recallMessage(senderId, messageId)
+    }
+    async deleteMessage(senderId: string, messageId: string) {
+        await this.repository.deleteMessage(senderId, messageId)
+    }
+    async getMessages(channelId: string, currentUserId: string, offset: number = 0) {
+        return await this.repository.getMessages(channelId, currentUserId)
+    }
+    async getMessagesByMessageId(messageId: string) {
+        return await this.repository.getMessagesByMessageId(messageId)
+    }
+    async deleteHistoryMessage(senderId: string, channelId: string) {
+        await this.repository.deleteHistoryMessage(senderId, channelId)
+    }
 }

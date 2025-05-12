@@ -6,7 +6,9 @@ import SystemMessage, { SystemMessageDocument } from '../model/SystemMessage.ts'
 import { GROUP_EVENT_TYPE } from '../../../types/enum/systemMessage.enum.ts';
 import { IMessageType } from '../../../domain/entities/message/Message.type.ts';
 import { MongooseBaseRepository } from './MongooseBaseEntity.ts';
+import { injectable } from 'inversify';
 
+@injectable()
 export class MongooseMessageRepository implements IMessageRepository {
     private _baseRepository: any;
     constructor() {
@@ -66,9 +68,6 @@ export class MongooseMessageRepository implements IMessageRepository {
             if (!message) {
                 throw new Error("Message not found.");
             }
-            // if (this._checkIsNotYourMessage(senderId, message.us.toString())) {
-            //     throw new Error("You are not authorized to delete this message.");
-            // }
             message.content = "Tin nhắn đã thu hồi";
             message.messageType = "text";
             await message.save();

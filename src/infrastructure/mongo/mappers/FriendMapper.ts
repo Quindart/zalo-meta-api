@@ -1,6 +1,6 @@
 import { plainToInstance } from "class-transformer";
-import { FriendEntity } from "../../../domain/entities/friend/Friend.entity";
-import { FriendDocument } from "../model/Friend";
+import { FriendEntity } from "../../../domain/entities/friend/Friend.entity.ts";
+import { FriendDocument } from "../model/Friend.ts";
 import { Types } from "mongoose";
 
 export class FriendMapper {

@@ -22,5 +22,3 @@ export interface IChannelRepository extends IBaseRepository<IChannelType, Channe
     dissolveGroupSocket: (channelId: string, userId: string) => Promise<ChannelDocument>;
 }
 
-
-// export const __esModule = true;

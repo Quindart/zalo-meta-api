@@ -221,6 +221,8 @@ export class MongooseChannelRepository implements IChannelRepository {
         );
         await Promise.all(updatePromises);
     };
+
+    //TODO: DONE
     async assignRoleChannelIdSocket(channelId: string, members: IMember[]): Promise<any> {
         if (!channelId || !Array.isArray(members)) {
             return;
@@ -237,6 +239,8 @@ export class MongooseChannelRepository implements IChannelRepository {
             { new: true }
         );
     };
+
+    //TODO: DONE -> to remove
     async updateLastMessageSocket(channelId: string, lastMessageId: string): Promise<any> {
         if (!channelId || !lastMessageId) return null;
         const channel: any = await Channel.findById(new Types.ObjectId(channelId));
@@ -249,6 +253,8 @@ export class MongooseChannelRepository implements IChannelRepository {
         const updatedChannel = await channel.save();
         return updatedChannel;
     };
+
+    //TODO: Need tách service
     async removeMemberSocket(channelId: string, senderId: string, userId: string): Promise<any> {
         try {
             if (!channelId || !userId || !senderId) {
@@ -339,6 +345,7 @@ export class MongooseChannelRepository implements IChannelRepository {
             throw new Error(error.message || "Đã có lỗi xảy ra khi xóa thành viên");
         }
     };
+    //TODO: Need tách service
     async addMemberToChannelSocket(channelId: string, userId: string): Promise<any> {
         if (!channelId || !userId) {
             throw new Error("Channel ID và User ID là bắt buộc");

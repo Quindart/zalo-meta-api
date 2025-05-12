@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { UserEntity } from '../../../domain/entities/user/User.entity.ts';
 import { IUserType } from '../../../domain/entities/user/User.type.ts';
 import { IUserRepository } from '../../../domain/repositories/IUser.repository.ts';
@@ -6,9 +7,9 @@ import { UserMapper } from '../mappers/UserMapper.ts';
 import User, { UserDocument } from '../model/User.ts';
 import bcrypt from 'bcrypt';
 
-
+@injectable()
 export class MongooseUserRepository implements IUserRepository {
-   
+
     async findByIdAndUpdateChannel(userId: string, channelId: string): Promise<UserDocument> {
         return await User.findByIdAndUpdate(
             userId,

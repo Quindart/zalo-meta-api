@@ -18,13 +18,13 @@ export class ChannelMapper {
         return plainToInstance(ChannelEntity, channel, { excludeExtraneousValues: true })
     }
 
-    toPersistence(channel: ChannelEntity): any {
+    toPersistence(channel: ChannelEntity): ChannelDocument {
         const convertMembers = channel.members.length === 0 ? [] : channel.members.map((mem) => ({
             user: mem.user ? new Types.ObjectId(mem.user) : undefined,
             role: mem.role
         }))
         const convertDeletedForUsers = channel.deletedForUsers.length === 0 ? [] : channel.deletedForUsers.map(mem => ({ user: new Types.ObjectId(mem.user) }))
-        return {
+        const channelDoc = {
             _id: channel._id ? new Types.ObjectId(channel._id) : undefined,
             lastMessage: channel.lastMessage ? new Types.ObjectId(channel.lastMessage) : undefined,
             members: convertMembers,
@@ -36,6 +36,12 @@ export class ChannelMapper {
             createdAt: channel.createdAt,
             isDeleted: false,
             updatedAt: undefined,
-        }
+            toObject: () => ({}), 
+            $assertPopulated: () => ({}), 
+            $clearModifiedPaths: () => ({}), 
+            $clone: () => ({}), 
+        } as unknown;
+
+        return channelDoc as ChannelDocument;
     }
 }

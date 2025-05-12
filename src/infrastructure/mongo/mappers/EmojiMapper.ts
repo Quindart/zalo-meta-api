@@ -1,7 +1,7 @@
 import { plainToInstance } from "class-transformer";
-import { EmojiEntity } from "../../../domain/entities/emoji/Emoji.entity";
-import { EmojiDocument } from "../model/Emoji";
+import { EmojiDocument } from "../model/Emoji.ts";
 import { Types } from "mongoose";
+import { EmojiEntity } from "../../../domain/entities/emoji/Emoji.entity.ts";
 
 export class EmojiMapper {
     toDomain(doc: EmojiDocument): EmojiEntity {

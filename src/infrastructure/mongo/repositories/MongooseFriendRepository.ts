@@ -1,7 +1,8 @@
+import { injectable } from "inversify";
 import { IFriendRepository } from "../../../domain/repositories/IFriend.repository.ts";
 import Friend from "../model/Friend.ts";
 
-
+@injectable()
 export class MongooseFriendRepository implements IFriendRepository {
     async getFriendByUserId(userId: string) {
         try {
