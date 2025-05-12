@@ -65,6 +65,118 @@ export class MongooseChannelRepository implements IChannelRepository {
         return channel;
 
     }
+    //TODO: get channel 
+    async getChannel(channelId: string, currentUserId?: string) {
+        try {
+            const channel = await Channel.findById(channelId)
+                .populate({
+                    path: "members.user",
+                    select: "firstName lastName avatar email"
+                })
+                .lean();
+
+            if (!channel) {
+                throw new Error("Channel not found");
+            }
+
+            return this._formatChannelResponse(channel, currentUserId);
+        } catch (error) {
+            console.error("Error in getChannel:", error);
+            throw error;
+        }
+
+    }
+    //TODO: get channes
+    async getChannels(currentUserId: string) {
+        try {
+            const channels = await Channel.aggregate([
+                {
+                    $match: {
+                        "members.user": new Types.ObjectId(currentUserId),
+                        "deletedForUsers.user": { $nin: [new Types.ObjectId(currentUserId)] },
+                        "$and": [
+                            // { deletedAt: null },
+                            { lastMessage: { $ne: null } }
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "messages",
+                        localField: "lastMessage",
+                        foreignField: "_id",
+                        as: "lastMessageData",
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$lastMessageData",
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "members.user",
+                        foreignField: "_id",
+                        as: "membersData",
+                    },
+                },
+                {
+                    $sort: {
+                        "lastMessageData.createdAt": -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        type: 1,
+                        name: 1,
+                        avatar: 1,
+                        description: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                        deletedAt: 1,
+                        lastMessage: {
+                            _id: "$lastMessageData._id",
+                            content: "$lastMessageData.content",
+                            senderId: "$lastMessageData.senderId",
+                            createdAt: "$lastMessageData.createdAt",
+                            status: "$lastMessageData.status",
+                        },
+                        members: {
+                            $map: {
+                                input: "$members",
+                                as: "member",
+                                in: {
+                                    user: {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: "$membersData",
+                                                    as: "userData",
+                                                    cond: { $eq: ["$$userData._id", "$$member.user"] },
+                                                },
+                                            },
+                                            0,
+                                        ],
+                                    },
+                                    role: "$$member.role",
+                                },
+                            },
+                        },
+                    },
+                },
+            ]).exec();
+            return Promise.all(channels.map(channel =>
+                this._formatChannelResponse(channel, currentUserId)
+            ));
+        } catch (error) {
+            console.error('Error fetching channels:', error);
+            throw error;
+        }
+    }
     //TODO: FIND
     async findOne(id: string, queries?: string): Promise<ChannelDocument> {
         try {

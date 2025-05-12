@@ -12,6 +12,8 @@ export interface IChannelRepository extends IBaseRepository<IChannelType, Channe
     findChannelByIdAndByUserId: (channelId: string, currentUserId?: string) => Promise<ChannelDocument>;
     createChannelGroup(name: string, membersList: IMember[]): Promise<ChannelDocument>;
 
+    getChannel(channelId: string, currentUserId?: string): Promise<any>;
+    getChannels(currentUserId: string): Promise<any>;
     updateUserChannelSocket: (channel: any) => Promise<void>;
     updateLastMessageSocket: (channelId: string, lastMessageId: string) => Promise<ChannelDocument>;
     assignRoleChannelIdSocket: (channelId: string, members: IMember[]) => Promise<ChannelDocument>;

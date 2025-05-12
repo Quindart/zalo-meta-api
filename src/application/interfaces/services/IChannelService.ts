@@ -30,4 +30,7 @@ export interface IChannelService {
         userId: string,
         memberIds: string[]
     ): Promise<void>;
+
+    getChannel(channelId: string, currentUserId?: string): Promise<any>;
+    getChannels(currentUserId: string): Promise<any>;
 }

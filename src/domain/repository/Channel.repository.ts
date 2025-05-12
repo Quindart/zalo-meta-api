@@ -189,7 +189,7 @@ class ChannelRepository {
     }
   }
 
-  async getChannels(currentUserId) {
+  async getChannels(currentUserId: string) {
     try {
       const channels = await Channel.aggregate([
         {
@@ -280,7 +280,7 @@ class ChannelRepository {
     }
   }
 
-  async removeMember(channelId, senderId, userId) {
+  async removeMember(channelId: string, senderId: string, userId: string) {
     try {
       if (!channelId || !userId || !senderId) {
         throw new Error('Channel ID, Sender ID và User ID là bắt buộc');

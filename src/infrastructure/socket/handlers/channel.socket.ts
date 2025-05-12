@@ -33,6 +33,7 @@ class ChannelSocket {
         this.socket.on(SOCKET_EVENTS.CHANNEL.ASSIGN_ROLE, this.assignRole.bind(this));
 
     }
+    
 
     async findOrCreateChat(params) {
         const { senderId, receiverId } = params;

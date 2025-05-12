@@ -11,19 +11,25 @@ import { ILogger } from "../../../infrastructure/logger/WinstonLogger.ts";
 import { GROUP_EVENT_TYPE } from "../../../types/enum/systemMessage.enum.ts";
 import { IUserService } from "../../interfaces/services/IUserService.ts";
 
-type ChannelServiceType = IChannelRepository
+type ChannelRepositoryType = IChannelRepository
 type LoggerServiceType = ILogger
 type MessageServiceType = IMessageService
 type UserServiceType = IUserService
 @injectable()
 export class ChannelService implements IChannelService {
     constructor(
-        @inject(TYPES.ChannelRepository) private readonly repository: ChannelServiceType,
+        @inject(TYPES.ChannelRepository) private readonly repository: ChannelRepositoryType,
         @inject(TYPES.MessageService) private readonly messageService: MessageServiceType,
         @inject(TYPES.Logger) private readonly logger: LoggerServiceType,
         @inject(TYPES.ChannelMapper) private readonly mapper: ChannelMapper,
         @inject(TYPES.UserService) private readonly userService: UserServiceType,
     ) { }
+    async getChannel(channelId: string, currentUserId?: string): Promise<any> {
+        return await this.repository.getChannel(channelId, currentUserId)
+    }
+    async getChannels(currentUserId: string): Promise<any> {
+        return await this.repository.getChannels(currentUserId)
+    }
 
     async findOne(id: string, queries?: string) {
         const channelDocument = await this.repository.findOne(id, queries)
@@ -40,11 +46,10 @@ export class ChannelService implements IChannelService {
             const data: IChannelCreateData = { memberRequestId, userCreateId, nameChannel, typeChannel, avatarChannel }
             channel = await this.repository.create(data)
         }
-        return this.mapper.toDomain(channel)
+        return channel
     }
     async findChannelByIdAndByUserId(channelId: string, currentUserId?: string) {
-        const channelDocument = await this.repository.findChannelByIdAndByUserId(channelId, currentUserId)
-        return this.mapper.toDomain(channelDocument)
+        return await this.repository.findChannelByIdAndByUserId(channelId, currentUserId)
     }
     async createChannelGroup(name: string, userId: string, memberIds: string[]) {
         const creatorId = userId;
@@ -79,8 +84,8 @@ export class ChannelService implements IChannelService {
         await Promise.all(updatePromises);
     }
 
-    async assignRoleChannelId(channelId: string, members: IMember[]): Promise<void> {
-        await this.repository.assignRoleChannelIdSocket(channelId, members)
+    async assignRoleChannelId(channelId: string, members: IMember[]): Promise<any> {
+        return await this.repository.assignRoleChannelIdSocket(channelId, members)
     }
 
     async updateLastMessage(channelId: string, lastMessageId: string) {
@@ -91,7 +96,7 @@ export class ChannelService implements IChannelService {
         channelEntity.lastMessage = lastMessageId
         channelEntity.updatedAt = new Date(Date.now());
         channelEntity.deletedForUsers = []
-        await this.repository.toSave(this.mapper.toPersistence(channelEntity))
+        return await this.repository.toSave(this.mapper.toPersistence(channelEntity))
     }
 
     //! TODO: tach service - mongo
