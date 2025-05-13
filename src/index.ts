@@ -6,25 +6,20 @@ import cors from "cors";
 import chalk from "chalk";
 import http from "http";
 import path from "path";
-import { fileURLToPath } from "url";
 
 //TODO: IMPORT SOURCE
-import routing from "./presentation/router/index.ts";
-import config from "./config/index.ts";
-import { blacklistMiddleware } from "./config/access-list.ts";
-import SocketService from "./infrastructure/socket/connection/ConnectionSocketIO.ts";
-import mongoService from "./infrastructure/mongo/connection/MongoService.ts";
+import routing from "./presentation/router/index";
+import config from "./config/index";
+import { blacklistMiddleware } from "./config/access-list";
+import SocketService from "./infrastructure/socket/connection/ConnectionSocketIO";
+import mongoService from "./infrastructure/mongo/connection/MongoService";
 
-import { ChannelService } from "./application/services/channel/Channel.service.ts";
-import { MongooseChannelRepository } from "./infrastructure/mongo/repositories/MongooseChannelRepository.ts";
-import { ChannelMapper } from "./infrastructure/mongo/mappers/ChannelMapper.ts";
-import { removeUndefined } from "./utils/query.ts";
-import { container } from "./infrastructure/inversify/container.ts";
-import TYPES from "./infrastructure/inversify/type.ts";
+import { ChannelService } from "./application/services/channel/Channel.service";
+import { removeUndefined } from "./utils/query";
+import { container } from "./infrastructure/inversify/container";
+import TYPES from "./infrastructure/inversify/type";
 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 
 const app = express();
@@ -51,7 +46,7 @@ app.set("views", path.join(__dirname, "./views"))
 
 //TODO: Routing service
 routing(app);
-async function runningService() {
+async function bootstrap() {
   //TODO: Start
   server.listen(config.port, () => {
     console.log(`✅> Server is running at http://localhost:${config.port}`);
@@ -86,7 +81,7 @@ async function runningService() {
 
 
 
-runningService();
+bootstrap();
 
 
 

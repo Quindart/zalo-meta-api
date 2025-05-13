@@ -1,11 +1,11 @@
 import mongoose, { Types } from 'mongoose';
-import { IMessageRepository } from '../../../domain/repositories/IMessage.repository.ts';
-import Message, { MessageDocument } from '../model/Message.ts';
-import Channel from '../model/Channel.ts';
-import SystemMessage, { SystemMessageDocument } from '../model/SystemMessage.ts';
-import { GROUP_EVENT_TYPE } from '../../../types/enum/systemMessage.enum.ts';
-import { IMessageType } from '../../../domain/entities/message/Message.type.ts';
-import { MongooseBaseRepository } from './MongooseBaseEntity.ts';
+import { IMessageRepository } from '../../../domain/repositories/IMessage.repository';
+import Message, { MessageDocument } from '../model/Message';
+import Channel from '../model/Channel';
+import SystemMessage, { SystemMessageDocument } from '../model/SystemMessage';
+import { GROUP_EVENT_TYPE } from '../../../types/enum/systemMessage.enum';
+import { IMessageType } from '../../../domain/entities/message/Message.type';
+import { MongooseBaseRepository } from './MongooseBaseEntity';
 import { injectable } from 'inversify';
 
 @injectable()

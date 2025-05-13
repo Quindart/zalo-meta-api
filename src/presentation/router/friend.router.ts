@@ -1,7 +1,7 @@
 import express from "express";
-import ROUTING from "../../constants/Routes.ts";
-import friendController from "../handlers/friend.controller.ts";
-import { authenticateToken } from "../middleware/authentication.middleware.ts";
+import ROUTING from "../../constants/Routes";
+import friendController from "../handlers/friend.controller";
+import { authenticateToken } from "../middleware/authentication.middleware";
 const router = express.Router();
 
 

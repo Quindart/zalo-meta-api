@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { HTTP_STATUS } from "../constants/index.ts";
+import { HTTP_STATUS } from "../constants/index";
 
 class ErrorHandler {
   sendError(res: Response, error: any) {

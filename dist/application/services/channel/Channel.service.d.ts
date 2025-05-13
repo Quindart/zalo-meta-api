@@ -1,0 +1,37 @@
+import { ChannelMapper } from "../../../infrastructure/mongo/mappers/ChannelMapper";
+import { IChannelType } from "../../../domain/entities/channel/Channel.type";
+import { IChannelRepository } from "../../../domain/repositories/IChannel.repository";
+import { IChannelService } from "../../interfaces/services/IChannelService";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import { ILogger } from "../../../infrastructure/logger/WinstonLogger";
+import { IUserService } from "../../interfaces/services/IUserService";
+type ChannelRepositoryType = IChannelRepository;
+type LoggerServiceType = ILogger;
+type MessageServiceType = IMessageService;
+type UserServiceType = IUserService;
+export declare class ChannelService implements IChannelService {
+    private readonly repository;
+    private readonly messageService;
+    private readonly logger;
+    private readonly mapper;
+    private readonly userService;
+    constructor(repository: ChannelRepositoryType, messageService: MessageServiceType, logger: LoggerServiceType, mapper: ChannelMapper, userService: UserServiceType);
+    getChannel(channelId: string, currentUserId?: string): Promise<any>;
+    getChannels(currentUserId: string): Promise<any>;
+    findOne(id: string, queries?: string): Promise<import("../../../domain/entities/channel/Channel.entity").ChannelEntity>;
+    createChannel(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: IChannelType, avatarChannel: string): Promise<import("../../../domain/entities/channel/Channel.entity").ChannelEntity>;
+    createChannelSocket(name: string, userId: string, members: any[]): Promise<any>;
+    findOrCreateChannelPersonal(memberRequestId: string, userCreateId: string, nameChannel: string, typeChannel: 'personal' | 'group', avatarChannel: string): Promise<any>;
+    findChannelByIdAndByUserId(channelId: string, currentUserId?: string): Promise<any>;
+    createChannelGroup(name: string, userId: string, memberIds: string[]): Promise<void>;
+    updateUserChannel(channel: IChannelType): Promise<void>;
+    assignRoleChannelId(channelId: string, members: any[]): Promise<any>;
+    updateLastMessage(channelId: string, lastMessageId: string): Promise<any>;
+    removeMember(channelId: string, senderId: string, userId: string): Promise<any>;
+    addMemberToChannel(channelId: string, userId: string): Promise<any>;
+    dissolveGroup(channelId: string, userId: string): Promise<any>;
+    leaveChannel(channelId: string, userId: string): Promise<any>;
+    findChannelsByUserId(userId: string): Promise<any[]>;
+    private _createMembersOfChannel;
+}
+export {};

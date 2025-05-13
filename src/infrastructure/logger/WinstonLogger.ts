@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { winstonInstance } from '../../config/logger.ts';
+import { winstonInstance } from '../../config/logger';
 
 export interface ILogger {
     info(message: string): void;

@@ -1,6 +1,6 @@
-import { IBaseRepository } from './IBase.repository.ts';
-import { IChannelType, IMember } from "../entities/channel/Channel.type.ts";
-import { ChannelDocument } from '../../infrastructure/mongo/model/Channel.ts';
+import { IBaseRepository } from './IBase.repository';
+import { IChannelType, IMember } from "../entities/channel/Channel.type";
+import { ChannelDocument } from '../../infrastructure/mongo/model/Channel';
 
 export interface IChannelRepository extends IBaseRepository<IChannelType, ChannelDocument> {
 

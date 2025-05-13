@@ -1,8 +1,8 @@
 
 import { injectable } from "inversify";
-import { IEmojiRepository } from "../../../domain/repositories/IEmoji.repository.ts";
-import Emoji from "../model/Emoji.ts";
-import Message from "../model/Message.ts";
+import { IEmojiRepository } from "../../../domain/repositories/IEmoji.repository";
+import Emoji from "../model/Emoji";
+import Message from "../model/Message";
 @injectable()
 export class MongooseEmojiRepository implements IEmojiRepository {
     async addEmoji(messageId: string, emoji: any, userId: string) {

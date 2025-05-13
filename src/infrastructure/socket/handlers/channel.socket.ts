@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
-import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
-import { container } from "../../inversify/container.ts";
-import TYPES from "../../inversify/type.ts";
-import { IUserService } from "../../../application/interfaces/services/IUserService.ts";
-import { IMessageService } from "../../../application/interfaces/services/IMessageService.ts";
+import SOCKET_EVENTS from "../../../constants/eventEnum";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService";
+import { container } from "../../inversify/container";
+import TYPES from "../../inversify/type";
+import { IUserService } from "../../../application/interfaces/services/IUserService";
+import { IMessageService } from "../../../application/interfaces/services/IMessageService";
 
 const ROLE_TYPES = {
     CAPTAIN: 'captain',

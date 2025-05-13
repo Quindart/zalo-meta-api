@@ -1,7 +1,7 @@
-import { UserEntity } from './../entities/user/User.entity.ts';
-import { IUserType } from "../entities/user/User.type.ts";
-import { IBaseRepository } from "./IBase.repository.ts";
-import { UserDocument } from '../../infrastructure/mongo/model/User.ts';
+import { UserEntity } from './../entities/user/User.entity';
+import { IUserType } from "../entities/user/User.type";
+import { IBaseRepository } from "./IBase.repository";
+import { UserDocument } from '../../infrastructure/mongo/model/User';
 
 export interface IUserRepository extends IBaseRepository<IUserType, UserDocument> {
 

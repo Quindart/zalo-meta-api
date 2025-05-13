@@ -1,8 +1,8 @@
 import { Server, Socket } from "socket.io";
-import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import { IFriendService } from "../../../application/interfaces/services/IFriendService.ts";
-import { container } from "../../inversify/container.ts";
-import TYPES from "../../inversify/type.ts";
+import SOCKET_EVENTS from "../../../constants/eventEnum";
+import { IFriendService } from "../../../application/interfaces/services/IFriendService";
+import { container } from "../../inversify/container";
+import TYPES from "../../inversify/type";
 interface FriendParams {
     userId: string;
     userFriendId: string;

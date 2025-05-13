@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import TYPES from "../../../infrastructure/inversify/type.ts";
+import TYPES from "../../../infrastructure/inversify/type";
 import { IEmojiService } from "../../interfaces/services/IEmojiService";
 import { IEmojiRepository } from "../../../domain/repositories/IEmoji.repository";
 

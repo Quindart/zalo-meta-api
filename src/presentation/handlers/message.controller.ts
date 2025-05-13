@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { HTTP_STATUS } from '../../constants/index.ts';
-import Message from '../../infrastructure/mongo/model/Message.ts';
+import { HTTP_STATUS } from '../../constants/index';
+import Message from '../../infrastructure/mongo/model/Message';
 import mongoose from 'mongoose';
 
 class MessageController {

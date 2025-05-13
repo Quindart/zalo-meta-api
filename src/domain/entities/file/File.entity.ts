@@ -1,6 +1,6 @@
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
 import { Expose } from "class-transformer";
-import { IFileType } from "./File.type.ts";
+import { IFileType } from "./File.type";
 
 
 export class FileEntity extends BaseEntity<IFileType & IBaseEntityType> {

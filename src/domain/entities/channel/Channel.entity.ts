@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
-import { BaseEntity } from "../BaseEntity.ts";
-import { IChannelType, IDeletedForUser, IMember } from "./Channel.type.ts";
+import { BaseEntity } from "../BaseEntity";
+import { IChannelType, IDeletedForUser, IMember } from "./Channel.type";
 
 export class ChannelEntity extends BaseEntity<IChannelType> {
     @Expose() type: 'personal' | 'group';

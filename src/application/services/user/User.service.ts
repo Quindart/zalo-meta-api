@@ -1,11 +1,11 @@
 import { inject, injectable } from "inversify";
-import { UserBuilder } from "../../../domain/entities/user/User.builder.ts";
-import { UserEntity } from "../../../domain/entities/user/User.entity.ts";
-import { IUserType } from "../../../domain/entities/user/User.type.ts";
-import { IUserRepository } from "../../../domain/repositories/IUser.repository.ts";
-import { UserDocument } from "../../../infrastructure/mongo/model/User.ts";
-import { IUserService } from "../../interfaces/services/IUserService.ts";
-import TYPES from "../../../infrastructure/inversify/type.ts";
+import { UserBuilder } from "../../../domain/entities/user/User.builder";
+import { UserEntity } from "../../../domain/entities/user/User.entity";
+import { IUserType } from "../../../domain/entities/user/User.type";
+import { IUserRepository } from "../../../domain/repositories/IUser.repository";
+import { UserDocument } from "../../../infrastructure/mongo/model/User";
+import { IUserService } from "../../interfaces/services/IUserService";
+import TYPES from "../../../infrastructure/inversify/type";
 type UserRepositoryType = IUserRepository
 @injectable()
 class UserService implements IUserService {

@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
-import { HTTP_STATUS } from '../../constants/index.ts';
-import { generateAccessToken, generateQRToken, generateRefreshToken, verifyToken } from '../../infrastructure/JWT/index.ts';
-import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.ts';
-import User from '../../infrastructure/mongo/model/User.ts';
-import QRService from '../../infrastructure/QR/index.ts'
-import Error from '../../utils/errors.ts';
+import { Response } from 'express';
+import { HTTP_STATUS } from '../../constants/index';
+import { generateAccessToken, generateQRToken, generateRefreshToken, verifyToken } from '../../infrastructure/JWT/index';
+import RefreshToken from '../../infrastructure/mongo/model/RefreshToken';
+import User from '../../infrastructure/mongo/model/User';
+import QRService from '../../infrastructure/QR/index'
+import Error from '../../utils/errors';
 import dotenv from "dotenv"
+import { RequestQR } from '../../types/request/RequestQR';
 
 interface DecodedToken {
     payload?: Record<string, any>;
@@ -26,7 +27,7 @@ class QRController {
         this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
-    async generateQR(req: Request, res: Response): Promise<void> {
+    async generateQR(req: RequestQR, res: Response): Promise<void> {
         try {
             const token = generateQRToken({ ...req.deviceInfo, expiryTimes: '180s' })
             const qrDataUrl = await QRService.generateQR(JSON.stringify(token));
@@ -41,7 +42,7 @@ class QRController {
             Error.sendError(res, err)
         }
     }
-    async getInfoQR(req: Request, res: Response): Promise<void> {
+    async getInfoQR(req: RequestQR, res: Response): Promise<void> {
         try {
             const tokenQR = req.query.tokenQR as string
             if (!tokenQR) {
@@ -64,7 +65,7 @@ class QRController {
         }
     }
 
-    async loginQR(req: Request, res: Response) {
+    async loginQR(req: RequestQR, res: Response) {
         try {
             const { accessToken, isActive } = req.body
             if (isActive === false) {

@@ -1,17 +1,17 @@
 import mongoose, { Types } from "mongoose";
-import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type.ts";
-import { ROLE_TYPES, MESSAGE_TYPES } from "../../../types/enum/channel.enum.ts";
-import { ChannelMapper } from "../mappers/ChannelMapper.ts";
-import Channel, { ChannelDocument } from "../model/Channel.ts";
-import User from "../model/User.ts";
-import Message from "../model/Message.ts";
-import SystemMessage from "../model/SystemMessage.ts";
-import { responseEntity } from "../../../utils/query.ts";
+import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type";
+import { ROLE_TYPES, MESSAGE_TYPES } from "../../../types/enum/channel.enum";
+import { ChannelMapper } from "../mappers/ChannelMapper";
+import Channel, { ChannelDocument } from "../model/Channel";
+import User from "../model/User";
+import Message from "../model/Message";
+import SystemMessage from "../model/SystemMessage";
+import { responseEntity } from "../../../utils/query";
 import { inject, injectable } from "inversify";
-import TYPES from "../../inversify/type.ts";
-import { IChannelRepository } from "../../../domain/repositories/IChannel.repository.ts";
-import { ILogger } from "../../logger/WinstonLogger.ts";
-import { MongooseBaseRepository } from "./MongooseBaseEntity.ts";
+import TYPES from "../../inversify/type";
+import { IChannelRepository } from "../../../domain/repositories/IChannel.repository";
+import { ILogger } from "../../logger/WinstonLogger";
+import { MongooseBaseRepository } from "./MongooseBaseEntity";
 type LoggerType = ILogger
 
 export interface IChannelCreateData extends Partial<IChannelType> {

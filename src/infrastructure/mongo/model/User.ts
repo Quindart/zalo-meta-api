@@ -1,5 +1,5 @@
 import { Document, model, Schema, Types } from "mongoose";
-import { IUserType } from "../../../domain/entities/user/User.type.ts";
+import { IUserType } from "../../../domain/entities/user/User.type";
 
 const USER_STATUS = {
   ACTIVE: "ACTIVE",

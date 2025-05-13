@@ -1,5 +1,5 @@
-import { FriendEntity } from "./Friend.entity.ts";
-import { IFriendType } from "./Friend.type.ts";
+import { FriendEntity } from "./Friend.entity";
+import { IFriendType } from "./Friend.type";
 
 export class FriendBuilder {
     private friendData: Partial<IFriendType> = {};

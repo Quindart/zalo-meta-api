@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
-import { IRefreshTokenType } from "./RefreshToken.type.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
+import { IRefreshTokenType } from "./RefreshToken.type";
 
 export class RefreshTokenEntity extends BaseEntity<IRefreshTokenType & IBaseEntityType> {
     @Expose() token: string;

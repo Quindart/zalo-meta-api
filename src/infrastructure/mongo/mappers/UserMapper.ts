@@ -1,5 +1,5 @@
-import { UserEntity } from "../../../domain/entities/user/User.entity.ts";
-import { UserDocument } from "../model/User.ts";
+import { UserEntity } from "../../../domain/entities/user/User.entity";
+import { UserDocument } from "../model/User";
 import {  plainToInstance } from 'class-transformer';
 import { Types } from 'mongoose';
 

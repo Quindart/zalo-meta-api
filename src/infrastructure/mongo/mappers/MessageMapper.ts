@@ -1,8 +1,8 @@
 import { plainToInstance } from "class-transformer";
 import { Types } from "mongoose";
-import { MessageDocument } from "../model/Message.ts";
-import { MessageEntity } from "../../../domain/entities/message/Message.entity.ts";
-import { IMessageType } from "../../../domain/entities/message/Message.type.ts";
+import { MessageDocument } from "../model/Message";
+import { MessageEntity } from "../../../domain/entities/message/Message.entity";
+import { IMessageType } from "../../../domain/entities/message/Message.type";
 
 export class MessageMapper {
     static MessageMapper(doc: MessageDocument): MessageDocument | PromiseLike<MessageDocument> {

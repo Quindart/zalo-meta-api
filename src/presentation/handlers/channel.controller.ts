@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { HTTP_STATUS } from "../../constants/index.ts";
-import Channel from "../../infrastructure/mongo/model/Channel.ts"
-import Error from "../../utils/errors.ts"
-import { ROLE_MEMBER_OF_CHANNEL } from "../../constants/index.ts"
-import TYPES from "../../infrastructure/inversify/type.ts";
-import { IChannelService } from "../../application/interfaces/services/IChannelService.ts";
-import { container } from "../../infrastructure/inversify/container.ts";
-import { ROLE_TYPES } from "../../types/enum/channel.enum.ts";
+import { HTTP_STATUS } from "../../constants/index";
+import Channel from "../../infrastructure/mongo/model/Channel"
+import Error from "../../utils/errors"
+import { ROLE_MEMBER_OF_CHANNEL } from "../../constants/index"
+import TYPES from "../../infrastructure/inversify/type";
+import { IChannelService } from "../../application/interfaces/services/IChannelService";
+import { container } from "../../infrastructure/inversify/container";
+import { ROLE_TYPES } from "../../types/enum/channel.enum";
+import { RequestUser } from "../../types/request/RequestUser";
 
 class ChannelController {
 
@@ -15,7 +16,7 @@ class ChannelController {
         this.channelService = container.get<IChannelService>(TYPES.ChannelService)
     }
     //TODO: CREATE CHANNEl
-    async createGroup(req: Request, res: Response): Promise<void> {
+    async createGroup(req: RequestUser, res: Response): Promise<void> {
         try {
             const { name, members } = req.body;
             const userCreateChannelId = req.user.id
@@ -45,7 +46,7 @@ class ChannelController {
     }
 
     //TODO: GET ALL CHANNEL
-    async getAllChannel(req: Request, res: Response): Promise<void> {
+    async getAllChannel(req: RequestUser, res: Response): Promise<void> {
         try {
             const userId = req.user.id;
             const channels = await Channel.find({
@@ -135,7 +136,7 @@ class ChannelController {
     }
 
     //OUT GROUP 
-    async outChannel(req: Request, res: Response): Promise<void> {
+    async outChannel(req: RequestUser, res: Response): Promise<void> {
         try {
             const { id } = req.params;
             const userId = req.user.id;

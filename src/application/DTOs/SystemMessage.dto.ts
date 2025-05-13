@@ -1,5 +1,5 @@
 import { Expose } from "class-transformer";
-import { ISystemMessageType } from "../../domain/entities/systemMessage/SystemMessage.type.ts";
+import { ISystemMessageType } from "../../domain/entities/systemMessage/SystemMessage.type";
 
 export class SystemMessageDTO {
     @Expose() actionType: ISystemMessageType["actionType"];

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
-import { IEmojiType } from "../../../domain/entities/emoji/Emoji.entity.ts";
+import { IEmojiType } from "../../../domain/entities/emoji/Emoji.entity";
 export interface EmojiDocument extends Omit<IEmojiType, 'messageId' | 'userId'>, Document {
   toObject(): unknown;
   messageId: Types.ObjectId;

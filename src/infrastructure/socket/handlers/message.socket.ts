@@ -1,18 +1,18 @@
-import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import Message from "../../mongo/model/Message.ts";
-import File from "../../mongo/model/File.ts";
+import SOCKET_EVENTS from "../../../constants/eventEnum";
+import Message from "../../mongo/model/Message";
+import File from "../../mongo/model/File";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
-import FCM from "../../mongo/model/FCM.ts";
-import { expo } from "../../../config/expo-notify.ts"
+import FCM from "../../mongo/model/FCM";
+import { expo } from "../../../config/expo-notify"
 import { Expo } from "expo-server-sdk";
 import mongoose, { Mongoose } from 'mongoose';
 import { Server, Socket } from "socket.io";
-import { IUserService } from "../../../application/interfaces/services/IUserService.ts";
-import { IMessageService } from "../../../application/interfaces/services/IMessageService.ts";
-import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
-import { container } from "../../inversify/container.ts";
-import TYPES from "../../inversify/type.ts";
+import { IUserService } from "../../../application/interfaces/services/IUserService";
+import { IMessageService } from "../../../application/interfaces/services/IMessageService";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService";
+import { container } from "../../inversify/container";
+import TYPES from "../../inversify/type";
 
 class MessageSocket {
     public userRepo: any;

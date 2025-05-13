@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
-import { IFriendRepository } from "../../../domain/repositories/IFriend.repository.ts";
-import Friend from "../model/Friend.ts";
+import { IFriendRepository } from "../../../domain/repositories/IFriend.repository";
+import Friend from "../model/Friend";
 
 @injectable()
 export class MongooseFriendRepository implements IFriendRepository {

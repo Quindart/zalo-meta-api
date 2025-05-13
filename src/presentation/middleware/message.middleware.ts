@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 
+import { HTTP_STATUS } from "../../constants/index";
+import { RequestMessage } from "../../types/request/RequestMessage";
 
-import { HTTP_STATUS } from "../../constants/index.ts";
-
-export const verifyMessage = (req: Request, res: Response, next: NextFunction) => {
+export const verifyMessage = (req: RequestMessage, res: Response, next: NextFunction) => {
     try {
         const userId = req.user.id;
         const isMyMessage = req.body.senderId === userId ? true : false;

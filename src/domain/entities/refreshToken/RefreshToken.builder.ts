@@ -1,5 +1,5 @@
-import { RefreshTokenEntity } from "./RefreshToken.entity.ts";
-import { IRefreshTokenType } from "./RefreshToken.type.ts";
+import { RefreshTokenEntity } from "./RefreshToken.entity";
+import { IRefreshTokenType } from "./RefreshToken.type";
 
 export class RefreshTokenBuilder {
     private readonly data: Partial<IRefreshTokenType> = {};

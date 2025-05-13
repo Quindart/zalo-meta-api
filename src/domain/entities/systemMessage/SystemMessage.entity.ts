@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
-import { ISystemMessageType } from "./SystemMessage.type.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
+import { ISystemMessageType } from "./SystemMessage.type";
 
 export class SystemMessageEntity extends BaseEntity<ISystemMessageType & IBaseEntityType> {
     @Expose() actionType: ISystemMessageType["actionType"];

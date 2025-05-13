@@ -1,9 +1,7 @@
-// src/entities/Friend.entity.ts
 
 import { Expose } from 'class-transformer';
-import { BaseEntity, IBaseEntityType } from '../BaseEntity.ts';   // Giả sử đã có BaseEntity
-import { IFriendType } from './Friend.type.ts';
-
+import { BaseEntity, IBaseEntityType } from '../BaseEntity';   
+import { IFriendType } from './Friend.type';
 export class FriendEntity extends BaseEntity<IFriendType & IBaseEntityType> {
     @Expose()  user: string;
     @Expose() friend: string;

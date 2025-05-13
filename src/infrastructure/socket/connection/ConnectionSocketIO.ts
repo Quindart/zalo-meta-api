@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
-import MessageSocket from "../handlers/message.socket.ts";
-import UserSocket from "../handlers/user.socket.ts";
-import QRSocket from "../handlers/qr.socket.ts";
-import ChannelSocket from "../handlers/channel.socket.ts";
-import FriendSocket from "../handlers/friend.socket.ts";
-import EmojiSocket from "../handlers/emoji.socket.ts";
+import MessageSocket from "../handlers/message.socket";
+import UserSocket from "../handlers/user.socket";
+import QRSocket from "../handlers/qr.socket";
+import ChannelSocket from "../handlers/channel.socket";
+import FriendSocket from "../handlers/friend.socket";
+import EmojiSocket from "../handlers/emoji.socket";
 
 interface SocketServiceOptions {
   io: Server;

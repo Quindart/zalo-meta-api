@@ -1,9 +1,5 @@
-// src/builders/Message.builder.ts
-
-import { MessageEntity } from "./Message.entity.ts";
-import { IMessageType } from "./Message.type.ts";
-
-
+import { MessageEntity } from "./Message.entity";
+import { IMessageType } from "./Message.type";
 export class MessageBuilder {
     private messageData: Partial<IMessageType> = {};
 

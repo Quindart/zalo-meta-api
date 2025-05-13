@@ -1,21 +1,23 @@
 import { Request, Response } from "express";
-import { HTTP_STATUS } from "../../constants/index.ts";
-import User from "../../infrastructure/mongo/model/User.ts";
-import Error from "../../utils/errors.ts";
-import { responseEntity } from "../../utils/query.ts";
+
+import { HTTP_STATUS } from "../../constants/index";
+import User from "../../infrastructure/mongo/model/User";
+import Error from "../../utils/errors";
+import { responseEntity } from "../../utils/query";
 import bcrypt from 'bcrypt';
-import { IFriendService } from "../../application/interfaces/services/IFriendService.ts";
-import TYPES from "../../infrastructure/inversify/type.ts";
-import { container } from "../../infrastructure/inversify/container.ts";
+import { IFriendService } from "../../application/interfaces/services/IFriendService";
+import TYPES from "../../infrastructure/inversify/type";
+import { container } from "../../infrastructure/inversify/container";
+import { RequestUser } from "../../types/request/RequestUser";
 
 class UserController {
   private friendService: IFriendService
   constructor() {
-    this.friendService  = container.get<IFriendService>(TYPES.FriendService)
+    this.friendService = container.get<IFriendService>(TYPES.FriendService)
   }
   //TODO: [GET]
 
-  async getUserById(req: Request, res: Response): Promise<void> {
+  async getUserById(req: RequestUser, res: Response): Promise<void> {
     try {
       const id = req.params.id;
       const { queries } = req.query;
@@ -44,7 +46,7 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-  async getUserByPhone(req: Request, res: Response): Promise<void> {
+  async getUserByPhone(req: RequestUser, res: Response): Promise<void> {
     try {
       const phone = req.params.phone;
       const { queries } = req.query;
@@ -64,7 +66,7 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-  async getUsers(req: Request, res: Response): Promise<void> {
+  async getUsers(req: RequestUser, res: Response): Promise<void> {
     try {
       const { queries } = req.query;
       const users = await User.find().select(responseEntity(queries)).lean();
@@ -81,7 +83,7 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-  async getMe(req: Request, res: Response): Promise<void> {
+  async getMe(req: RequestUser, res: Response): Promise<void> {
     try {
       const userRequest = req.user
       const { queries } = req.query;
@@ -105,7 +107,7 @@ class UserController {
     }
   }
   //TODO: [POST]
-  async createUser(req: Request, res: Response): Promise<void> {
+  async createUser(req: RequestUser, res: Response): Promise<void> {
     try {
       const {
         email,
@@ -145,7 +147,7 @@ class UserController {
     }
   }
   //TODO: [PUT]
-  async updateMe(req: Request, res: Response): Promise<void> {
+  async updateMe(req: RequestUser, res: Response): Promise<void> {
     try {
       const file = req.uploadedImages ? req.uploadedImages : null
       const id = req.user.id;
@@ -188,7 +190,7 @@ class UserController {
     }
   }
   //TODO: [PUT]
-  async changePassword(req: Request, res: Response): Promise<void> {
+  async changePassword(req: RequestUser, res: Response): Promise<void> {
     try {
       const user = req.user
       const id = user.id
@@ -220,7 +222,7 @@ class UserController {
     }
   }
   //TODO: [PUT]
-  async updateUser(req: Request, res: Response): Promise<void> {
+  async updateUser(req: RequestUser, res: Response): Promise<void> {
     try {
       const id = req.params.id;
       const { email, phone, firstName, lastName } = req.body;
@@ -253,7 +255,7 @@ class UserController {
     }
   }
   //TODO: [DELETE]
-  async deleteUser(req: Request, res: Response): Promise<void> {
+  async deleteUser(req: RequestUser, res: Response): Promise<void> {
     try {
       const id = req.params.id;
 
@@ -274,7 +276,7 @@ class UserController {
       Error.sendError(res, error);
     }
   }
-  async searchUserWithFriends(req: Request, res: Response): Promise<void> {
+  async searchUserWithFriends(req: RequestUser, res: Response): Promise<void> {
     const { type, keywords } = req.query
     const user = req.user
     const userId = user.id
@@ -310,7 +312,7 @@ class UserController {
     })
   }
 
-  async searchUsers(req: Request, res: Response): Promise<void> {
+  async searchUsers(req: RequestUser, res: Response): Promise<void> {
     const { type, keywords } = req.query
     const searchQuery = {
       [`${type}`]: { $regex: keywords, $options: "i" }

@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
-import { IOTPType } from "./OTP.type.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
+import { IOTPType } from "./OTP.type";
 
 export class OTPEntity extends BaseEntity<IOTPType & IBaseEntityType> {
     @Expose() email: string;

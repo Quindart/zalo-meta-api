@@ -1,7 +1,7 @@
 import { plainToInstance } from "class-transformer";
-import { ChannelEntity } from "../../../domain/entities/channel/Channel.entity.ts";
-import { IChannelType } from "../../../domain/entities/channel/Channel.type.ts";
-import { ChannelDocument } from "../model/Channel.ts";
+import { ChannelEntity } from "../../../domain/entities/channel/Channel.entity";
+import { IChannelType } from "../../../domain/entities/channel/Channel.type";
+import { ChannelDocument } from "../model/Channel";
 import { Types } from "mongoose";
 import { injectable } from "inversify";
 

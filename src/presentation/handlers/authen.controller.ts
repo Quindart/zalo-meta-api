@@ -4,14 +4,14 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import User from '../../infrastructure/mongo/model/User.ts';
-import RefreshToken from '../../infrastructure/mongo/model/RefreshToken.ts';
-import { HTTP_STATUS } from '../../constants/index.ts';
-import { sendMail } from '../middleware/mail.middleware.ts';
-import OTP from '../../infrastructure/mongo/model/OTP.ts';
-import Error from '../../utils/errors.ts'
-import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index.ts';
-import FCM from '../../infrastructure/mongo/model/FCM.ts';
+import User from '../../infrastructure/mongo/model/User';
+import RefreshToken from '../../infrastructure/mongo/model/RefreshToken';
+import { HTTP_STATUS } from '../../constants/index';
+import { sendMail } from '../middleware/mail.middleware';
+import OTP from '../../infrastructure/mongo/model/OTP';
+import Error from '../../utils/errors'
+import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index';
+import FCM from '../../infrastructure/mongo/model/FCM';
 class AuthenController {
 
     protected ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;

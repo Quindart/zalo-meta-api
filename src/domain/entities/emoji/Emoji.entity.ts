@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { BaseEntity, IBaseEntityType } from '../BaseEntity.ts';
+import { BaseEntity, IBaseEntityType } from '../BaseEntity';
 
 export interface IEmojiType extends IBaseEntityType {
     emoji: string;

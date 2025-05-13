@@ -1,6 +1,6 @@
 import express from "express";
-import ROUTING from "../../constants/Routes.ts";
-import messageController from "../handlers/message.controller.ts";
+import ROUTING from "../../constants/Routes";
+import messageController from "../handlers/message.controller";
 const router = express.Router();
 
 router.get(ROUTING.MESSAGE_BY_RECEIVERID_SENDERID, messageController.getMessages);

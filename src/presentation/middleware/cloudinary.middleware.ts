@@ -1,11 +1,11 @@
 import multer from 'multer'
-import { storage } from '../../config/cloudinary.ts';
+import { storage } from '../../config/cloudinary';
 import { NextFunction, Request, Response } from 'express';
 const upload = multer({
     storage: storage
 });
 
-export const imageUpload = (req: Request, res: Response, next: NextFunction) => {
+export const imageUpload = (req: any, res: Response, next: NextFunction) => {
 
     const contentType = req.headers['content-type'] || '';
 

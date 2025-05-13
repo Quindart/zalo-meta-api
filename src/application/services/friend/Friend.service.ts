@@ -1,9 +1,9 @@
 import { injectable, inject } from "inversify";
-import TYPES from "../../../infrastructure/inversify/type.ts";
-import { IFriendService } from "../../interfaces/services/IFriendService.ts";
-import { FriendDocument } from "../../../infrastructure/mongo/model/Friend.ts";
-import { IFriendRepository } from "../../../domain/repositories/IFriend.repository.ts"; 
-import { FriendMapper } from "../../../infrastructure/mongo/mappers/FriendMapper.ts";
+import TYPES from "../../../infrastructure/inversify/type";
+import { IFriendService } from "../../interfaces/services/IFriendService";
+import { FriendDocument } from "../../../infrastructure/mongo/model/Friend";
+import { IFriendRepository } from "../../../domain/repositories/IFriend.repository"; 
+import { FriendMapper } from "../../../infrastructure/mongo/mappers/FriendMapper";
 
 type FriendRepositoryType = IFriendRepository
 type MapperType = FriendMapper

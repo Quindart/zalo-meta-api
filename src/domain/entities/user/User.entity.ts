@@ -1,6 +1,6 @@
 import { Exclude, Expose } from "class-transformer";
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
-import { IUserType } from "./User.type.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
+import { IUserType } from "./User.type";
 // "dev": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only src/server.ts"
 @Exclude()
 export class UserEntity extends BaseEntity<IUserType & IBaseEntityType> {

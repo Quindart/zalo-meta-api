@@ -1,9 +1,9 @@
-import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
+import SOCKET_EVENTS from "../../../constants/eventEnum";
 import { Server, Socket } from "socket.io";
-import { container } from "../../inversify/container.ts";
-import TYPES from "../../inversify/type.ts";
-import { IEmojiService } from "../../../application/interfaces/services/IEmojiService.ts";
-import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
+import { container } from "../../inversify/container";
+import TYPES from "../../inversify/type";
+import { IEmojiService } from "../../../application/interfaces/services/IEmojiService";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService";
 class EmojiSocket {
     public io: Server;
     public socket: Socket;

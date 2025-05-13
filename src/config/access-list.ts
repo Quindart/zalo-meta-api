@@ -1,8 +1,8 @@
 
 import { Request, Response, NextFunction } from "express";
-import { HTTP_STATUS } from "../constants/index.ts";
-import blacklistConfig from "./blacklist.ts";
-import whitelistConfig from "./whitelist.ts";
+import { HTTP_STATUS } from "../constants/index";
+import blacklistConfig from "./blacklist";
+import whitelistConfig from "./whitelist";
 
 const blacklistMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const clientIP: string = req.ip;

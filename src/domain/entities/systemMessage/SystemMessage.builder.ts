@@ -1,5 +1,5 @@
-import { SystemMessageEntity } from "./SystemMessage.entity.ts";
-import { ISystemMessageType } from "./SystemMessage.type.ts";
+import { SystemMessageEntity } from "./SystemMessage.entity";
+import { ISystemMessageType } from "./SystemMessage.type";
 
 export class SystemMessageBuilder {
     private readonly data: Partial<ISystemMessageType> = {};

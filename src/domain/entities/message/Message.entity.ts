@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
-import { BaseEntity, IBaseEntityType } from "../BaseEntity.ts";
-import { IMessageType } from "./Message.type.ts";
+import { BaseEntity, IBaseEntityType } from "../BaseEntity";
+import { IMessageType } from "./Message.type";
 
 export class MessageEntity extends BaseEntity<IMessageType & IBaseEntityType> {
     @Expose() senderId: string;

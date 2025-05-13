@@ -1,5 +1,5 @@
-import { EmojiEntity } from "./Emoji.entity.ts";
-import { IEmojiType } from "./Emoji.type.ts";
+import { EmojiEntity } from "./Emoji.entity";
+import { IEmojiType } from "./Emoji.type";
 
 export class EmojiBuilder {
     private emojiData: Partial<IEmojiType> = {};

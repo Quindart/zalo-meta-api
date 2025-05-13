@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import useragent from "useragent";
+import { RequestQR } from "../../types/request/RequestQR";
 
-export const detectDevice = async (req: Request, res: Response, next: NextFunction) => {
+export const detectDevice = async (req: RequestQR, res: Response, next: NextFunction) => {
     try {
         const agent = useragent.parse(req.headers["user-agent"]);
 

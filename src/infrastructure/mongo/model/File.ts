@@ -1,5 +1,5 @@
 import mongoose, { Types } from "mongoose";
-import { IFileType } from "../../../domain/entities/file/File.type.ts";
+import { IFileType } from "../../../domain/entities/file/File.type";
 
 export interface FileDocument extends Omit<IFileType,'_id'>, Document { 
   toObject(): unknown;

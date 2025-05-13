@@ -1,9 +1,9 @@
 import express from "express";
-import ROUTING from "../../constants/Routes.ts";
-import authenController from "../handlers/authen.controller.ts";
-import { authenticateToken } from "../middleware/authentication.middleware.ts";
-import QRController from "../handlers/QR.controller.ts";
-import { detectDevice } from "../middleware/detectDevice.middleware.ts";
+import ROUTING from "../../constants/Routes";
+import authenController from "../handlers/authen.controller";
+import { authenticateToken } from "../middleware/authentication.middleware";
+import QRController from "../handlers/QR.controller";
+import { detectDevice } from "../middleware/detectDevice.middleware";
 const router = express.Router();
 
 router.post(ROUTING.LOGIN, async (req, res) => {

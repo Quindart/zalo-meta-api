@@ -1,10 +1,10 @@
 import { injectable } from 'inversify';
-import { UserEntity } from '../../../domain/entities/user/User.entity.ts';
-import { IUserType } from '../../../domain/entities/user/User.type.ts';
-import { IUserRepository } from '../../../domain/repositories/IUser.repository.ts';
-import { responseEntity } from '../../../utils/query.ts';
-import { UserMapper } from '../mappers/UserMapper.ts';
-import User, { UserDocument } from '../model/User.ts';
+import { UserEntity } from '../../../domain/entities/user/User.entity';
+import { IUserType } from '../../../domain/entities/user/User.type';
+import { IUserRepository } from '../../../domain/repositories/IUser.repository';
+import { responseEntity } from '../../../utils/query';
+import { UserMapper } from '../mappers/UserMapper';
+import User, { UserDocument } from '../model/User';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 

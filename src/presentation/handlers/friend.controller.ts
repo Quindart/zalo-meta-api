@@ -1,18 +1,19 @@
-import { HTTP_STATUS } from "../../constants/index.ts"
-import Friend from "../../infrastructure/mongo/model/Friend.ts"
-import Error from "../../utils/errors.ts"
+import { HTTP_STATUS } from "../../constants/index"
+import Friend from "../../infrastructure/mongo/model/Friend"
+import Error from "../../utils/errors"
 import mongoose from 'mongoose';
 import { Request, Response } from "express"
-import { IFriendService } from "../../application/interfaces/services/IFriendService.ts";
-import TYPES from '../../infrastructure/inversify/type.ts';
-import { container } from "../../infrastructure/inversify/container.ts";
+import { IFriendService } from "../../application/interfaces/services/IFriendService";
+import TYPES from '../../infrastructure/inversify/type';
+import { container } from "../../infrastructure/inversify/container";
+import { RequestUser } from "../../types/request/RequestUser";
 
 class FriendController {
-    private friendService : IFriendService
-    contructor(){
+    private friendService: IFriendService
+    contructor() {
         this.friendService = container.get<IFriendService>(TYPES.FriendService)
     }
-    async accpetFriend(req: Request, res: Response): Promise<void> {
+    async accpetFriend(req: RequestUser, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.body;
             const { user } = req
@@ -34,7 +35,7 @@ class FriendController {
 
         }
     }
-    async rejectAcceptFriend(req: Request, res: Response): Promise<void> {
+    async rejectAcceptFriend(req: RequestUser, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.body;
             const { user } = req
@@ -56,7 +57,7 @@ class FriendController {
 
         }
     }
-    async removeFriend(req: Request, res: Response): Promise<void> {
+    async removeFriend(req: RequestUser, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.body;
             const { user } = req
@@ -77,7 +78,7 @@ class FriendController {
             Error.sendError(res, error)
         }
     }
-    async inviteFriend(req: Request, res: Response): Promise<void> {
+    async inviteFriend(req: RequestUser, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.body;
             const { user } = req
@@ -99,7 +100,7 @@ class FriendController {
         }
 
     }
-    async removeIniviteFriend(req: Request, res: Response): Promise<void> {
+    async removeIniviteFriend(req: RequestUser, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.query;
             const { user } = req
@@ -122,7 +123,7 @@ class FriendController {
         }
     }
 
-    async getMyFriends(req: Request, res: Response): Promise<void> {
+    async getMyFriends(req: RequestUser, res: Response): Promise<void> {
         const { user } = req
         if (!user) {
             Error.sendNotFound(res, "User not found")
@@ -140,7 +141,7 @@ class FriendController {
         })
     }
 
-    async getMyInviteFriends(req: Request, res: Response): Promise<void> {
+    async getMyInviteFriends(req: RequestUser, res: Response): Promise<void> {
         const { user } = req
         if (!user) {
             Error.sendNotFound(res, "User not found")
@@ -156,7 +157,7 @@ class FriendController {
         })
     }
 
-    async getMyInvitedSending(req: Request, res: Response): Promise<void> {
+    async getMyInvitedSending(req: RequestUser, res: Response): Promise<void> {
         const { user } = req
         if (!user) {
             Error.sendNotFound(res, "User not found")
@@ -172,7 +173,7 @@ class FriendController {
         })
     }
 
-    async getFriendList(req: Request, res: Response): Promise<void> {
+    async getFriendList(req: RequestUser, res: Response): Promise<void> {
         const { userId } = req.body;
         if (!userId) {
             res.status(HTTP_STATUS.BAD_REQUEST).json({

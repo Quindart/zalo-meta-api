@@ -1,11 +1,11 @@
 import { inject, injectable } from "inversify";
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import TYPES from "../../../infrastructure/inversify/type.ts";
-import { IMessageRepository } from "../../../domain/repositories/IMessage.repository.ts";
-import { GROUP_EVENT_TYPE } from "../../../types/enum/systemMessage.enum.ts";
-import { IMessageType } from "../../../domain/entities/message/Message.type.ts";
-import { MessageDocument } from "../../../infrastructure/mongo/model/Message.ts";
-import { SystemMessageDocument } from "../../../infrastructure/mongo/model/SystemMessage.ts";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import TYPES from "../../../infrastructure/inversify/type";
+import { IMessageRepository } from "../../../domain/repositories/IMessage.repository";
+import { GROUP_EVENT_TYPE } from "../../../types/enum/systemMessage.enum";
+import { IMessageType } from "../../../domain/entities/message/Message.type";
+import { MessageDocument } from "../../../infrastructure/mongo/model/Message";
+import { SystemMessageDocument } from "../../../infrastructure/mongo/model/SystemMessage";
 
 type MessageServiceType = IMessageRepository
 

@@ -1,16 +1,14 @@
 import QRCode from "qrcode";
 import sharp from "sharp";
 import path from "path";
-import { fileURLToPath } from "url";
 import { config } from "dotenv";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 config();
 
 class QRService {
-    public QRCode: any
+    public QRCode: any;
     constructor() {
         this.QRCode = QRCode;
     }
@@ -40,7 +38,7 @@ class QRService {
             const qrMetadata = await qrImage.metadata();
             const logoSize = Math.round(qrMetadata.width * 0.3);
             const logoBuffer = await sharp(logoFullPath)
-                .resize(logoSize, logoSize, { fit: "cover", background: 'white' })
+                .resize(logoSize, logoSize, { fit: "cover", background: "white" })
                 .toBuffer();
             const left = Math.round((qrMetadata.width - logoSize) / 2);
             const top = Math.round((qrMetadata.height - logoSize) / 2);
@@ -52,6 +50,7 @@ class QRService {
             throw new Error(`Lỗi khi tạo mã QR: ${err.message}`);
         }
     }
+
     async renderQRToDOM(inputString: string, elementId: string, options = {}) {
         if (typeof document === "undefined") {
             throw new Error("Phương thức này chỉ hoạt động trong trình duyệt.");

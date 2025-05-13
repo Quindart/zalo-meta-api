@@ -1,5 +1,5 @@
-import { UserEntity } from "./User.entity.ts";
-import { IUserType } from "./User.type.ts";
+import { UserEntity } from "./User.entity";
+import { IUserType } from "./User.type";
 
 export class UserBuilder {
     private readonly data: Partial<IUserType> = {};

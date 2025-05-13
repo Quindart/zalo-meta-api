@@ -1,7 +1,7 @@
 import express from "express";
-import ROUTING from "../../constants/Routes.ts";
-import userController from "../handlers/user.controller.ts";
-import { authenticateToken } from "../middleware/authentication.middleware.ts";
+import ROUTING from "../../constants/Routes";
+import userController from "../handlers/user.controller";
+import { authenticateToken } from "../middleware/authentication.middleware";
 const router = express.Router();
 
 //TODO [GET]

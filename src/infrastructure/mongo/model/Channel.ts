@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
-import { IChannelType } from "../../../domain/entities/channel/Channel.type.ts";
-import { ROLE_TYPES } from "../../../types/enum/channel.enum.ts";
+import { IChannelType } from "../../../domain/entities/channel/Channel.type";
+import { ROLE_TYPES } from "../../../types/enum/channel.enum";
 
 export interface ChannelDocument extends Omit<IChannelType, '_id' | 'deletedForUsers' | 'members' | 'lastMessage'>, Document {
   toObject(): unknown;

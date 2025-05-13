@@ -1,8 +1,7 @@
-import zaloService from "./index.ts";
 import os from "os";
 import chalk from "chalk";
-import Client from "./client.ts";
-
+import Client from "./client";
+import zaloService from "./index"
 const totalMemory: string = (os.totalmem() / 1024 ** 3).toFixed(2);
 const freeMemory: string = (os.freemem() / 1024 ** 3).toFixed(2);
 

@@ -1,15 +1,15 @@
-import userRouter from "./user.router.ts";
-import authRouter from "./authen.router.ts";
-import swaggerRouter from "./swagger.router.ts";
-import mailRouter from "./mail.router.ts";
-import channelRouter from "./channel.router.ts";
-import friendRouter from "./friend.router.ts";
-import ROUTING from "../../constants/Routes.ts";
+import userRouter from "./user.router";
+import authRouter from "./authen.router";
+import swaggerRouter from "./swagger.router";
+import mailRouter from "./mail.router";
+import channelRouter from "./channel.router";
+import friendRouter from "./friend.router";
+import ROUTING from "../../constants/Routes";
 
 
-import messageRouter from "./message.router.ts";
-import meRouter from "./me.router.ts"
-import { authenticateToken } from "../middleware/authentication.middleware.ts";
+import messageRouter from "./message.router";
+import meRouter from "./me.router"
+import { authenticateToken } from "../middleware/authentication.middleware";
 
 function routing(app) {
   // app.use(imageUpload);

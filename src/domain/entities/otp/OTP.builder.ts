@@ -1,5 +1,5 @@
-import { OTPEntity } from "./OTP.entity.ts";
-import { IOTPType } from "./OTP.type.ts";
+import { OTPEntity } from "./OTP.entity";
+import { IOTPType } from "./OTP.type";
 
 export class OtpBuilder {
     private readonly data: Partial<IOTPType> = {};

@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
+import SOCKET_EVENTS from "../../../constants/eventEnum";
 
 class UserSocket {
     public io: Server;

@@ -3,9 +3,9 @@ import nodemailer from 'nodemailer';
 import { Request, Response } from 'express';
 
 
-import OTP from '../../infrastructure/mongo/model/OTP.ts';
-import { HTTP_STATUS } from '../../constants/index.ts';
-import mailConfig from '../../config/mail.ts';
+import OTP from '../../infrastructure/mongo/model/OTP';
+import { HTTP_STATUS } from '../../constants/index';
+import mailConfig from '../../config/mail';
 
 dotenv.config();
 

@@ -1,15 +1,15 @@
 import { inject, injectable } from "inversify";
-import TYPES from "../../../infrastructure/inversify/type.ts";
-import { ChannelMapper } from "../../../infrastructure/mongo/mappers/ChannelMapper.ts";
-import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type.ts";
-import { IChannelRepository } from "../../../domain/repositories/IChannel.repository.ts";
-import { IChannelCreateData } from "../../../infrastructure/mongo/repositories/MongooseChannelRepository.ts";
-import { MESSAGE_TYPES, ROLE_TYPES } from "../../../types/enum/channel.enum.ts";
-import { IChannelService } from "../../interfaces/services/IChannelService.ts";
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { ILogger } from "../../../infrastructure/logger/WinstonLogger.ts";
-import { GROUP_EVENT_TYPE } from "../../../types/enum/systemMessage.enum.ts";
-import { IUserService } from "../../interfaces/services/IUserService.ts";
+import TYPES from "../../../infrastructure/inversify/type";
+import { ChannelMapper } from "../../../infrastructure/mongo/mappers/ChannelMapper";
+import { IChannelType, IMember } from "../../../domain/entities/channel/Channel.type";
+import { IChannelRepository } from "../../../domain/repositories/IChannel.repository";
+import { IChannelCreateData } from "../../../infrastructure/mongo/repositories/MongooseChannelRepository";
+import { MESSAGE_TYPES, ROLE_TYPES } from "../../../types/enum/channel.enum";
+import { IChannelService } from "../../interfaces/services/IChannelService";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import { ILogger } from "../../../infrastructure/logger/WinstonLogger";
+import { GROUP_EVENT_TYPE } from "../../../types/enum/systemMessage.enum";
+import { IUserService } from "../../interfaces/services/IUserService";
 
 type ChannelRepositoryType = IChannelRepository
 type LoggerServiceType = ILogger
