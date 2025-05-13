@@ -87,14 +87,7 @@ export class ChannelService implements IChannelService {
     }
 
     async updateLastMessage(channelId: string, lastMessageId: string) {
-        if (!channelId || !lastMessageId) return null;
-        const channel = await this.repository.findOne(channelId)
-        if (!channel) return null
-        const channelEntity = this.mapper.toDomain(channel)
-        channelEntity.lastMessage = lastMessageId
-        channelEntity.updatedAt = new Date(Date.now());
-        channelEntity.deletedForUsers = []
-        return await this.repository.toSave(this.mapper.toPersistence(channelEntity))
+        return await this.repository.updateLastMessageSocket(channelId, lastMessageId)
     }
 
     //! TODO: tach service - mongo

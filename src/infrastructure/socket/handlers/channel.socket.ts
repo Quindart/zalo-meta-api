@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
 import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import messageRepository from "../../../domain/repository/Message.repository.ts";
-import { UserRepository } from "../../../domain/repository/User.repository.ts";
 import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
 import { container } from "../../inversify/container.ts";
 import TYPES from "../../inversify/type.ts";
+import { IUserService } from "../../../application/interfaces/services/IUserService.ts";
+import { IMessageService } from "../../../application/interfaces/services/IMessageService.ts";
 
 const ROLE_TYPES = {
     CAPTAIN: 'captain',
@@ -15,12 +15,16 @@ class ChannelSocket {
     public io: Server;
     public socket: Socket;
     public userRepo: any;
-    public channelService: IChannelService
+    private channelService: IChannelService
+    private userService: IUserService
+    private messageService: IMessageService
+    
     constructor(io: Server, socket: Socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
-        this.userRepo = new UserRepository()
+        this.userService = container.get<IUserService>(TYPES.UserService)
+        this.messageService = container.get<IMessageService>(TYPES.MessageService)
         this.channelService = container.get<IChannelService>(TYPES.ChannelService)
     }
 
@@ -77,7 +81,6 @@ class ChannelSocket {
     async loadChannel(params: { currentUserId: string }) {
         const { currentUserId } = params;
         try {
-            console.log("Loading channels for user:", currentUserId);
             this.channelService.getChannels(currentUserId)
                 .then((channels) => {
                     this.socket.emit(SOCKET_EVENTS.CHANNEL.LOAD_CHANNEL_RESPONSE, {
@@ -120,7 +123,7 @@ class ChannelSocket {
         const { channelId, currentUserId } = params;
 
         Promise.all([
-            messageRepository.getMessages(channelId, currentUserId),
+            this.messageService.getMessages(channelId, currentUserId),
             this.channelService.getChannel(channelId, currentUserId)
         ])
             .then(([messages, channel]) => {

@@ -10,11 +10,11 @@ export interface IFriendService {
 
     isExistFriendRelationship(userId: string, userFriendId: string): Promise<boolean>;
 
-    getFriendByUserIdByType(userId: string, type: string): Promise<any[]>;
+    getFriendByUserIdByType(userId: string | any, type: string): Promise<any[]>;
 
-    getInviteOfUser(userId: string): Promise<any[]>;
+    getInviteOfUser(userId: string | any): Promise<any[]>;
 
-    getInviteOfUserSending(userId: string): Promise<any[]>;
+    getInviteOfUserSending(userId: string | any): Promise<any[]>;
 
     getById(userId: string): Promise<FriendDocument | null>;
 

@@ -3,9 +3,17 @@ import { HTTP_STATUS } from "../../constants/index.ts";
 import Channel from "../../infrastructure/mongo/model/Channel.ts"
 import Error from "../../utils/errors.ts"
 import { ROLE_MEMBER_OF_CHANNEL } from "../../constants/index.ts"
-import ChannelRepository from "../../domain/repository/Channel.repository.ts"
+import TYPES from "../../infrastructure/inversify/type.ts";
+import { IChannelService } from "../../application/interfaces/services/IChannelService.ts";
+import { container } from "../../infrastructure/inversify/container.ts";
+import { ROLE_TYPES } from "../../types/enum/channel.enum.ts";
 
 class ChannelController {
+
+    private channelService: IChannelService
+    constructor() {
+        this.channelService = container.get<IChannelService>(TYPES.ChannelService)
+    }
     //TODO: CREATE CHANNEl
     async createGroup(req: Request, res: Response): Promise<void> {
         try {
@@ -13,7 +21,7 @@ class ChannelController {
             const userCreateChannelId = req.user.id
 
             //TODO: đây là mảng members
-            let createMembers = ChannelRepository.createMembersOfChannel(members, userCreateChannelId)
+            let createMembers = this._createMembersOfChannel(members, userCreateChannelId)
 
             const channel = await Channel.create({ name, members: createMembers });
 
@@ -22,7 +30,7 @@ class ChannelController {
             }
 
             //TODO: Lưu ds channel vào trong list member user
-            await ChannelRepository.updateUserChannels(channel)
+            await this.channelService.updateUserChannel(channel)
 
             res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
@@ -207,7 +215,22 @@ class ChannelController {
             Error.sendError(res, error)
         }
     }
+    private _createMembersOfChannel(creatorId: string, members: string[]) {
+        if (members.length >= 2) {
+            return [
+                { user: creatorId, role: ROLE_TYPES.CAPTAIN },
+                ...members.map(memberId => ({
+                    user: memberId,
+                    role: ROLE_TYPES.MEMBER
+                }))
+            ];
+        }
 
+        return members.map(memberId => ({
+            user: memberId,
+            role: ROLE_TYPES.MEMBER
+        }));
+    }
 }
 
 export default new ChannelController();

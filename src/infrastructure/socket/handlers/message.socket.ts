@@ -1,8 +1,5 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import channelRepository from "../../../domain/repository/Channel.repository.ts";
-import messageRepository from "../../../domain/repository/Message.repository.ts";
 import Message from "../../mongo/model/Message.ts";
-import { UserRepository } from "../../../domain/repository/User.repository.ts";
 import File from "../../mongo/model/File.ts";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
@@ -31,7 +28,6 @@ class MessageSocket {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
-        this.userRepo = new UserRepository()
         this.userService = container.get<IUserService>(TYPES.UserService)
         this.channelService = container.get<IChannelService>(TYPES.ChannelService)
         this.messageService = container.get<IMessageService>(TYPES.MessageRepository)
@@ -50,7 +46,7 @@ class MessageSocket {
 
     }
 
-    async sendMessage(data) {
+    async sendMessage(data: any) {
         const channel = await this.channelService.getChannel(data.channelId);
         const sender = await this.userService.findOne(data.senderId);
         const message = {
@@ -65,7 +61,7 @@ class MessageSocket {
         await newMessage.save();
 
         // UPDATE LAST MESSAGE IN CHANNEL
-        await channelRepository.updateLastMessage(channel.id, newMessage._id);
+        await this.channelService.updateLastMessage(channel.id, `${newMessage._id}`);
 
         const messageResponse = {
             id: newMessage._id,
@@ -83,12 +79,11 @@ class MessageSocket {
         };
 
         this.socket.emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
-        channel.members.forEach(async (member) => {
+
+        channel.members.forEach(async (member: any) => {
             if (member.userId.toString() !== data.senderId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
                 const fcm = await FCM.findOne({ user: member.userId });
-                // console.log("check fcm: ", fcm);
-
                 if (fcm && fcm.fcmToken) {
                     if (Expo.isExpoPushToken(fcm.fcmToken)) {
                         const messages = [{
@@ -129,10 +124,10 @@ class MessageSocket {
         this.io.to(data.senderId).emit(SOCKET_EVENTS.MESSAGE.READ, messageUpdate);
     }
 
-    async loadMessage(params) {
+    async loadMessage(params: { channelId: string, currentUserId: string, offset: number }) {
         try {
             const { channelId, currentUserId, offset } = params;
-            const messages = await messageRepository.getMessages(channelId, currentUserId, offset);
+            const messages = await this.messageService.getMessages(channelId, currentUserId, offset);
             this.socket.emit(SOCKET_EVENTS.MESSAGE.LOAD_RESPONSE, {
                 success: true,
                 data: messages,
@@ -151,7 +146,7 @@ class MessageSocket {
     async uploadFile(data) {
         const { channelId, senderId, fileName, fileData, timestamp } = data;
         try {
-            const channel = await channelRepository.getChannel(channelId);
+            const channel = await this.channelService.getChannel(channelId);
             if (!channel) {
                 this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
                     success: false,
@@ -160,7 +155,7 @@ class MessageSocket {
                 return;
             }
 
-            const sender = await this.userRepo.findOne(senderId);
+            const sender = await this.userService.findOne(senderId);
             if (!sender) {
                 this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_RESPONSE, {
                     success: false,
@@ -234,7 +229,7 @@ class MessageSocket {
 
             await file.save();
             await newMessage.save();
-            await channelRepository.updateLastMessage(channelId, newMessage._id);
+            await this.channelService.updateLastMessage(channelId, `${newMessage._id}`);
 
             const messageResponse = {
                 id: newMessage._id,
@@ -286,7 +281,7 @@ class MessageSocket {
     //TODO: Xoa tin nhan
     async recallMessage(data) {
         const { senderId, messageId } = data
-        await messageRepository.recallMessage(senderId, messageId);
+        await this.messageService.recallMessage(senderId, messageId);
         this.socket.emit(SOCKET_EVENTS.MESSAGE.RECALL_RESPONSE, {
             success: true,
             data: {
@@ -298,8 +293,8 @@ class MessageSocket {
     async deleteMessage(data) {
         const { senderId, messageId, channelId } = data
         console.log("check data delete message: ", data)
-        await messageRepository.deleteMessage(senderId, messageId);
-        const channel = await channelRepository.getChannel(channelId);
+        await this.messageService.deleteMessage(senderId, messageId);
+        const channel = await this.channelService.getChannel(channelId);
         channel.members.forEach((member) => {
             if (member.userId.toString() !== senderId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.DELETE_RESPONSE, {
@@ -320,7 +315,7 @@ class MessageSocket {
     async forwardMessage(data) {
         try {
             const { messageId, channelId, senderId } = data;
-            const receiver = await this.userRepo.findOne(channelId);
+            const receiver = await this.userService.findOne(channelId);
             if (!receiver) {
                 console.error("Receiver not found:", channelId);
                 return;
@@ -332,7 +327,7 @@ class MessageSocket {
             // Kiểm tra kênh và tạo kênh mới nếu không tồn tại
             let channel;
             try {
-                channel = await channelRepository.findOrCreateChannel(channelId, senderId, nameChannel, typeChannel, avatarChannel);
+                channel = await this.channelService.findOrCreateChannelPersonal(channelId, senderId, nameChannel, typeChannel, avatarChannel);
             } catch (error) {
                 console.error("Error finding or creating channel:", error);
                 return;
@@ -345,7 +340,7 @@ class MessageSocket {
             // Nếu không tìm thấy kênh, trả về lỗi
             if (!channel) throw new Error("Channel not found");
 
-            const sender = await this.userRepo.findOne(senderId);
+            const sender = await this.userService.findOne(senderId);
 
             const newMessageData = {
                 content: originalMessage.content || "",
@@ -360,7 +355,7 @@ class MessageSocket {
 
             const newMessage = new Message(newMessageData);
             await newMessage.save();
-            await channelRepository.updateLastMessage(channel.id, newMessage._id);
+            await this.channelService.updateLastMessage(channel.id, `${newMessage._id}`);
 
             const messageResponse = {
                 id: newMessage._id,
@@ -418,7 +413,7 @@ class MessageSocket {
     //TODO: Xóa lịch sử trò chuyện
     async deleteHistoryMessage(data) {
         const { senderId, channelId } = data
-        await messageRepository.deleteHistoryMessage(senderId, channelId);
+        await this.messageService.deleteHistoryMessage(senderId, channelId);
         this.socket.emit(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY_RESPONSE, {
             success: true,
             data: {
@@ -449,7 +444,7 @@ class MessageSocket {
                 return;
             }
 
-            const channel = await channelRepository.getChannel(channelId);
+            const channel = await this.channelService.getChannel(channelId);
             if (!channel) {
                 console.error("Channel not found:", channelId);
                 this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
@@ -459,7 +454,7 @@ class MessageSocket {
                 return;
             }
 
-            const sender = await this.userRepo.findOne(senderId);
+            const sender = await this.userService.findOne(senderId);
             if (!sender) {
                 console.error("Sender not found:", senderId);
                 this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_GROUP_RESPONSE, {
@@ -476,14 +471,6 @@ class MessageSocket {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 try {
-                    // Emit progress update
-                    // this.socket.emit(SOCKET_EVENTS.FILE.UPLOAD_PROGRESS, {
-                    //     progress: Math.round((i / files.length) * 100),
-                    //     fileName: file.fileName,
-                    //     index: i + 1,
-                    //     total: files.length
-                    // });
-
                     // Set longer timeout for larger files
                     const uploadResult: any = await new Promise((resolve, reject) => {
                         const uploadOptions: any = {
@@ -559,7 +546,7 @@ class MessageSocket {
             });
 
             await newMessage.save();
-            await channelRepository.updateLastMessage(channelId, newMessage._id);
+            await this.channelService.updateLastMessage(channelId, `${newMessage._id}`);
 
             // Prepare response with file information
             const messageResponse = {

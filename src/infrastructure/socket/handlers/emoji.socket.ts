@@ -1,14 +1,20 @@
 import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import emojiRepository from "../../../domain/repository/Emoij.Repository.ts";
-import channelRepository from "../../../domain/repository/Channel.repository.ts";
 import { Server, Socket } from "socket.io";
+import { container } from "../../inversify/container.ts";
+import TYPES from "../../inversify/type.ts";
+import { IEmojiService } from "../../../application/interfaces/services/IEmojiService.ts";
+import { IChannelService } from "../../../application/interfaces/services/IChannelService.ts";
 class EmojiSocket {
     public io: Server;
     public socket: Socket;
+    private emojiService : IEmojiService;
+    private channelService: IChannelService;
     constructor(io: Server, socket: Socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
+        this.emojiService = container.get<IEmojiService>(TYPES.EmojiService)
+        this.channelService = container.get<IChannelService>(TYPES.ChannelService)
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI, this.interactEmoji.bind(this));
@@ -16,30 +22,34 @@ class EmojiSocket {
         this.socket.on(SOCKET_EVENTS.EMOJI.LOAD_EMOJIS_OF_MESSAGE, this.loadEmojiOfMessage.bind(this));
     }
 
-    async interactEmoji(params: any) {
+    async interactEmoji(params: { messageId: string, emoji: any, userId: string, channelId: string }) {
         const { messageId, emoji, userId, channelId } = params;
-        console.log("params", params);
-        const result = await emojiRepository.addEmoji(messageId, emoji, userId);
-        const channel = await channelRepository.getChannel(channelId, userId);
+        const result = await this.emojiService.addEmoji(messageId, emoji, userId);
+
+        const channel = await this.channelService.getChannel(channelId, userId);
         this.socket.emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
-        channel.members.forEach((member) => {
+        channel.members.forEach((member: any) => {
             this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
         });
     }
-    async removeMyEmoji(params) {
+    async removeMyEmoji(params: { messageId: string, userId: string, channelId: string }) {
         const { messageId, userId, channelId } = params;
-        const result = await emojiRepository.deleteMyEmoji(messageId, userId);
+       
+        const result = await this.emojiService.deleteMyEmoji(messageId, userId);
+      
         this.socket.emit(SOCKET_EVENTS.EMOJI.REMOVE_MY_EMOJI_RESPONSE, result);
-        const channel = await channelRepository.getChannel(channelId, userId);
+       
+        const channel = await this.channelService.getChannel(channelId, userId);
+       
         channel.members.forEach((member: any) => {
             if (member.userId.toString() !== userId) {
                 this.io.to(member.userId).emit(SOCKET_EVENTS.EMOJI.INTERACT_EMOJI_RESPONSE, result);
             }
         });
     }
-    async loadEmojiOfMessage(params) {
+    async loadEmojiOfMessage(params: { messageId: string }) {
         const { messageId } = params;
-        const result = await emojiRepository.getAllEmojiOfMessage(messageId);
+        const result = await this.emojiService.getAllEmojiOfMessage(messageId);
         this.socket.emit(SOCKET_EVENTS.EMOJI.LOAD_EMOJIS_OF_MESSAGE_RESPONSE, result);
     }
 }

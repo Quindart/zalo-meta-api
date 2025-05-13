@@ -1,13 +1,20 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../../constants/index.ts";
-import FriendRepository from "../../domain/repository/Friend.repository.ts";
 import User from "../../infrastructure/mongo/model/User.ts";
 import Error from "../../utils/errors.ts";
 import { responseEntity } from "../../utils/query.ts";
 import bcrypt from 'bcrypt';
+import { IFriendService } from "../../application/interfaces/services/IFriendService.ts";
+import TYPES from "../../infrastructure/inversify/type.ts";
+import { container } from "../../infrastructure/inversify/container.ts";
 
 class UserController {
+  private friendService: IFriendService
+  constructor() {
+    this.friendService  = container.get<IFriendService>(TYPES.FriendService)
+  }
   //TODO: [GET]
+
   async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id;
@@ -278,7 +285,7 @@ class UserController {
       [`${type}`]: { $regex: keywords, $options: "i" }
     };
 
-    const userFriendListIds = (await FriendRepository.getFriendByUserId(userId)).map(user => user.id.toString())
+    const userFriendListIds = (await this.friendService.getFriendByUserId(userId)).map(user => user.id.toString())
     const users = await User.find(searchQuery).select({
       avatar: 1,
       id: 1,

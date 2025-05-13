@@ -2,20 +2,26 @@ import { HTTP_STATUS } from "../../constants/index.ts"
 import Friend from "../../infrastructure/mongo/model/Friend.ts"
 import Error from "../../utils/errors.ts"
 import mongoose from 'mongoose';
-import FriendRepository from "../../domain/repository/Friend.repository.ts"
 import { Request, Response } from "express"
+import { IFriendService } from "../../application/interfaces/services/IFriendService.ts";
+import TYPES from '../../infrastructure/inversify/type.ts';
+import { container } from "../../infrastructure/inversify/container.ts";
 
 class FriendController {
+    private friendService : IFriendService
+    contructor(){
+        this.friendService = container.get<IFriendService>(TYPES.FriendService)
+    }
     async accpetFriend(req: Request, res: Response): Promise<void> {
         try {
             const { userFriendId } = req.body;
             const { user } = req
             const userId = user.id
-            const isExistRelationship = await FriendRepository.isExistFriendRelationship(userId, userFriendId)
+            const isExistRelationship = await this.friendService.isExistFriendRelationship(userId, userFriendId)
             if (!isExistRelationship) {
                 Error.sendNotFound(res, "No Friend relationship found")
             }
-            await FriendRepository.updateFriendStatus(userId, userFriendId, 'ACCEPTED')
+            await this.friendService.updateFriendStatus(userId, userFriendId, 'ACCEPTED')
 
 
             res.status(HTTP_STATUS.CREATED).json({
@@ -33,11 +39,11 @@ class FriendController {
             const { userFriendId } = req.body;
             const { user } = req
             const userId = user.id
-            const isExistRelationship = await FriendRepository.isExistFriendRelationship(userId, userFriendId)
+            const isExistRelationship = await this.friendService.isExistFriendRelationship(userId, userFriendId)
             if (!isExistRelationship) {
                 Error.sendNotFound(res, "No Friend relationship found")
             }
-            await FriendRepository.removeFriend(userId, userFriendId)
+            await this.friendService.removeFriend(userId, userFriendId)
 
 
             res.status(HTTP_STATUS.OK).json({
@@ -55,11 +61,11 @@ class FriendController {
             const { userFriendId } = req.body;
             const { user } = req
             const userId = user.id
-            const isExistRelationship = await FriendRepository.isExistFriendRelationship(userId, userFriendId)
+            const isExistRelationship = await this.friendService.isExistFriendRelationship(userId, userFriendId)
             if (!isExistRelationship) {
                 Error.sendNotFound(res, "No Friend relationship found")
             }
-            await FriendRepository.removeFriend(userId, userFriendId)
+            await this.friendService.removeFriend(userId, userFriendId)
 
 
             res.status(HTTP_STATUS.CREATED).json({
@@ -76,11 +82,11 @@ class FriendController {
             const { userFriendId } = req.body;
             const { user } = req
             const userId = user.id
-            const isExistRelationship = await FriendRepository.isExistFriendRelationship(userId, userFriendId)
+            const isExistRelationship = await this.friendService.isExistFriendRelationship(userId, userFriendId)
             if (isExistRelationship) {
                 Error.sendConflict(res, "Friend relationship already exists")
             }
-            await FriendRepository.createFriend(userId, userFriendId)
+            await this.friendService.createFriend(userId, userFriendId)
 
             res.status(HTTP_STATUS.CREATED).json({
                 status: HTTP_STATUS.CREATED,
@@ -98,13 +104,13 @@ class FriendController {
             const { userFriendId } = req.query;
             const { user } = req
             const userId = user.id
-            const isExistRelationship = await FriendRepository.isExistFriendRelationship(userId, userFriendId)
+            const isExistRelationship = await this.friendService.isExistFriendRelationship(userId, `${userFriendId}`)
 
             if (!isExistRelationship) {
                 Error.sendNotFound(res, "No Friend relationship found")
             }
 
-            await FriendRepository.removeFriend(userId, userFriendId)
+            await this.friendService.removeFriend(userId, `${userFriendId}`)
 
             res.status(HTTP_STATUS.OK).json({
                 status: HTTP_STATUS.OK,
@@ -121,7 +127,7 @@ class FriendController {
         if (!user) {
             Error.sendNotFound(res, "User not found")
         }
-        const friends = await FriendRepository.getFriendByUserIdByType(new mongoose.Types.ObjectId(user.id), 'ACCEPTED')
+        const friends = await this.friendService.getFriendByUserIdByType(new mongoose.Types.ObjectId(`${user.id}`), 'ACCEPTED')
 
         res.status(HTTP_STATUS.OK).json({
             status: HTTP_STATUS.OK,
@@ -139,7 +145,7 @@ class FriendController {
         if (!user) {
             Error.sendNotFound(res, "User not found")
         }
-        const friends = await FriendRepository.getInviteOfUser(new mongoose.Types.ObjectId(user.id))
+        const friends = await this.friendService.getInviteOfUser(new mongoose.Types.ObjectId(user.id))
         res.status(HTTP_STATUS.OK).json({
             success: true,
             status: HTTP_STATUS.OK,
@@ -155,7 +161,7 @@ class FriendController {
         if (!user) {
             Error.sendNotFound(res, "User not found")
         }
-        const friends = await FriendRepository.getInviteOfUserSending(new mongoose.Types.ObjectId(user.id))
+        const friends = await this.friendService.getInviteOfUserSending(new mongoose.Types.ObjectId(user.id))
         res.status(HTTP_STATUS.OK).json({
             success: true,
             status: HTTP_STATUS.OK,

@@ -182,7 +182,7 @@ export class MongooseChannelRepository implements IChannelRepository {
     async findOne(id: string, queries?: string): Promise<ChannelDocument> {
         try {
             const idObj = new Types.ObjectId(id)
-            const channel = await Channel.findById(idObj).select(responseEntity(queries));
+            const channel = await Channel.findById(idObj);
 
             this.logger.info(`${JSON.stringify(channel)}`)
             return channel
@@ -357,17 +357,19 @@ export class MongooseChannelRepository implements IChannelRepository {
     //TODO: DONE -> to remove
     async updateLastMessageSocket(channelId: string, lastMessageId: string): Promise<any> {
         if (!channelId || !lastMessageId) return null;
-        const channel: any = await Channel.findById(new Types.ObjectId(channelId));
+        const channel: any = await Channel.findById(new mongoose.Types.ObjectId(channelId));
         if (!channel) return null;
 
         channel.lastMessage = lastMessageId;
         channel.updatedAt = new Date(Date.now());
         channel.deletedForUsers = [];
 
+
         const updatedChannel = await channel.save();
         return updatedChannel;
-    };
+    }
 
+ 
     //TODO: Need tách service
     async removeMemberSocket(channelId: string, senderId: string, userId: string): Promise<any> {
         try {

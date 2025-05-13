@@ -1,6 +1,5 @@
 import { Server, Socket } from "socket.io";
 import SOCKET_EVENTS from "../../../constants/eventEnum.ts";
-import { UserRepository } from "../../../domain/repository/User.repository.ts";
 
 class UserSocket {
     public io: Server;
