@@ -9,7 +9,6 @@ services:
       - .env
     networks:
       - zalo-network
-
   # nginx:
   #   image: nginx
   #   container_name: nginx-zalo
