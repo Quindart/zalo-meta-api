@@ -181,7 +181,6 @@ class ChannelRepository {
       if (!channel) {
         throw new Error("Channel not found");
       }
-
       return this._formatChannelResponse(channel, currentUserId);
     } catch (error) {
       console.error("Error in getChannel:", error);
@@ -663,6 +662,8 @@ class ChannelRepository {
     } else {
       avatarGroup = await this._generateGroupAvatar(channel.members);
     }
+    console.log("💲💲💲 ~ ChannelRepository ~ _formatChannelResponse= ~ channel.members:", channel.members)
+
     return {
       id: channel._id.toString(),
       name: name,
@@ -670,7 +671,7 @@ class ChannelRepository {
       avatarGroup: avatarGroup,
       type: channel.type,
       members: channel.members.map(member => ({
-        userId: member.user._id.toString() || member.user,
+        userId: member.user ? member.user._id.toString() || member.user : '',
         role: member.role
       })),
       time: channel.lastMessage ? channel.lastMessage.createdAt : null,
