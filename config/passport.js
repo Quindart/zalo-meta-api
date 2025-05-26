@@ -1,7 +1,8 @@
 import passport from 'passport';
-require('dotenv').config();
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-import User from '../src/infrastructure/mongo/model/User';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import dotenv from 'dotenv';
+dotenv.config();
+import User from '../src/infrastructure/mongo/model/User.js';
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,

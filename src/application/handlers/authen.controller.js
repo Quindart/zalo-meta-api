@@ -10,7 +10,7 @@ import Error from '../../utils/errors.js'
 import { generateAccessToken, generateRefreshToken } from '../../infrastructure/JWT/index.js';
 import FCM from '../../infrastructure/mongo/model/FCM.js';
 dotenv.config();
-
+import passport from 'passport';
 class AuthenController {
     constructor() {
         this.ACCESS_TOKEN_SECRET = process.env.TOKEN_SECRET_KEY;
@@ -18,80 +18,61 @@ class AuthenController {
         this.ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '1d';
         this.REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
     }
-    async googleLogin(req, res) {
-        passport.authenticate('google', {
-            scope: ['profile', 'email']
-        })(req, res);
-    }
-
     async googleCallback(req, res) {
-        passport.authenticate('google', async (err, user, info) => {
-            if (err) {
-                console.error('Google auth error:', err);
-                return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-                    success: false,
-                    message: 'Lỗi xác thực Google',
-                    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-                });
-            }
+        try {
+            // req.user đã có sẵn từ passport middleware trong router
+            const user = req.user;
 
             if (!user) {
-                return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-                    success: false,
-                    message: 'Xác thực Google không thành công',
-                    error: process.env.NODE_ENV === 'development' ? info?.message : undefined
-                });
+                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+                return res.redirect(`${frontendUrl}/auth/login?error=auth_failed`);
             }
 
-            try {
-                // Tạo payload cho JWT tokens
-                const payload = {
-                    id: user._id,
-                    phone: user.phone,
-                    email: user.email,
-                    expiry_accesstoken: this.ACCESS_TOKEN_EXPIRY,
-                    expiry_refreshtoken: this.REFRESH_TOKEN_EXPIRY,
-                };
+            // Tạo payload cho JWT tokens
+            const payload = {
+                id: user._id,
+                phone: user.phone,
+                email: user.email,
+                expiry_accesstoken: this.ACCESS_TOKEN_EXPIRY,
+                expiry_refreshtoken: this.REFRESH_TOKEN_EXPIRY,
+            };
 
-                // Tạo tokens
-                const accessToken = generateAccessToken(payload);
-                const refreshToken = generateRefreshToken(payload);
+            // Tạo tokens
+            const accessToken = generateAccessToken(payload);
+            const refreshToken = generateRefreshToken(payload);
 
-                // Lưu refresh token vào database
-                await RefreshToken.create({
-                    token: refreshToken,
-                    userId: user._id,
-                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 ngày
-                });
+            // Lưu refresh token vào database
+            await RefreshToken.create({
+                token: refreshToken,
+                userId: user._id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 ngày
+            });
 
-                return res.status(HTTP_STATUS.OK).json({
-                    success: true,
-                    message: 'Đăng nhập Google thành công',
-                    data: {
-                        user: {
-                            id: user._id,
-                            firstName: user.firstName,
-                            lastName: user.lastName,
-                            email: user.email,
-                            avatar: user.avatar,
-                            phone: user.phone
-                        },
-                        tokens: {
-                            accessToken,
-                            refreshToken,
-                            expiresIn: this.ACCESS_TOKEN_EXPIRY
-                        }
-                    }
-                });
-            } catch (tokenError) {
-                console.error('Token generation error:', tokenError);
-                return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-                    success: false,
-                    message: 'Lỗi tạo token',
-                    error: process.env.NODE_ENV === 'development' ? tokenError.message : undefined
-                });
-            }
-        })(req, res);
+            const userData = {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                avatar: user.avatar,
+                phone: user.phone
+            };
+
+            // Redirect về frontend với tokens và user data
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const queryParams = new URLSearchParams({
+                success: 'true',
+                accessToken,
+                refreshToken,
+                userData: JSON.stringify(userData)
+            });
+
+            return res.redirect(`${frontendUrl}/auth/login?${queryParams.toString()}`);
+
+        } catch (error) {
+            console.error('Google callback error:', error);
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            return res.redirect(`${frontendUrl}/auth/login?error=token_error`);
+        }
     }
     async registerFcmToken(req, res) {
         try {

@@ -4,6 +4,7 @@ import authenController from "../handlers/authen.controller.js";
 import { authenticateToken } from "../middleware/authentication.middleware.js";
 import QRController from "../handlers/QR.controller.js";
 import { detectDevice } from "../middleware/detectDevice.middleware.js";
+import passport from "../../../config/passport.js";
 const router = express.Router();
 
 router.post(ROUTING.LOGIN, (req, res) => authenController.login(req, res));
@@ -24,7 +25,7 @@ router.post(ROUTING.QR_LOGIN, (req, res) => QRController.loginQR(req, res));
 router.post(ROUTING.FCM, (req, res) => authenController.registerFcmToken(req, res));
 
 //Login with Google
-router.get(ROUTING.GOOGLE_LOGIN, (req, res) => authenController.googleLogin(req, res));
-router.get(ROUTING.GOOGLE_CALLBACK, (req, res) => authenController.googleCallback(req, res));
+router.get(ROUTING.GOOGLE_LOGIN, passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get(ROUTING.GOOGLE_CALLBACK, passport.authenticate('google', { session: false }), (req, res) => authenController.googleCallback(req, res));
 
 export default router;
