@@ -78,5 +78,9 @@ const ROUTING = {
 
   //FCM
   FCM: "/fcm",
+
+  //*Google
+  GOOGLE_LOGIN: "/google-login",
+  GOOGLE_CALLBACK: "/google-callback",
 };
 export default ROUTING;

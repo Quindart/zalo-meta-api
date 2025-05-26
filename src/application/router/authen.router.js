@@ -23,4 +23,8 @@ router.post(ROUTING.QR_LOGIN, (req, res) => QRController.loginQR(req, res));
 
 router.post(ROUTING.FCM, (req, res) => authenController.registerFcmToken(req, res));
 
+//Login with Google
+router.get(ROUTING.GOOGLE_LOGIN, (req, res) => authenController.googleLogin(req, res));
+router.get(ROUTING.GOOGLE_CALLBACK, (req, res) => authenController.googleCallback(req, res));
+
 export default router;

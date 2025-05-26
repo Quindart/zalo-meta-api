@@ -39,7 +39,6 @@ class MessageSocket {
         const message = {
             content: data.content,
             senderId: data.senderId,
-            fcmToken: data.fcmToken,
             channelId: channel.id,
             status: "send",
             timestamp: new Date(),
