@@ -3,6 +3,7 @@ import channelRepository from "../../../domain/repository/Channel.repository.js"
 import messageRepository from "../../../domain/repository/Message.repository.js";
 import Message from "../../mongo/model/Message.js";
 import { UserRepository } from "../../../domain/repository/User.repository.js";
+import MessageRepository from "../../../domain/repository/Message.repository.js";
 import File from "../../mongo/model/File.js";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
@@ -12,12 +13,12 @@ import { Expo } from "expo-server-sdk";
 import mongoose, { Mongoose } from 'mongoose';
 
 class MessageSocket {
-    userRepo
+    userRepo;
     constructor(io, socket) {
         this.io = io;
         this.socket = socket;
         this.registerEvents();
-        this.userRepo = new UserRepository()
+        this.userRepo = new UserRepository();
     }
     registerEvents() {
         this.socket.on(SOCKET_EVENTS.MESSAGE.SEND, this.sendMessage.bind(this));
@@ -27,12 +28,151 @@ class MessageSocket {
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE, this.deleteMessage.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD, this.uploadFile.bind(this));
         this.socket.on(SOCKET_EVENTS.FILE.UPLOAD_GROUP, this.uploadGroupImages.bind(this));
+        this.socket.on(SOCKET_EVENTS.MESSAGE.FORWARD_SERVICE, this.forwardMessageService.bind(this));
 
         this.socket.on(SOCKET_EVENTS.MESSAGE.FORWARD, this.forwardMessage.bind(this))
         this.socket.on(SOCKET_EVENTS.MESSAGE.DELETE_HISTORY, this.deleteHistoryMessage.bind(this));
 
     }
+    async forwardMessageService(data) {
+        try {
+            const { messageId, channelIds, senderId } = data;
+            const originalMessage = await Message.findById(new mongoose.Types.ObjectId(messageId))
+                .populate("fileId")
+                .populate("imagesGroup");
 
+            if (!originalMessage) {
+                console.error("Message not found with ID:", messageId);
+                return;
+            }
+            if (!Array.isArray(channelIds) || channelIds.length === 0) {
+                console.error("Invalid channelIds:", channelIds);
+                return;
+            }
+            const sender = await this.userRepo.findOne(senderId);
+            if (!sender) {
+                console.error("Sender not found:", senderId);
+                return;
+            }
+            const forwardPromises = channelIds.map(async (channelId) => {
+                try {
+                    // Lấy thông tin channel
+                    const channel = await channelRepository.getChannel(channelId);
+                    if (!channel) {
+                        console.error(`Channel not found: ${channelId}`);
+                        return;
+                    }
+
+                    // Tạo message mới với đầy đủ thông tin từ message gốc
+                    const newMessageData = {
+                        content: originalMessage.content || "",
+                        senderId: senderId,
+                        channelId: channelId,
+                        messageType: originalMessage.messageType || "text",
+                        fileId: originalMessage.fileId || null,
+                        imagesGroup: originalMessage.imagesGroup || [],
+                        status: "send",
+                        timestamp: new Date(),
+                    };
+
+                    const newMessage = new Message(newMessageData);
+                    await newMessage.save();
+
+                    // Cập nhật last message trong channel
+                    await channelRepository.updateLastMessage(channelId, newMessage._id);
+
+                    // Tạo response message
+                    const messageResponse = {
+                        id: newMessage._id,
+                        content: newMessage.content,
+                        sender: {
+                            id: sender._id,
+                            name: `${sender.lastName} ${sender.firstName}`,
+                            avatar: sender.avatar,
+                        },
+                        messageType: newMessage.messageType,
+                        // Xử lý file nếu có
+                        file: newMessage.messageType === "file" && originalMessage.fileId
+                            ? {
+                                id: originalMessage.fileId._id,
+                                filename: originalMessage.fileId.filename,
+                                path: originalMessage.fileId.path,
+                                size: originalMessage.fileId.size,
+                                extension: originalMessage.fileId.extension,
+                            }
+                            : null,
+                        // Xử lý image nếu có
+                        image: newMessage.messageType === "image" && originalMessage.fileId
+                            ? {
+                                id: originalMessage.fileId._id,
+                                filename: originalMessage.fileId.filename,
+                                path: originalMessage.fileId.path,
+                                size: originalMessage.fileId.size,
+                                extension: originalMessage.fileId.extension,
+                            }
+                            : null,
+                        // Xử lý group images nếu có
+                        imagesGroup: newMessage.messageType === "imageGroup" && originalMessage.imagesGroup
+                            ? originalMessage.imagesGroup.map((file) => ({
+                                id: file._id,
+                                filename: file.filename,
+                                size: file.size,
+                                path: file.path,
+                                extension: file.extension,
+                            }))
+                            : [],
+                        // Xử lý video nếu có
+                        video: newMessage.messageType === "video" && originalMessage.fileId
+                            ? {
+                                id: originalMessage.fileId._id,
+                                filename: originalMessage.fileId.filename,
+                                path: originalMessage.fileId.path,
+                                size: originalMessage.fileId.size,
+                                extension: originalMessage.fileId.extension,
+                            }
+                            : null,
+                        // Xử lý audio nếu có
+                        audio: newMessage.messageType === "audio" && originalMessage.fileId
+                            ? {
+                                id: originalMessage.fileId._id,
+                                filename: originalMessage.fileId.filename,
+                                path: originalMessage.fileId.path,
+                                size: originalMessage.fileId.size,
+                                extension: originalMessage.fileId.extension,
+                            }
+                            : null,
+                        members: channel.members,
+                        channelId: channelId,
+                        status: "send",
+                        timestamp: new Date(),
+                        isMe: true,
+                    };
+                    channel.members.forEach((member) => {
+                        this.io.to(member.userId).emit(SOCKET_EVENTS.MESSAGE.RECEIVED, messageResponse);
+                    });
+                } catch (error) {
+                    console.error(`Failed to forward to channel ${channelId}:`, error);
+                }
+            });
+
+            await Promise.all(forwardPromises);
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD_SERVICE_RESPONSE, {
+                success: true,
+                message: "Messages forwarded successfully",
+                data: {
+                    messageId,
+                    channelIds,
+                    totalChannels: channelIds.length
+                }
+            });
+
+        } catch (error) {
+            this.socket.emit(SOCKET_EVENTS.MESSAGE.FORWARD_SERVICE_RESPONSE, {
+                success: false,
+                message: error.message || "Error forwarding messages",
+            });
+        }
+    }
     async sendMessage(data) {
         const channel = await channelRepository.getChannel(data.channelId);
         const sender = await this.userRepo.findOne(data.senderId);
