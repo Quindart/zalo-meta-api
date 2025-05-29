@@ -78,6 +78,7 @@ const ROUTING = {
 
   //FCM
   FCM: "/fcm",
+  FCM_UNREGISTER: "/unregister-token",
 
   //*Google
   GOOGLE_LOGIN: "/google-login",

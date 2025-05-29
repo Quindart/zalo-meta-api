@@ -121,6 +121,52 @@ class AuthenController {
 
         }
     }
+    async unRegisterFcmToken(req, res) {
+        try {
+            const { fcmToken, userId } = req.body;
+
+            if (!fcmToken) {
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                    success: false,
+                    message: 'FCM token là bắt buộc'
+                });
+            }
+
+            const existingFcm = await FCM.findOne({ fcmToken: fcmToken }).select({ _id: 1, user: 1 });
+
+            if (!existingFcm) {
+                return res.status(HTTP_STATUS.NOT_FOUND).json({
+                    success: false,
+                    message: 'FCM token không tồn tại'
+                });
+            }
+
+            existingFcm.user = existingFcm.user.filter(user => user.toString() !== userId);
+            if (existingFcm.user.length === 0) {
+                // Nếu không còn user nào, xóa FCM token
+                await FCM.deleteOne({ _id: existingFcm._id });
+                return res.status(HTTP_STATUS.OK).json({
+                    success: true,
+                    message: 'FCM token đã được xóa thành công',
+                    data: fcmToken
+                });
+            }
+            await existingFcm.save();
+
+            return res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: 'FCM token đã được xóa thành công',
+                data: existingFcm.fcmToken
+            });
+        } catch (error) {
+            console.error('Error in removeUserFcmToken:', error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Lỗi server',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
     async login(req, res) {
         try {
             const { phone, password } = req.body;

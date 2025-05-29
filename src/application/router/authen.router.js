@@ -22,6 +22,7 @@ router.get(ROUTING.QR, QRController.getInfoQR);
 router.post(ROUTING.QR_LOGIN, (req, res) => QRController.loginQR(req, res));
 
 router.post(ROUTING.FCM, (req, res) => authenController.registerFcmToken(req, res));
+router.post(ROUTING.FCM_UNREGISTER, (req, res) => authenController.unRegisterFcmToken(req, res));
 
 //Login with Google
 router.get(ROUTING.GOOGLE_LOGIN, passport.authenticate('google', { scope: ['profile', 'email'] }));
